@@ -117,16 +117,17 @@ public:
 		return key_;
 	}
 	std::string getKeyAsString() {
-        cout<<"pico_record getKeyAsString : key_ : "<<key_<<endl;
+        log("pico_record getKeyAsString : key_ : ");
+        log(key_);
 		std::string key(key_);
-         cout<<"pico_record getKeyAsString : key : "<<key<<endl;
+       
 		return key;
 	}
 	std::string getValueAsString() {
-        cout<<"pico_record getValueAsString : value_ : "<<value_<<endl;
+        log("pico_record getValueAsString : value_ : ");
+        log(value_);
 		std::string val(value_);
-        cout<<"pico_record getValueAsString : val : "<<val<<endl;
-		
+       
 		return val;
 	}
 	std::string getString() const {

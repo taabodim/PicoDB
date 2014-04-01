@@ -84,7 +84,7 @@ public:
 		return raw_message;
 	}
 	msgPtr convert_to_buffered_message() {
-        cout<<"pico_message : converToBuffers "<<endl;
+        log("pico_message : converToBuffers ");
         std::shared_ptr<pico_concurrent_list<pico_buffer>>  all_buffers (new pico_concurrent_list<pico_buffer>);
 
 		if (messageSize < pico_buffer::max_size) {
@@ -103,13 +103,14 @@ public:
 		long numberOfBuffer = 0;
 		const char* temp_buffer_message  = new char [sizeof(raw_message)];
         temp_buffer_message = raw_message.c_str();
-		cout<<"pico_message : message is too big , breaking down the huge string to a list of buffers ...... "<<endl;
+		log("pico_message : message is too big , breaking down the huge string to a list of buffers ...... ");
         
         while (*temp_buffer_message != 0) {
 			pico_buffer currentBuffer;
 			currentBuffer.parentMessageId = uniqueMessageId;
             
-            cout<<"pico_message : uniqureMessageId  "<<uniqueMessageId<<endl;
+            log("pico_message : uniqureMessageId  ");
+            log(uniqueMessageId);
 			
             for (int i = 0; i < pico_buffer::max_size; i++) {
 				currentBuffer.parentSequenceNumber = numberOfBuffer;
@@ -120,7 +121,7 @@ public:
 				}
 				++temp_buffer_message;
 			}
-             cout<<"pico_message : buffer pushed back to all_buffers "<<endl;
+             log("pico_message : buffer pushed back to all_buffers ");
 			all_buffers->push(currentBuffer);
 			numberOfBuffer++;
 		}
@@ -130,13 +131,13 @@ public:
 	 char* convertMessageToArrayBuffer() {
          
 		char* temp_raw_message  = new char [sizeof(raw_message)];
-         cout<<"pico_message : convertMessageToArrayBuffer   "<<endl;
+         log("pico_message : convertMessageToArrayBuffer  " );
 		const char* charOfMessage = raw_message.c_str();
 		for (long i = 0; i < sizeof(raw_message); i++) {
 			temp_raw_message[i] = *charOfMessage;
 			++charOfMessage;
 		}
-         cout<<"pico_message : convertMessageToArrayBuffer temp_raw_message is  "<<(*temp_raw_message)<<endl;
+//         log("pico_message : convertMessageToArrayBuffer temp_raw_message is  "<<(*temp_raw_message)<<endl;
 
 		return temp_raw_message;
 	}
@@ -147,26 +148,29 @@ public:
 			//get rid of all buffers that are not for this messageId
 			for (list<pico_buffer>::iterator it; it != all_buffers.end();
 					++it) {
-                cout<<"get_pico_message : parentSequenceNumber :  "<<it->parentSequenceNumber<<endl;
-                cout<<"get_pico_message : seq_number :  "<<seq_number<<endl;
-
+//                log("get_pico_message : parentSequenceNumber :  "<<it->parentSequenceNumber<<endl;
+//                log("get_pico_message : seq_number :  "<<seq_number<<endl;
+//
 				if (it->parentSequenceNumber == seq_number) {
 					all_raw_msg.append((it->getString()));
 					seq_number++;
 				}
 			}
-			cout<<"pico_message : all_raw_msg is "<<all_raw_msg<<endl;
+			log("pico_message : all_raw_msg is ");
+           
+            
+            log(all_raw_msg);
 		}
 		pico_message pico_msg(all_raw_msg);
 		return pico_msg;
 
 	}
 	pico_message() {
-	    cout<<"pico_message being created by default constructor ";
+	    log("pico_message being created by default constructor ");
 
     }
 	~pico_message() {
-        cout<<"pico_message being destroyed now."<<endl;
+        log("pico_message being destroyed now.");
     }
 
 	void set() {

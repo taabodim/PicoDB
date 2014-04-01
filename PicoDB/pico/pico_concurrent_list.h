@@ -27,14 +27,14 @@ namespace pico{
         
         pico_concurrent_list()
         {
-            cout<<"pico_concurrent_list being constructed"<<endl;
+            log("pico_concurrent_list being constructed");
         }
         
        
         queueType pop()
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
-            cout<<"pico_concurrent_list : poping from the list.."<<endl;
+            log("pico_concurrent_list : poping from the list..");
             queueType msg = underlying_list.front();
             underlying_list.pop_front();
             return msg;
@@ -46,7 +46,7 @@ namespace pico{
         void push(queueType& msg)
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
-            cout<<"pushing pico msg to the front"<<endl;
+            log("pushing pico msg to the front");
             underlying_list.push_front(msg);
             
         }
@@ -62,7 +62,7 @@ namespace pico{
                 }
                 i++;
             }
-            cout<<"index "<<index<< " was not found in the list..concurrent list has only "<<i<<" elements \n";
+//            log("index "+index+ " was not found in the list..concurrent list has only "+i+" elements \n");
             return empty;
         }
         
@@ -90,12 +90,12 @@ namespace pico{
                  underlying_list.pop_front();
                 str.append(t.getString());
             }
-            cout<<"this is the string representation of the pico_buffered_message"<<endl<<str<<endl;
+            log("this is the string representation of the pico_buffered_message");
             return str;
                     }
         virtual ~pico_concurrent_list()
         {
-            cout<<"pico_concurrent_list being destructed.."<<endl;
+            log("pico_concurrent_list being destructed..");
         }
     };
 }

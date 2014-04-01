@@ -46,10 +46,10 @@ void jsonCPPexample() {
 // there is no such member.
 	const Json::Value plugins = root["plug-ins"];
 	for (int index = 0; index < plugins.size(); ++index) // Iterates over the sequence elements.
-		std::cout<<"plugin index is "<<(plugins[index].asString())<<std::endl;
+		log("plugin index is "<<(plugins[index].asString())<<std::endl;
 
-	std::cout<<(root["indent"].get("length", 3).asInt());
-	cout<<(root["indent"].get("use_space", true).asBool());
+	log((root["indent"].get("length", 3).asInt());
+	log((root["indent"].get("use_space", true).asBool());
 
 // At application shutdown to make the new configuration document:
 // Since Json::Value has implicit constructor for all value types, it is not

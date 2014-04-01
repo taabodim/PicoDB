@@ -19,10 +19,10 @@ class asyncReader {
 
 public:
 	asyncReader() {
-		cout<<"asyncReader is being constructed....\n";
+		log("asyncReader is being constructed....\n");
 	}
 	virtual ~asyncReader() {
-		cout<<"asyncReader is being destructed....\n";
+		log("asyncReader is being destructed....\n");
 	}
 
 	msgPtr getReadBuffer() {

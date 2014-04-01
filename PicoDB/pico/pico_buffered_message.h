@@ -10,27 +10,30 @@
 #define PicoDB_pico_buffered_message_h
 #include <pico/pico_buffer.h>
 #include <pico/pico_concurrent_list.h>
+#include <pico/pico_utils.h>
 
 //this class contains a message thats has been transformed into a list of buffers
 using namespace std;
  namespace pico
 {
-    
+    class pico_buffered_message;
+    typedef std::shared_ptr<pico_buffered_message> msgPtr;
+
     class pico_buffered_message{
     public:
         pico_buffered_message()
         {
-        cout<<"empty pico_buffered_message being constructed.....\n";
+        log("empty pico_buffered_message being constructed.....\n");
         }
         pico_buffered_message(std::shared_ptr<pico_concurrent_list<pico_buffer>> list){
-        cout<<"pico_buffered_message being constructed....\n";
+        log("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
         }
         
         
         virtual ~pico_buffered_message()
         {
-            cout<<"pico_buffered_message being desstructed....\n";
+            log("pico_buffered_message being desstructed....\n");
             
         }
         void append(pico_buffer buf)

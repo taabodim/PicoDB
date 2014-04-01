@@ -65,7 +65,7 @@ public:
 	}
 
 	void initClientHandler(socketType socket) {
-		cout<<"server accepted a connection...going to start the session"<<endl;
+		log("server accepted a connection...going to start the session");
 		std::shared_ptr<pico_session> clientPtr (new pico_session (socket));
 		//add clients to a set
 		clientPtr->start();
@@ -89,7 +89,7 @@ void runServer() {
 
 	servers.emplace_back(serverPtr);
 	io_service.run();
-	std::cout<<" io server is running going out of scope..";
+	log(" io server is running going out of scope..");
 }
 } //end of namespace
 

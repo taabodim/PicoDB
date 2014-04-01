@@ -25,18 +25,21 @@ namespace pico {
         void printNode()
         {
             if(left==nullptr)
-                cout<<"left : null";
+                log("left : null");
             else
-                cout<<"left : "<< left->key_of_pico_record;
+                log("left : ");
+            //<< left->key_of_pico_record;
             
-            cout<<" node : "<<key_of_pico_record;
+            log(" node : ");
+            //<<key_of_pico_record;
             
             if(right==nullptr)
-                cout<<"right : null";
+                log("right : null");
             else
                 
-            cout<<" right : "<<right->key_of_pico_record;
-            cout<<endl;
+                    log(" right : ");
+                    //right->key_of_pico_record;
+            
         }
     };
     
@@ -125,18 +128,18 @@ namespace pico {
         void insert(std::shared_ptr<pico_record_node> nodeToBeInserted, std::shared_ptr<pico_record_node> leaf) {
             offsetType key = nodeToBeInserted->key_of_pico_record;
             offsetType offset= nodeToBeInserted->pico_record_offset;
-            cout<<"pico_index : insert : nodeToBeInserted->key_of_pico_record =key = "<<nodeToBeInserted->key_of_pico_record<<endl;
-            cout<<"pico_index : insert : leaf->key_of_pico_record = "<<leaf->key_of_pico_record<<endl;
+           // log("pico_index : insert : nodeToBeInserted->key_of_pico_record =key = "<<nodeToBeInserted->key_of_pico_record<<endl;
+          //  log("pico_index : insert : leaf->key_of_pico_record = "<<leaf->key_of_pico_record<<endl;
             
             if (key < leaf->key_of_pico_record) {
                 if (leaf->left != nullptr)
                 {
-                    cout<<"pico_index : insert : key is smaller checking the left node "<<endl;
+                 //   log("pico_index : insert : key is smaller checking the left node );
                     
                     insert(nodeToBeInserted, leaf->left);
                 }
                 else {
-                    cout<<"pico_index : insert : key is smaller adding a left node to this node"<<endl;
+                    log("pico_index : insert : key is smaller adding a left node to this node");
                     
                     leaf->left = std::shared_ptr<pico_record_node>(new pico_record_node());
                     leaf->left->key_of_pico_record = key;
@@ -147,12 +150,12 @@ namespace pico {
             } else if (key >= leaf->key_of_pico_record) {
                 if (leaf->right != nullptr)
                 {
-                    cout<<"pico_index : insert : key is larger checking the right node "<<endl;
+                    log("pico_index : insert : key is larger checking the right node ");
                     
                     insert(nodeToBeInserted, leaf->right);
                 }
                 else {
-                    cout<<"pico_index : insert : key is larger adding a right node to this node"<<endl;
+                    log("pico_index : insert : key is larger adding a right node to this node");
                     
                     leaf->right = std::shared_ptr<pico_record_node>(new pico_record_node());
                     leaf->right->key_of_pico_record = key;
@@ -202,7 +205,7 @@ namespace pico {
         
         void printTheTree()
         {
-            cout<<"this is the tree "<<std::endl;
+            log("this is the tree ");
             list<std::shared_ptr<pico_record_node>> level;
             level.push_front(root);
             while(!level.empty()){
@@ -215,7 +218,7 @@ namespace pico {
                     node->left->printNode();
                     level.push_front(node->left);
                 }
-                cout<<node->pico_record_offset;
+              //  log(node->pico_record_offset);
                 if(node->right!= nullptr)
                 {
                     node->right->printNode();
@@ -227,7 +230,7 @@ namespace pico {
         }
         void add_to_tree(pico_record& it) { //this method creates a tree structure
             //based on the pico records that it gets reads from a collection
-            cout<<"adding record to tree "<<endl;
+            log("adding record to tree ");
             
             std::shared_ptr<pico_record_node>  node = createANodeBasedOnOffsetAndKeyOfRecord(it.offset_of_record,it.getKeyAsString());
             insert(node);
@@ -235,11 +238,11 @@ namespace pico {
         }
         void build_tree(list<pico_record> all_pico_records) { //this method creates a tree structure
             //based on the pico records that it gets reads from a collection
-            cout<<"tree is going to be build by "<<all_pico_records.size()<<" elements"<<std::endl;
+           // log("tree is going to be build by "<<all_pico_records.size()<<" elements"<<std::endl;
             
             for (list<pico_record>::iterator it=all_pico_records.begin(); it != all_pico_records.end(); ++it) {
                 
-                cout<<"build_tree : offset is "<<it->offset_of_record<<endl;
+             //   log("build_tree : offset is "<<it->offset_of_record<<endl;
                 std::shared_ptr<pico_record_node>  node = createANodeBasedOnOffsetAndKeyOfRecord(it->offset_of_record,it->getKeyAsString());
                 insert(node);
                 

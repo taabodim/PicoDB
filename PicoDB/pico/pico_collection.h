@@ -37,7 +37,7 @@ public:
         path.append(ext);
         name = path;
 		filename = name;
-        cout<<"pico_collection : name of the file is "<<filename<<std::endl;
+       // log("pico_collection : name of the file is "<<filename<<std::endl;
 		infile.open(name, std::fstream::in | std::fstream::binary);
 		outfile.open(name,
 				std::fstream::out | std::fstream::app | std::fstream::binary);
@@ -79,8 +79,9 @@ public:
         std::fstream file;
 		file.open(filename, std::fstream::in | std::fstream::binary);
 		file.seekg(0, std::ifstream::end);
-        cout<<" getEndOfFileOffset : filename is "<<filename<<std::endl;
-        cout<<" getEndOfFileOffset : file.tellg() :  "<<file.tellg()<<std::endl;
+        log(" getEndOfFileOffset : filename is ");
+//        log(<<filename<<std::endl;
+//        log(" getEndOfFileOffset : file.tellg() :  "<<file.tellg()<<std::endl;
         
         return file.tellg();
 
@@ -178,7 +179,7 @@ public:
 				list_of_records.push_back(record_read_from_file);
 			}
             else{
-                cout<<"warning : read_all_records : key is empty!"<<endl;
+                log("warning : read_all_records : key is empty!");
             }
             
 		}
@@ -209,7 +210,7 @@ public:
 				list_of_offsets.push_back(offset);
 			}
             else{
-                cout<<"warning : read_all_records_offsets : key is empty!"<<endl;
+                log("warning : read_all_records_offsets : key is empty!");
             }
                 
 		}

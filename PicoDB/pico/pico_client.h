@@ -48,15 +48,15 @@ public:
 			writeMessageLock(sessionMutex) {
 
 		socket_ = socket;
-		std::cout << "client initializing " << std::endl;
+		log( "client initializing ");
 
 	}
     
 	void start_connect(tcp::resolver::iterator endpoint_iter) {
-		std::cout << " start_connect(tcp::resolver::iterator endpoint_iter) "
-				<< std::endl;
+		log( " start_connect(tcp::resolver::iterator endpoint_iter) ");
 		if (endpoint_iter != tcp::resolver::iterator()) {
-			std::cout << "Trying " << endpoint_iter->endpoint() << "...\n";
+			log(  "Trying ");
+            //log(endpoint_iter->endpoint() << "...\n";
 
 			// Start the asynchronous connect operation.
 			socket_->async_connect(endpoint_iter->endpoint(),
@@ -65,7 +65,7 @@ public:
 			// There are no more endpoints to try. Shut down the client.
 //				stop();
 		}
-		std::cout << " start_connect ends" << std::endl;
+		log(  " start_connect ends" );
 	}
 	void handle_connect(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
@@ -76,7 +76,7 @@ public:
 // of the asynchronous operation. If the socket is closed at this time then
 // the timeout handler must have run first.
 		if (!socket_->is_open()) {
-			std::cout << "Connect timed out\n";
+			log(  "Connect timed out\n");
 
 			// Try the next available endpoint.
 			start_connect(++endpoint_iter);
@@ -85,7 +85,7 @@ public:
 
 	void start(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
-        cout<<"client starting the process..going to write_message to server"<<endl;
+        log("client starting the process..going to write_message to server");
         
 		try {
 			write_messages();
@@ -99,7 +99,7 @@ public:
 	}
 //	void readAsync() {
 ////		while (true) {
-//		cout<<" client is going to read asynchronously..\n";
+//		log(" client is going to read asynchronously..\n";
 //		read_messages();
 //
 //		//boost::this_thread::sleep(boost::posix_time::seconds(4));
@@ -128,7 +128,7 @@ public:
 	void read_messages() {
 
         auto self(shared_from_this());
-		cout << "client is trying to read messages" << endl;
+		log( "client is trying to read messages" );
 		bufPtr currentBuffer = asyncReader_.getOneBuffer();
 		//get a message in pico_buffer
         //convert it to string , if at the end of it is append.. add it to the list of buffers and create a
@@ -146,11 +146,11 @@ public:
                                     append_to_last_message(currentBuffer);
                                     if(str.find_last_of(app)== string::npos)
                                     {
-                                        cout<<"this buffer is an add on to the last message..dont process anything..read the next buffer"<<endl;
+                                        log("this buffer is an add on to the last message..dont process anything..read the next buffer");
                                         
                                     }
                                     else {
-                                        cout<<"message was read completely..process the last message "<<endl;
+                                        log("message was read completely..process the last message ");
                                         str =last_read_message->toString();
                                         print(error,t,str);
                                         
@@ -166,11 +166,12 @@ public:
     void print(const boost::system::error_code& error,
                std::size_t t,string& str)
     {
-        std::cout << "Client Received :  "<<std::endl;
-        cout<<t<<" bytes from server "<<std::endl;
-        if(error) cout<<" error msg : "<<error.message()<<std::endl;
-        std::cout<< " data  read from server is "<<str<<std::endl;
-        std::cout << "-------------------------"<<std::endl;
+//        std::cout << "Client Received :  "<<std::endl;
+//        log(t<<" bytes from server "<<std::endl;
+//        if(error) log(" error msg : "<<error.message()<<std::endl;
+                      log( " data  read from server is ");
+                      log(str);
+        log("-------------------------");
     }
     void append_to_last_message(bufPtr currentBuffer) {
 		last_read_message->append(*currentBuffer);
@@ -180,7 +181,7 @@ public:
       
         //std::string key,std::string value,std::string com,std::string database,std::string us
         //,std::string col
-       // cout<<"insert : key : "+key +" \n value : "+value<<endl;
+       // log("insert : key : "+key +" \n value : "+value<<endl;
         string command("insert");
         string database("currencyDB");
         string user("currencyUser");
@@ -195,17 +196,17 @@ public:
 		queueType message;
 		if (commandQueue_.empty())
         {
-            cout<<"client queue of messages is empty...going to wait on the lock"<<endl;
+            log("client queue of messages is empty...going to wait on the lock");
 			messageClientQueueIsEmpty.wait(writeMessageLock);
         }
-		cout << "client is writing async now\n";
+		log( "client is writing async now");
 
 		if (!commandQueue_.empty()) {
 			message = commandQueue_.pop();
 
 		}
-		cout << " client is going to send this message to server : " << message->toString()
-				<< std::endl;
+		log( " client is going to send this message to server : ");
+        log(message->toString());
 
       
 
@@ -231,11 +232,12 @@ public:
                                  [this,self,currentBuffer](const boost::system::error_code& error,
                                                            std::size_t t) {
                                      string str = currentBuffer->getString();
-                                     std::cout << "Client Sent :  "<<std::endl;
-                                     cout<<t<<" bytes from server "<<std::endl;
-                                     if(error) cout<<" error msg : "<<error.message()<<std::endl;
-                                     std::cout<< " data sent to server is "<<str<<std::endl;
-                                     std::cout << "-------------------------"<<std::endl;
+                                   //  std::cout << "Client Sent :  "<<std::endl;
+                                     //log(t<<" bytes from server "<<std::endl;
+                                     //if(error) log(" error msg : "<<error.message()<<std::endl;
+                                     log( " data sent to server is ");
+                                     log(str);
+                                     log("-------------------------");
                                      read_messages();
                                  });
  
@@ -270,7 +272,7 @@ void startTheShell(std::shared_ptr<clientType> ptr) {
 		ptr->queueCommand(msg);
 		}catch(...)
 		{
-			cout<<"error in parsing command"<<std::endl;
+			log("error in parsing command");
 		}
 
 	} while (shellCommand.compare(quitCmd) != 0);

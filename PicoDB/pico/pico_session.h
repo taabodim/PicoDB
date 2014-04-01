@@ -149,11 +149,11 @@ public:
 					append_to_last_message(currentBuffer);
 					if(str.find_last_of(app)== string::npos)
 					{
-						cout<<"this buffer is an add on to the last message..dont process anything..read the next buffer"<<endl;
+						log("this buffer is an add on to the last message..dont process anything..read the next buffer");
 
 					}
 					else {
-						cout<<"message was read completely..process the last message "<<endl;
+						log("message was read completely..process the last message ");
 						str =last_read_message->toString();
                         print(error,t,str);
 						
@@ -167,11 +167,12 @@ public:
 	}
     void print(const boost::system::error_code& error,std::size_t t,string& str)
     {
-        if(error) cout<<" error msg : "<<error.message()<<std::endl;
-        std::cout << "Server received "<<std::endl;
-        cout<<t<<" bytes read from Client "<<std::endl;
-        std::cout<< " data read from client is "<<str<<std::endl;
-        std::cout << "-------------------------"<<std::endl;
+//        if(error) log(" error msg : "<<error.message()<<std::endl;
+//        std::cout << "Server received "<<std::endl;
+//        log(t<<" bytes read from Client "<<std::endl;
+            log(" data read from client is ");
+            log(str);
+        log("-------------------------");
     
     }
 	void append_to_last_message(bufPtr currentBuffer) {
@@ -198,9 +199,9 @@ public:
 //
 //					string str = currentBuffer->getString();
 //					std::cout << "Server sent "<<std::endl;
-//					cout<<t<<" bytes sent to client "<<std::endl;
-//					if(error) cout<<" error msg : "<<error.message()<<std::endl;
-//					std::cout<< " data sent to client is "<<str<<std::endl;
+//					log(t<<" bytes sent to client "<<std::endl;
+//					if(error) log(" error msg : "<<error.message()<<std::endl;
+//					log( " data sent to client is "<<str<<std::endl;
 //					std::cout << "-------------------------"<<std::endl;
 //					read_messages();
 //				});
@@ -209,7 +210,7 @@ public:
         queueType message;
 		if (messageToClientQueue_.empty())
         {
-            cout<<"session queue of messages is empty...going to wait on the lock"<<endl;
+            log("session queue of messages is empty...going to wait on the lock");
 			messageClientQueueIsEmpty.wait(writeMessageLock);
         }
 		cout << "session is writing async now\n";
@@ -246,11 +247,12 @@ public:
                                  [this,self,currentBuffer](const boost::system::error_code& error,
                                                            std::size_t t) {
                                      string str = currentBuffer->getString();
-                                     std::cout << "Session Sent :  "<<std::endl;
-                                     cout<<t<<" bytes from Client "<<std::endl;
-                                     if(error) cout<<" error msg : "<<error.message()<<std::endl;
-                                     std::cout<< " data sent to client is "<<str<<std::endl;
-                                     std::cout << "-------------------------"<<std::endl;
+//                                     std::cout << "Session Sent :  "<<std::endl;
+//                                     //log(t<<" bytes from Client "<<std::endl;
+//                                     if(error) log(" error msg : "<<error.message()<<std::endl;
+                                                   log(" data sent to client is ");
+                                                   log(str);
+                                     log("-------------------------");
                                      read_messages();
                                  });
         

@@ -7,13 +7,11 @@
 
 #ifndef PICO_UTILS_H_
 #define PICO_UTILS_H_
-#include <pico/pico_buffered_message.h>
 #include <pico_buffer.h>
 using namespace std;
 namespace pico{
 
-typedef std::shared_ptr<pico_buffered_message> msgPtr;
-typedef std::shared_ptr<pico_buffer> bufPtr;
+
 
 typedef long offsetType;
 typedef std::shared_ptr<tcp::socket> socketType;
@@ -23,10 +21,12 @@ typedef std::string messageType;
     
     
     enum log_level {debug,trace,all,error,warning};
-    void log(const char* str,log_level s)
+    void log(const std::string& str)
     {
+        boost::mutex mutex;
+        boost::interprocess::scoped_lock<boost::mutex> lock( mutex);
         
-        std::cout<<(*str)<<std::endl;
+        std::cout<<str<<std::endl;
     }
     std::string random_string( size_t length )
     {

@@ -7,11 +7,13 @@
 #include <utility>
 #include <vector>
 #include <pico/pico_exception.h>
+#include <pico/pico_utils.h>
 using boost::asio::ip::tcp;
 
 namespace pico {
+class pico_buffer;
+typedef std::shared_ptr<pico_buffer> bufPtr;
     
-
 class pico_buffer {
 public:
 	std::string parentMessageId; //this is the id of the parent that
@@ -22,7 +24,7 @@ public:
     
     {
     
-        std::cout<<"pico buffer being destructed..";
+        log("pico buffer being destructed..");
         
     }
 	bool isBufferBeingUsed() {

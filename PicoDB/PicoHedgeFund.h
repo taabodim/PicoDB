@@ -27,7 +27,7 @@ namespace pico {
         
         PicoHedgeFund(std::shared_ptr<DBClient> client)
         {
-            cout<<" hedge fund is going to buy some currencies"<<endl;
+          //  log(" hedge fund is going to buy some currencies");
             client_ = client;
            
         }
@@ -35,7 +35,7 @@ namespace pico {
         {
             for(int i=0;i<num;i++)
             {
-                cout<<"hedge fund is buying currency.."<<endl;
+                //log("hedge fund is buying currency..");
                 Currency c1;
                 c1.name = "They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot where a French satellite captured images of a floating group of objects Sunday.They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot where a French satellite captured images of a floating group of objects Sunday.They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot where a French satellite captured images of a floating group of objects Sunday.They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot where a French satellite captured images of a floating group of objects Sunday.";
                 c1.volume=c1.name.size();
@@ -54,7 +54,7 @@ namespace pico {
         
         }
         ~PicoHedgeFund(){
-        
+            log("picoHedgeFund being destructed....\n");
         }
     };
 

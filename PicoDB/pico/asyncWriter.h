@@ -18,18 +18,18 @@ public:
     
     asyncWriter():   writerMessageList ( new pico_concurrent_list<msgPtr>())
     {
-        cout<<"empty asyncWriter being constructed...."<<endl;
+        log("empty asyncWriter being constructed....");
         currentBufferIndex=0;
     }
     asyncWriter(std::shared_ptr<pico_concurrent_list<msgPtr>> list)
     
     {
-        cout<<"asyncWriter being constructed...."<<endl;
+        log("asyncWriter being constructed....");
         currentBufferIndex=0;
         writerMessageList = list;
     }
 	~asyncWriter(){
-        cout<<"asyncWriter being destructed...."<<endl;
+        log("asyncWriter being destructed....");
     }
 	void addToAllMessages(msgPtr& msg)
     {

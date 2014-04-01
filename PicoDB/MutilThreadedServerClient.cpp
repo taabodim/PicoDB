@@ -286,7 +286,7 @@ int stdFunctionBindingExample()
 //class financialPackage<Stock<double>>{
 //	public :
 //	void printValue(Stock<double> f){
-//		std::cout<<"this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
+//		log("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
 //	}
 //
 //};
@@ -409,9 +409,10 @@ boost::this_thread::sleep(boost::posix_time::seconds(seconds));
 }
 void runPicoHedgeFundClient(std::shared_ptr<clientType> ptr)
 {
-    cout<<"hedge fund is starting..."<<endl;
+    log("hedge fund is starting...");
     PicoHedgeFund hedgefund(ptr);
-    hedgefund.buy(10);
+    hedgefund.buy(1);
+    log("hedge fund finished buying currencies...");
     
 }
 void runClient() {
@@ -722,7 +723,7 @@ void chronoExamples() {
 	//	cout << "system clock is " << std::chrono::system_clock() << endl;
 	//	cout << "high_resolution_clock is " << std::chrono::high_resolution_clock()
 	//			<< endl;
-	// cout<<"steady_clock  is "<<std::chrono::steady_clock()<<endl;
+	// log("steady_clock  is "<<std::chrono::steady_clock()<<endl;
 
 }
 
