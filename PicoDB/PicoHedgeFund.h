@@ -43,7 +43,7 @@ namespace pico {
             
             }
         }
-        void insert(Currency& cur){
+        void insert(Currency cur){
             
             string str(cur.toString());
             client_->insert(cur.name,str);

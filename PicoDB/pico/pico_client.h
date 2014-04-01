@@ -176,7 +176,7 @@ public:
 		last_read_message->append(*currentBuffer);
         
 	}
-    void insert(std::string& key,std::string& value){
+    void insert(std::string key,std::string value){
       
         //std::string key,std::string value,std::string com,std::string database,std::string us
         //,std::string col

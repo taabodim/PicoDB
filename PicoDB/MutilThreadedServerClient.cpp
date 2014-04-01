@@ -433,6 +433,7 @@ void runClient() {
         
         
         boost::thread hedgeThred(boost::bind(runPicoHedgeFundClient, ptr));
+        hedgeThred.detach();
         
 		io_service.run();
 		std::cout << "ptr to client going out of scope" << std::endl;
