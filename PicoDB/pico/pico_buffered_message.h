@@ -10,6 +10,7 @@
 #define PicoDB_pico_buffered_message_h
 #include <pico/pico_buffer.h>
 #include <pico/pico_concurrent_list.h>
+
 //this class contains a message thats has been transformed into a list of buffers
 using namespace std;
  namespace pico
@@ -32,21 +33,21 @@ using namespace std;
             cout<<"pico_buffered_message being desstructed....\n";
             
         }
-        void append()
+        void append(pico_buffer buf)
         {
-        	list->
+        	msg_in_buffers->append(buf);
         }
         void clear()
         {
-
-
+            
+            msg_in_buffers->clear();
         }
 
 
         string toString()
         {
 
-
+            return msg_in_buffers->toString();
         }
         std::shared_ptr<pico_concurrent_list<pico_buffer>> msg_in_buffers;
     };

@@ -25,20 +25,20 @@ public:
 		cout<<"asyncReader is being destructed....\n";
 	}
 
-	bufferPtrType getReadBuffer() {
-		bufferPtrType bufferPtr(new pico_buffered_message());
+	msgPtr getReadBuffer() {
+		msgPtr bufferPtr(new pico_buffered_message());
 		readerBufferList.push(bufferPtr);
 		return bufferPtr;
 	}
-	singleBufferPtrType getOneBuffer() {
+	bufPtr getOneBuffer() {
 
-		singleBufferPtrType bufferPtr(new pico_buffer());
+		bufPtr bufferPtr(new pico_buffer());
 		singleBufferList.push(bufferPtr);
 		return bufferPtr;
 	}
 
-	pico_concurrent_list<bufferPtrType> readerBufferList;
-	pico_concurrent_list<singleBufferPtrType> singleBufferList;
+	pico_concurrent_list<msgPtr> readerBufferList;
+	pico_concurrent_list<bufPtr> singleBufferList;
 
 private:
 //none as of now

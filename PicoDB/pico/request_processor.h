@@ -21,30 +21,28 @@ private:
 
 public:
 
-	string processRequest(string messageFromClient) {
+	queueType processRequest(string messageFromClient) {
 		string message("unknown");
-		pico_message picoMessage(messageFromClient);
+        std::shared_ptr<pico_message> picoMessage (new pico_message(messageFromClient));
 		cout << "session: processing request from client request: "
 				<< messageFromClient << std::endl;
-		if (picoMessage.command.compare(insertCommand) == 0) {
+		if (picoMessage->command.compare(insertCommand) == 0) {
 			cout << "inserting one record per client request";
-			string str = insertOneRecord(picoMessage.collection,
-					picoMessage.data);
-			return str;
-		} else if (picoMessage.command.compare(deleteCommand) == 0) {
+			string str = insertOneRecord(picoMessage->collection,
+					picoMessage->data);
+			
+		} else if (picoMessage->command.compare(deleteCommand) == 0) {
 			cout << "deleting one record per client request";
-			string str = deleteRecords(picoMessage.collection,
-					picoMessage.data);
-			return str;
-		} else if (picoMessage.command.compare(updateCommand) == 0) {
+			string str = deleteRecords(picoMessage->collection,
+					picoMessage->data);
+		
+		} else if (picoMessage->command.compare(updateCommand) == 0) {
 			cout << "updating one record per client request";
-			string str = updateRecords(picoMessage.collection,
-					picoMessage.data);
-			return str;
-		} else if (picoMessage.command.compare(findCommand) == 0) {
+			string str = updateRecords(picoMessage->collection,
+					picoMessage->data);
+		} else if (picoMessage->command.compare(findCommand) == 0) {
 			cout << "finding records per client request";
-			string str = findRecords(picoMessage.collection, picoMessage.data);
-			return str;
+			string str = findRecords(picoMessage->collection, picoMessage->data);
 		}
 //		else if (picoMessage.command.compare(addUserToDBCommand) == 0) {
 //			cout << "adding user per client request";
@@ -58,7 +56,7 @@ public:
 //			return str;
 //		}
 
-		return message;
+		return picoMessage;
 	}
 	string insertOneRecord(std::string& collection, pico_record record) {
 		pico_collection optionCollection(collection);

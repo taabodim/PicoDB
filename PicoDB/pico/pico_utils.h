@@ -8,12 +8,13 @@
 #ifndef PICO_UTILS_H_
 #define PICO_UTILS_H_
 #include <pico/pico_buffered_message.h>
-//#include <pico/pico_client.h>
+#include <pico_buffer.h>
 using namespace std;
 namespace pico{
 
-typedef std::shared_ptr<pico_buffered_message> bufferPtrType;
-typedef std::shared_ptr<pico_buffered> singleBufferPtrType
+typedef std::shared_ptr<pico_buffered_message> msgPtr;
+typedef std::shared_ptr<pico_buffer> bufPtr;
+
 typedef long offsetType;
 typedef std::shared_ptr<tcp::socket> socketType;
 typedef tcp::acceptor acceptorType;

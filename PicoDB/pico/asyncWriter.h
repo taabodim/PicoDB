@@ -14,14 +14,14 @@ private:
 
 public:
 	
-    std::shared_ptr<pico_concurrent_list<bufferPtrType>> writerMessageList;
+    std::shared_ptr<pico_concurrent_list<msgPtr>> writerMessageList;
     
-    asyncWriter():   writerMessageList ( new pico_concurrent_list<bufferPtrType>())
+    asyncWriter():   writerMessageList ( new pico_concurrent_list<msgPtr>())
     {
         cout<<"empty asyncWriter being constructed...."<<endl;
         currentBufferIndex=0;
     }
-    asyncWriter(std::shared_ptr<pico_concurrent_list<bufferPtrType>> list)
+    asyncWriter(std::shared_ptr<pico_concurrent_list<msgPtr>> list)
     
     {
         cout<<"asyncWriter being constructed...."<<endl;
@@ -31,23 +31,23 @@ public:
 	~asyncWriter(){
         cout<<"asyncWriter being destructed...."<<endl;
     }
-	void addToAllMessages(bufferPtrType& msg)
+	void addToAllMessages(msgPtr& msg)
     {
         writerMessageList->push(msg);
     }
-    bufferPtrType get_new_pico_buffered_message(){
-		bufferPtrType msgPtr(new pico_buffered_message());
+    msgPtr get_new_pico_buffered_message(){
+		msgPtr msgPtr(new pico_buffered_message());
 		writerMessageList->push(msgPtr);
 		return msgPtr;
 	}
     
-    bufferPtrType getCurrentBuffer()
+    msgPtr getMessage()
     
     {
-        bufferPtrType curBuf = writerMessageList->get(currentBufferIndex);
-        
+        msgPtr curMessage = writerMessageList->get(currentBufferIndex);
+      
         currentBufferIndex++;
-        return curBuf;
+        return curMessage;
     }
 
     

@@ -36,11 +36,11 @@ using namespace std;
 namespace pico {
     class DBClient;
  typedef DBClient clientType;
-    
+    typedef std::shared_ptr<pico_message> queueType;
 class DBClient: public std::enable_shared_from_this<DBClient> {
 private:
    
-	typedef pico_message* queueType;
+	
 	socketType socket_;
 	pico_concurrent_list <queueType> commandQueue_;
 public:
@@ -127,26 +127,55 @@ public:
 	}
 	void read_messages() {
 
-		auto self(shared_from_this());
-		bufferPtrType currentBuffer = asyncReader_.getReadBuffer();
-
+        auto self(shared_from_this());
+		cout << "client is trying to read messages" << endl;
+		bufPtr currentBuffer = asyncReader_.getOneBuffer();
+		//get a message in pico_buffer
+        //convert it to string , if at the end of it is append.. add it to the list of buffers and create a
+		//buffered_message out of all the pico_buffers and then convert the buffere_message to string and process
+        
+		//if the append is not at the end..convert the pico_buffer to string and process
+		//
 		boost::asio::async_read(*socket_,
-				boost::asio::buffer(currentBuffer->getData(), pico_buffer::max_size),
-				[this,self,currentBuffer](const boost::system::error_code& error,
-						std::size_t t ) {
-					string str = currentBuffer->getString();
-
-					std::cout << "Client Received :  "<<std::endl;
-					cout<<t<<" bytes from server "<<std::endl;
-					if(error) cout<<" error msg : "<<error.message()<<std::endl;
-					std::cout<< " data  read from server is "<<str<<std::endl;
-					std::cout << "-------------------------"<<std::endl;
-					processDataFromServer(str);
-
-				});
+                                boost::asio::buffer(currentBuffer->getData(),
+                                                    pico_buffer::max_size),
+                                [this,self,currentBuffer](const boost::system::error_code& error,
+                                                          std::size_t t ) {
+                                    string app("append");
+                                    string str =currentBuffer->getString();
+                                    append_to_last_message(currentBuffer);
+                                    if(str.find_last_of(app)== string::npos)
+                                    {
+                                        cout<<"this buffer is an add on to the last message..dont process anything..read the next buffer"<<endl;
+                                        
+                                    }
+                                    else {
+                                        cout<<"message was read completely..process the last message "<<endl;
+                                        str =last_read_message->toString();
+                                        print(error,t,str);
+                                        
+                                        
+                                        processDataFromServer(str);
+                                        last_read_message->clear();
+                                        
+                                    }
+                                    
+                                });
 
 	}
-    
+    void print(const boost::system::error_code& error,
+               std::size_t t,string& str)
+    {
+        std::cout << "Client Received :  "<<std::endl;
+        cout<<t<<" bytes from server "<<std::endl;
+        if(error) cout<<" error msg : "<<error.message()<<std::endl;
+        std::cout<< " data  read from server is "<<str<<std::endl;
+        std::cout << "-------------------------"<<std::endl;
+    }
+    void append_to_last_message(bufPtr currentBuffer) {
+		last_read_message->append(*currentBuffer);
+        
+	}
     void insert(std::string& key,std::string& value){
       
         //std::string key,std::string value,std::string com,std::string database,std::string us
@@ -157,11 +186,12 @@ public:
         string user("currencyUser");
         string col("currencyCollection");
        
-        pico_message* msg =  new pico_message(key,value,command,database,user,col) ;
+        queueType msg (  new pico_message(key,value,command,database,user,col) );
         queueCommand(msg);
         
     }
 	void write_messages() {
+        
 		queueType message;
 		if (commandQueue_.empty())
         {
@@ -176,27 +206,26 @@ public:
 		}
 		cout << " client is going to send this message to server : " << message->toString()
 				<< std::endl;
-		//create a write buffer in the heap and assign the value to a list of write buffers to make it
-		//stay in the scope
 
-        bufferPtrType buffered_msg = message->convertToBuffers();
-        asyncWriter_.addToAllMessages(bufferPtrType);
-        //async writer contain list of m have many buffers per message , and many messages
+      
+
+        msgPtr buffered_msg = message->convert_to_buffered_message();
         
-		do{
-            
-         bufferPtrType currentBuffer =asyncWriter_.getCurrentBuffer();
-            writeOneBuffer(currentBuffer);
-          }
-        while(currentBuffer!=null);
-	}
-    
-    void writeOneBuffer(bufferPtrType currentBuffer)
+	
+        while(!buffered_msg->msg_in_buffers->empty())
+        {
+            auto curBuf = buffered_msg->msg_in_buffers->pop();
+            bufPtr curBufPtr (new pico_buffer(curBuf));
+            writeOneBuffer(curBufPtr);
+          
+      	}
+    }
+    void writeOneBuffer(bufPtr currentBuffer)
     {
         
         char* data = currentBuffer->getData();
 		std::size_t dataSize = currentBuffer->getSize();
-		std::shared_ptr<clientType> self(shared_from_this());
+		auto self(shared_from_this());
         
 		boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
                                  [this,self,currentBuffer](const boost::system::error_code& error,
@@ -223,6 +252,7 @@ public:
 	boost::mutex sessionMutex;   // mutex for the condition variable
 	boost::condition_variable messageClientQueueIsEmpty;
 	boost::unique_lock<boost::mutex> writeMessageLock;
+    	msgPtr last_read_message;
 
 };
 
@@ -236,7 +266,7 @@ void startTheShell(std::shared_ptr<clientType> ptr) {
 
 		cin >> shellCommand;
 		try{
-		pico_message* msg = new pico_message(shellCommand);
+		queueType msg ( new pico_message(shellCommand));
 		ptr->queueCommand(msg);
 		}catch(...)
 		{

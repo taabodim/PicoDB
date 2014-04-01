@@ -65,6 +65,34 @@ namespace pico{
             cout<<"index "<<index<< " was not found in the list..concurrent list has only "<<i<<" elements \n";
             return empty;
         }
+        
+        void append(queueType t)
+        {
+        	underlying_list.push_back(t);
+        }
+        void clear()
+        {
+            
+         while(!underlying_list.empty())
+         {
+            underlying_list.pop_front();
+         }
+            
+         }
+        
+        
+        string toString()
+        {
+            string str;
+            while(!underlying_list.empty())
+            {
+                queueType t = underlying_list.front();
+                 underlying_list.pop_front();
+                str.append(t.getString());
+            }
+            cout<<"this is the string representation of the pico_buffered_message"<<endl<<str<<endl;
+            return str;
+                    }
         virtual ~pico_concurrent_list()
         {
             cout<<"pico_concurrent_list being destructed.."<<endl;
