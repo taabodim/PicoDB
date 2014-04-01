@@ -32,7 +32,22 @@ using namespace std;
             cout<<"pico_buffered_message being desstructed....\n";
             
         }
-        
+        void append()
+        {
+        	list->
+        }
+        void clear()
+        {
+
+
+        }
+
+
+        string toString()
+        {
+
+
+        }
         std::shared_ptr<pico_concurrent_list<pico_buffer>> msg_in_buffers;
     };
 }

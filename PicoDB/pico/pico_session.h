@@ -85,7 +85,6 @@ public:
 //		write_messages();
 	}
 
-
 	void readingAndWritingRecordData() {
 
 		string key1 = "keyfromkey1";
@@ -131,38 +130,62 @@ public:
 
 		auto self(shared_from_this());
 		cout << "session is trying to read messages" << endl;
-		bufferPtrType currentBuffer = asyncReader_.getReadBuffer();
+		singleBufferPtrType currentBuffer = asyncReader_.getReadBuffer();
+		//get a message in pico_buffer
+//convert it to string , if at the end of it is append.. add it to the list of buffers and create a
+		//buffered_message out of all the pico_buffers and then convert the buffere_message to string and process
 
+		//if the append is not at the end..convert the pico_buffer to string and process
+		//
 		boost::asio::async_read(*socket_,
-				boost::asio::buffer(currentBuffer->getData(), pico_buffer::max_size),
+				boost::asio::buffer(currentBuffer->getData(),
+						pico_buffer::max_size),
 				[this,self,currentBuffer](const boost::system::error_code& error,
 						std::size_t t ) {
-
+					string app("append");
 					string str =currentBuffer->getString();
+					append_to_last_message(currentBuffer);
+					if(str.find_last_of(app)== string::npos)
+					{
+						cout<<"this buffer is an add on to the last message..dont process anything..read the next buffer"<<endl;
 
-					if(error) cout<<" error msg : "<<error.message()<<std::endl;
-					std::cout << "Server received "<<std::endl;
-					cout<<t<<" bytes read from Client "<<std::endl;
-					std::cout<< " data read from client is "<<str<<std::endl;
-					std::cout << "-------------------------"<<std::endl;
+					}
+					else {
+						cout<<"message was read completely..process the last message "<<endl;
+						str =last_read_message.toString();
 
-					processDataFromClient(str);
+						if(error) cout<<" error msg : "<<error.message()<<std::endl;
+						std::cout << "Server received "<<std::endl;
+						cout<<t<<" bytes read from Client "<<std::endl;
+						std::cout<< " data read from client is "<<str<<std::endl;
+						std::cout << "-------------------------"<<std::endl;
+
+						processDataFromClient(str);
+						last_read_message.clear();
+
+					}
 
 				});
+	}
+	void append_to_last_message(singleBufferPtrType currentBuffer) {
+		last_read_message.append(currentBuffer);
+
 	}
 	void write_messages() {
 
 		if (messageToClientQueue_.empty())
 			messageClientQueueIsEmpty.wait(writeMessageLock);
 
-		cout << " session : messageToClientQueue_ size is "<< messageToClientQueue_.size() << endl;
+		cout << " session : messageToClientQueue_ size is "
+				<< messageToClientQueue_.size() << endl;
 		string messageToClient = messageToClientQueue_.front();
 		messageToClientQueue_.pop_front();
 		bufferPtrType currentBuffer = asyncWriter_.getWriteBuffer();
 		currentBuffer->setData(messageToClient);
 		auto self(shared_from_this());
 		boost::asio::async_write(*socket_,
-				boost::asio::buffer(currentBuffer->getData(), currentBuffer->getSize()),
+				boost::asio::buffer(currentBuffer->getData(),
+						currentBuffer->getSize()),
 				[this,self,currentBuffer](const boost::system::error_code& error,
 						std::size_t t) {
 
@@ -184,6 +207,7 @@ public:
 	boost::mutex sessionMutex;   // mutex for the condition variable
 	boost::condition_variable messageClientQueueIsEmpty;
 	boost::unique_lock<boost::mutex> writeMessageLock;
+	bufferPtrType last_read_message;
 };
 }
 

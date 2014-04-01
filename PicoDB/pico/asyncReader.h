@@ -15,26 +15,35 @@
 using namespace std;
 namespace pico {
 
-class asyncReader
-{
+class asyncReader {
 
 public:
-	asyncReader(){}
-	virtual ~asyncReader(){}
-	
-    bufferPtrType getReadBuffer(){
-		bufferPtrType  bufferPtr (new pico_buffered_message());
+	asyncReader() {
+		cout<<"asyncReader is being constructed....\n";
+	}
+	virtual ~asyncReader() {
+		cout<<"asyncReader is being destructed....\n";
+	}
+
+	bufferPtrType getReadBuffer() {
+		bufferPtrType bufferPtr(new pico_buffered_message());
 		readerBufferList.push(bufferPtr);
 		return bufferPtr;
 	}
+	singleBufferPtrType getOneBuffer() {
+
+		singleBufferPtrType bufferPtr(new pico_buffer());
+		singleBufferList.push(bufferPtr);
+		return bufferPtr;
+	}
+
 	pico_concurrent_list<bufferPtrType> readerBufferList;
+	pico_concurrent_list<singleBufferPtrType> singleBufferList;
 
 private:
 //none as of now
 
 };
 }
-
-
 
 #endif /* ASYNCREADER_H_ */

@@ -13,6 +13,7 @@ using namespace std;
 namespace pico{
 
 typedef std::shared_ptr<pico_buffered_message> bufferPtrType;
+typedef std::shared_ptr<pico_buffered> singleBufferPtrType
 typedef long offsetType;
 typedef std::shared_ptr<tcp::socket> socketType;
 typedef tcp::acceptor acceptorType;
