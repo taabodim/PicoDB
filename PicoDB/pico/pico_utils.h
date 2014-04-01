@@ -21,13 +21,14 @@ typedef std::string messageType;
     
     
     enum log_level {debug,trace,all,error,warning};
+    boost::mutex log_mutex;
+    
     void log(const std::string& str)
     {
-        boost::mutex mutex;
-        boost::interprocess::scoped_lock<boost::mutex> lock( mutex);
-        
+        boost::interprocess::scoped_lock<boost::mutex> lock( log_mutex);
         std::cout<<str<<std::endl;
     }
+    
     std::string random_string( size_t length )
     {
         auto randchar = []() -> char
