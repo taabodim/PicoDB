@@ -83,7 +83,7 @@ public:
 	std::string toString() {
 		return raw_message;
 	}
-	pico_buffered_message convertToBuffers() {
+	bufferPtrType convertToBuffers() {
         cout<<"pico_message : converToBuffers "<<endl;
         std::shared_ptr<pico_concurrent_list<pico_buffer>>  all_buffers (new pico_concurrent_list<pico_buffer>);
 
@@ -93,7 +93,8 @@ public:
 			buf.parentMessageId = uniqueMessageId;
 			buf.parentSequenceNumber = 0;
 			all_buffers->push(buf);
-			return all_buffers;
+            bufferPtrType msg (new pico_buffered_message (all_buffers));
+			return msg;
 		}
 
 		//break down the string
@@ -123,7 +124,7 @@ public:
 			all_buffers->push(currentBuffer);
 			numberOfBuffer++;
 		}
-        pico_buffered_message msg(all_buffers);
+        bufferPtrType msg (new pico_buffered_message (all_buffers));
 		return msg;
 	}
 	 char* convertMessageToArrayBuffer() {

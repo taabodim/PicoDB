@@ -179,8 +179,8 @@ public:
 		//create a write buffer in the heap and assign the value to a list of write buffers to make it
 		//stay in the scope
 
-        pico_buffered_message buffered_msg = message->convertToBuffers();
-        asyncWriter_.addToAllMessages(buffered_msg);
+        bufferPtrType buffered_msg = message->convertToBuffers();
+        asyncWriter_.addToAllMessages(bufferPtrType);
         //async writer contain list of m have many buffers per message , and many messages
         
 		do{
