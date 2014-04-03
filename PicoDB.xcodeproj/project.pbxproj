@@ -67,6 +67,7 @@
 		A511D68118E45E6600628059 /* Examples.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Examples.h; sourceTree = "<group>"; };
 		A589B0AE18E645480031AD25 /* pico_concurrent_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_concurrent_list.h; sourceTree = "<group>"; };
 		A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_buffered_message.h; sourceTree = "<group>"; };
+		A598208818ECBE1F00FFB6AE /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = logger.h; path = ../logger.h; sourceTree = "<group>"; };
 		A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PicoHedgeFund.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -126,6 +127,7 @@
 		A511D65B18E3628700628059 /* pico */ = {
 			isa = PBXGroup;
 			children = (
+				A598208818ECBE1F00FFB6AE /* logger.h */,
 				A511D65C18E3628700628059 /* asyncReader.h */,
 				A511D65D18E3628700628059 /* AsyncTcpClient.h */,
 				A511D65E18E3628700628059 /* asyncWriter.h */,

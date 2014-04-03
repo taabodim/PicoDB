@@ -8,14 +8,18 @@
 #include <vector>
 #include <pico/pico_exception.h>
 #include <pico/pico_utils.h>
+#include <logger.h>
 using boost::asio::ip::tcp;
 
 namespace pico {
 class pico_buffer;
 typedef std::shared_ptr<pico_buffer> bufPtr;
-    
-class pico_buffer {
+typedef std::shared_ptr<tcp::socket> socketType;
+typedef tcp::acceptor acceptorType;
+
+    class pico_buffer {
 public:
+           logger mylogger;
 	std::string parentMessageId; //this is the id of the parent that
 	//this buffer belongs to
 	long parentSequenceNumber; //this is the number ,that defines
@@ -24,7 +28,7 @@ public:
     
     {
     
-        log("pico buffer being destructed..");
+//        mylogger.log("pico buffer being destructed..");
         
     }
 	bool isBufferBeingUsed() {

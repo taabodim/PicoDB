@@ -23,7 +23,7 @@
 #include <boost/thread.hpp>
 #include "pico/pico_buffer.h"
 #include "pico/pico_session.h"
-
+#include <logger.h>
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -39,7 +39,7 @@ public:
 
 	acceptorType acceptor_;
 	socketType socket;
-
+    logger mylogger;
 	pico_server(boost::asio::io_service& io_service, const tcp::endpoint& endpoint,
 			socketType mySocket) :
 			acceptor_(io_service, endpoint), socket(mySocket) {
@@ -65,7 +65,7 @@ public:
 	}
 
 	void initClientHandler(socketType socket) {
-		log("server accepted a connection...going to start the session");
+		mylogger.log("server accepted a connection...going to start the session");
 		std::shared_ptr<pico_session> clientPtr (new pico_session (socket));
 		//add clients to a set
 		clientPtr->start();
@@ -89,7 +89,7 @@ void runServer() {
 
 	servers.emplace_back(serverPtr);
 	io_service.run();
-	log(" io server is running going out of scope..");
+	cout<<" io server is running going out of scope..\n";
 }
 } //end of namespace
 

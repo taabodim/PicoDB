@@ -12,17 +12,19 @@
 #include <pico/asyncWriter.h> //for typedef only
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
+#include <logger.h>
 using namespace std;
 namespace pico {
 
 class asyncReader {
 
 public:
+       logger mylogger;
 	asyncReader() {
-		log("asyncReader is being constructed....\n");
+		mylogger.log("asyncReader is being constructed....\n");
 	}
 	virtual ~asyncReader() {
-		log("asyncReader is being destructed....\n");
+//		mylogger.log("asyncReader is being destructed....\n");
 	}
 
 	msgPtr getReadBuffer() {

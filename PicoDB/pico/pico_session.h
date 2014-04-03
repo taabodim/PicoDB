@@ -14,6 +14,7 @@
 #include "pico/asyncReader.h"
 #include "pico/request_processor.h"
 #include <pico/pico_utils.h>
+#include <logger.h>
 using boost::asio::ip::tcp;
 using namespace std;
 namespace pico {
@@ -24,6 +25,7 @@ private:
 	socketType socket_;
     typedef std::shared_ptr<pico_message> queueType;
 public:
+    logger mylogger;
 	pico_session(socketType r_socket) :
 			writeMessageLock(sessionMutex) {
 		socket_ = r_socket;
@@ -149,11 +151,11 @@ public:
 					append_to_last_message(currentBuffer);
 					if(str.find_last_of(app)== string::npos)
 					{
-						log("this buffer is an add on to the last message..dont process anything..read the next buffer");
+						mylogger.log("this buffer is an add on to the last message..dont process anything..read the next buffer");
 
 					}
 					else {
-						log("message was read completely..process the last message ");
+						mylogger.log("message was read completely..process the last message ");
 						str =last_read_message->toString();
                         print(error,t,str);
 						
@@ -167,12 +169,12 @@ public:
 	}
     void print(const boost::system::error_code& error,std::size_t t,string& str)
     {
-//        if(error) log(" error msg : "<<error.message()<<std::endl;
+//        if(error) mylogger.log(" error msg : "<<error.message()<<std::endl;
 //        std::cout << "Server received "<<std::endl;
-//        log(t<<" bytes read from Client "<<std::endl;
-            log(" data read from client is ");
-            log(str);
-        log("-------------------------");
+//        mylogger.log(t<<" bytes read from Client "<<std::endl;
+            mylogger.log(" data read from client is ");
+            mylogger.log(str);
+        mylogger.log("-------------------------");
     
     }
 	void append_to_last_message(bufPtr currentBuffer) {
@@ -199,9 +201,9 @@ public:
 //
 //					string str = currentBuffer->getString();
 //					std::cout << "Server sent "<<std::endl;
-//					log(t<<" bytes sent to client "<<std::endl;
-//					if(error) log(" error msg : "<<error.message()<<std::endl;
-//					log( " data sent to client is "<<str<<std::endl;
+//					mylogger.log(t<<" bytes sent to client "<<std::endl;
+//					if(error) mylogger.log(" error msg : "<<error.message()<<std::endl;
+//					mylogger.log( " data sent to client is "<<str<<std::endl;
 //					std::cout << "-------------------------"<<std::endl;
 //					read_messages();
 //				});
@@ -210,7 +212,7 @@ public:
         queueType message;
 		if (messageToClientQueue_.empty())
         {
-            log("session queue of messages is empty...going to wait on the lock");
+            mylogger.log("session queue of messages is empty...going to wait on the lock");
 			messageClientQueueIsEmpty.wait(writeMessageLock);
         }
 		cout << "session is writing async now\n";
@@ -248,11 +250,11 @@ public:
                                                            std::size_t t) {
                                      string str = currentBuffer->getString();
 //                                     std::cout << "Session Sent :  "<<std::endl;
-//                                     //log(t<<" bytes from Client "<<std::endl;
-//                                     if(error) log(" error msg : "<<error.message()<<std::endl;
-                                                   log(" data sent to client is ");
-                                                   log(str);
-                                     log("-------------------------");
+//                                     //mylogger.log(t<<" bytes from Client "<<std::endl;
+//                                     if(error) mylogger.log(" error msg : "<<error.message()<<std::endl;
+                                                   mylogger.log(" data sent to client is ");
+                                                   mylogger.log(str);
+                                     mylogger.log("-------------------------");
                                      read_messages();
                                  });
         

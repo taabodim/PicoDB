@@ -13,13 +13,14 @@
 #include <pico/pico_record.h>
 #include <pico/pico_buffer.h>
 #include <pico/pico_index.h>
-
+#include <logger.h>
 //this is a wrapper around the file that represents the collection
 namespace pico {
     
 class pico_collection {
     
 public:
+    logger mylogger;
 	pico_binary_index_tree index_of_collection;
 	pico_collection() = delete;
 	pico_collection(std::string name) {
@@ -37,7 +38,7 @@ public:
         path.append(ext);
         name = path;
 		filename = name;
-       // log("pico_collection : name of the file is "<<filename<<std::endl;
+       // mylogger.log("pico_collection : name of the file is "<<filename<<std::endl;
 		infile.open(name, std::fstream::in | std::fstream::binary);
 		outfile.open(name,
 				std::fstream::out | std::fstream::app | std::fstream::binary);
@@ -79,9 +80,9 @@ public:
         std::fstream file;
 		file.open(filename, std::fstream::in | std::fstream::binary);
 		file.seekg(0, std::ifstream::end);
-        log(" getEndOfFileOffset : filename is ");
-//        log(<<filename<<std::endl;
-//        log(" getEndOfFileOffset : file.tellg() :  "<<file.tellg()<<std::endl;
+//        mylogger.log(" getEndOfFileOffset : filename is ");
+//        mylogger.log(<<filename<<std::endl;
+//        mylogger.log(" getEndOfFileOffset : file.tellg() :  "<<file.tellg()<<std::endl;
         
         return file.tellg();
 
@@ -179,7 +180,7 @@ public:
 				list_of_records.push_back(record_read_from_file);
 			}
             else{
-                log("warning : read_all_records : key is empty!");
+                mylogger.log("warning : read_all_records : key is empty!");
             }
             
 		}
@@ -210,7 +211,7 @@ public:
 				list_of_offsets.push_back(offset);
 			}
             else{
-                log("warning : read_all_records_offsets : key is empty!");
+                mylogger.log("warning : read_all_records_offsets : key is empty!");
             }
                 
 		}

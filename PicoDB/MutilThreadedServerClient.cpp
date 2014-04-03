@@ -48,11 +48,13 @@
 #include <string>
 #include <vector>
 #include <PicoHedgeFund.h>
+#include <logger.h>
 using namespace boost::filesystem;
 using namespace pico;
 using namespace std;
 
 boost::mutex myMutex;
+
 const int sizeOfArray = 20;
 typedef std::vector<std::shared_ptr<Currency>> vectorSharedCurPtr;
 
@@ -286,7 +288,7 @@ int stdFunctionBindingExample()
 //class financialPackage<Stock<double>>{
 //	public :
 //	void printValue(Stock<double> f){
-//		log("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
+//		mylogger.log("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
 //	}
 //
 //};
@@ -409,10 +411,10 @@ boost::this_thread::sleep(boost::posix_time::seconds(seconds));
 }
 void runPicoHedgeFundClient(std::shared_ptr<clientType> ptr)
 {
-    log("hedge fund is starting...");
+    cout<<("hedge fund is starting...");
     PicoHedgeFund hedgefund(ptr);
     hedgefund.buy(1);
-    log("hedge fund finished buying currencies...");
+    cout<<("hedge fund finished buying currencies...");
     
 }
 void runClient() {
@@ -488,9 +490,13 @@ void forwarding_example()
     std::cout << "B\n";
     auto t = make_unique<B>(2, i, 3);
 }
+
+std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
 void clientServerExample() {
 	try {
-		using namespace pico;
+       
+	
+        using namespace pico;
 		boost::thread serverThread(runServer);
 		sleepViaBoost(4);
         
@@ -723,7 +729,7 @@ void chronoExamples() {
 	//	cout << "system clock is " << std::chrono::system_clock() << endl;
 	//	cout << "high_resolution_clock is " << std::chrono::high_resolution_clock()
 	//			<< endl;
-	// log("steady_clock  is "<<std::chrono::steady_clock()<<endl;
+	// mylogger.log("steady_clock  is "<<std::chrono::steady_clock()<<endl;
 
 }
 

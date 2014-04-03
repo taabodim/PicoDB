@@ -11,7 +11,7 @@
 #include <pico/pico_buffer.h>
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
-
+#include <logger.h>
 //this class contains a message thats has been transformed into a list of buffers
 using namespace std;
  namespace pico
@@ -21,19 +21,20 @@ using namespace std;
 
     class pico_buffered_message{
     public:
+          logger mylogger;
         pico_buffered_message()
         {
-        log("empty pico_buffered_message being constructed.....\n");
+        mylogger.log("empty pico_buffered_message being constructed.....\n");
         }
         pico_buffered_message(std::shared_ptr<pico_concurrent_list<pico_buffer>> list){
-        log("pico_buffered_message being constructed....\n");
+        mylogger.log("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
         }
         
         
         virtual ~pico_buffered_message()
         {
-            log("pico_buffered_message being desstructed....\n");
+            mylogger.log("pico_buffered_message being desstructed....\n");
             
         }
         void append(pico_buffer buf)

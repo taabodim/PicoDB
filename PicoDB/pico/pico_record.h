@@ -9,6 +9,7 @@
 #define PICO_RECORD_H_
 
 #include <memory>
+#include <logger.h>
 #include <pico/pico_buffer.h>
 using namespace std;
 namespace pico {
@@ -16,7 +17,7 @@ class pico_record {
 public:
 
 	offsetType offset_of_record;
-
+   logger mylogger;
 	// Construct from a std::string.
 	void setValue(std::string& data) {
 		strncpy(value_, data.c_str(), data.size());
@@ -117,15 +118,15 @@ public:
 		return key_;
 	}
 	std::string getKeyAsString() {
-        log("pico_record getKeyAsString : key_ : ");
-        log(key_);
+        mylogger.log("pico_record getKeyAsString : key_ : ");
+        mylogger.log(key_);
 		std::string key(key_);
        
 		return key;
 	}
 	std::string getValueAsString() {
-        log("pico_record getValueAsString : value_ : ");
-        log(value_);
+        mylogger.log("pico_record getValueAsString : value_ : ");
+        mylogger.log(value_);
 		std::string val(value_);
        
 		return val;

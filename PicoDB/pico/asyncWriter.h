@@ -4,6 +4,7 @@
 #include <pico/pico_utils.h>
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_buffered_message.h>
+#include <logger.h>
 using namespace std;
 namespace pico {
 class asyncWriter
@@ -15,21 +16,21 @@ private:
 public:
 	
     std::shared_ptr<pico_concurrent_list<msgPtr>> writerMessageList;
-    
+       logger mylogger;
     asyncWriter():   writerMessageList ( new pico_concurrent_list<msgPtr>())
     {
-        log("empty asyncWriter being constructed....");
+        mylogger.log("empty asyncWriter being constructed....");
         currentBufferIndex=0;
     }
     asyncWriter(std::shared_ptr<pico_concurrent_list<msgPtr>> list)
     
     {
-        log("asyncWriter being constructed....");
+        mylogger.log("asyncWriter being constructed....");
         currentBufferIndex=0;
         writerMessageList = list;
     }
 	~asyncWriter(){
-        log("asyncWriter being destructed....");
+//        mylogger.log("asyncWriter being destructed....");
     }
 	void addToAllMessages(msgPtr& msg)
     {

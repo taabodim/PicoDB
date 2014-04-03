@@ -12,7 +12,7 @@
 #include <pico/pico_utils.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
-
+#include <logger.h>
 using namespace std;
 namespace pico{
    
@@ -21,20 +21,20 @@ namespace pico{
     private:
         list<queueType> underlying_list;
         boost::mutex mutex_;
-        
+        logger mylogger;
     
     public:
         
         pico_concurrent_list()
         {
-            log("pico_concurrent_list being constructed");
+            mylogger.log("pico_concurrent_list being constructed");
         }
         
        
         queueType pop()
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
-            log("pico_concurrent_list : poping from the list..");
+            mylogger.log("pico_concurrent_list : poping from the list..");
             queueType msg = underlying_list.front();
             underlying_list.pop_front();
             return msg;
@@ -46,7 +46,7 @@ namespace pico{
         void push(queueType& msg)
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
-            log("pushing pico msg to the front");
+            mylogger.log("pushing pico msg to the front");
             underlying_list.push_front(msg);
             
         }
@@ -62,7 +62,7 @@ namespace pico{
                 }
                 i++;
             }
-//            log("index "+index+ " was not found in the list..concurrent list has only "+i+" elements \n");
+//            mylogger.log("index "+index+ " was not found in the list..concurrent list has only "+i+" elements \n");
             return empty;
         }
         
@@ -90,12 +90,12 @@ namespace pico{
                  underlying_list.pop_front();
                 str.append(t.getString());
             }
-            log("this is the string representation of the pico_buffered_message");
+            mylogger.log("this is the string representation of the pico_buffered_message");
             return str;
                     }
         virtual ~pico_concurrent_list()
         {
-            log("pico_concurrent_list being destructed..");
+//            mylogger.log("pico_concurrent_list being destructed..");
         }
     };
 }
