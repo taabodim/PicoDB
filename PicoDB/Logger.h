@@ -11,7 +11,8 @@
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
-
+#include <boost/any.hpp>
+using namespace std;
 namespace pico{
     
 class logger{
@@ -19,12 +20,30 @@ class logger{
 public:
     
     static std::shared_ptr<boost::mutex> log_mutex;
-    
-    void log(const std::string& str)
+    void log(const std::string& str )
     {
         boost::interprocess::scoped_lock<boost::mutex> lock( *log_mutex);
-        std::cout<<str<<std::endl;
+        std::cout<<str <<"\n ";
+        
     }
+    void log(const std::string& str,const std::string& str1 )
+    {
+        boost::interprocess::scoped_lock<boost::mutex> lock( *log_mutex);
+        std::cout<<str <<"  "<<str1<<endl;
+        
+    }
+    void log(const std::string& str,const std::string& str1,const std::string& str2 )
+    {
+        boost::interprocess::scoped_lock<boost::mutex> lock( *log_mutex);
+        std::cout<<str <<"  "<<str1<<" "<<str2<<endl;
+        
+    }
+    
+//    void log(const std::string& str)
+//    {
+//        boost::interprocess::scoped_lock<boost::mutex> lock( *log_mutex);
+//        std::cout<<str<<std::endl;
+//    }
     
     logger(){
         if(log_mutex==nullptr)

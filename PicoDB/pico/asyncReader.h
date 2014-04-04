@@ -24,7 +24,7 @@ public:
 		mylogger.log("asyncReader is being constructed....\n");
 	}
 	virtual ~asyncReader() {
-//		mylogger.log("asyncReader is being destructed....\n");
+		mylogger.log("asyncReader is being destructed....\n");
 	}
 
 	msgPtr getReadBuffer() {

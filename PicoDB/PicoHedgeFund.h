@@ -27,12 +27,15 @@ namespace pico {
         logger mylogger;
         PicoHedgeFund(std::shared_ptr<DBClient> client)
         {
-          //  mylogger.log(" hedge fund is going to buy some currencies");
+            mylogger.log(" hedge fund is going to buy some currencies");
             client_ = client;
            
         }
         void buy(int num)
         {
+            mylogger.log(" hedge fund is waiting for 3 seconds");
+            
+            boost::this_thread::sleep(boost::posix_time::seconds(3));
             for(int i=0;i<num;i++)
             {
                 //mylogger.log("hedge fund is buying currency..");
@@ -46,7 +49,7 @@ namespace pico {
         void insert(Currency cur){
             
             string str(cur.toString());
-            client_->insert(cur.name,str);
+          //  client_->insert(cur.name,str);
         }
         void buyCurrency(Currency& cur)
         {

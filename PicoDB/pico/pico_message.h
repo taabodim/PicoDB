@@ -22,29 +22,28 @@ public:
 	std::string command;
 	pico_record data;
 	std::string collection;
-	string raw_message;
+	
 	long messageSize;
     logger mylogger;
     
-    pico_message(pico_message& msg)
+    pico_message(const pico_message& msg)
     {
         mylogger.log("pico_message copy constructor being called.\n");
         this->user = msg.user;
         this->db = msg.db;
         this->command = msg.command;
-        this->data = msg.data;
+        //this->data = msg.data;
         this->collection = msg.collection;
-        this->raw_message = msg.raw_message;
-         this->messageSize = msg.messageSize;
-         this->mylogger = msg.mylogger;
+        this->messageSize = msg.messageSize;
+        //this->mylogger = msg.mylogger;
     }
 	pico_message(std::string message_from_client) {//this is for processing shell commands
-		raw_message = message_from_client;
+		
 		messageSize = sizeof(raw_message);
 		Json::Value root;   // will contains the root value after parsing.
 		Json::Reader reader;
 
-		bool parsingSuccessful = reader.parse(raw_message, root);
+		bool parsingSuccessful = reader.parse(message_from_client, root);
 		if (!parsingSuccessful) {
 			// report to the user the failure and their locations in the document.
 			std::cout << "Failed to parse message\n"
@@ -64,21 +63,29 @@ public:
 		data.setKeyValue(key, value);
 		set_hash_code();
 	}
-    
+    pico_message operator=(pico_message& msg)
+    {
+        mylogger.log("pico_message copy operator being called.\n");
+        this->user = msg.user;
+        this->db = msg.db;
+        this->command = msg.command;
+        this->data = msg.data;
+        this->collection = msg.collection;
+        this->raw_message = msg.raw_message;
+        this->messageSize = msg.messageSize;
+        this->mylogger = msg.mylogger;
+        return *this;
+    }
     pico_message(std::string key,std::string value,std::string com,std::string database,std::string us
-                 ,std::string col ) {
-		//fix this part , you might need to convert a json doc to pico_message
-        raw_message.append(key);
-        raw_message.append(value);
-        
-        messageSize = sizeof(raw_message);
-		
-		command = command;
+                 ,std::string col){
+
+        command = com;
 		collection = col;
 		db = database;
 		user = us;
-        
+       
         data.setKeyValue(key, value);
+          messageSize = sizeof(raw_message)
 		set_hash_code();
 	}
 
@@ -88,15 +95,16 @@ public:
 		std::size_t h3 = std::hash<std::string>()(command);
 		std::size_t h4 = std::hash<std::string>()(data.getString());
 		std::size_t h5 = std::hash<std::string>()(collection);
-		std::size_t h6 = std::hash<std::string>()(raw_message);
+		//std::size_t h6 = std::hash<std::string>()(raw_message);//find a solution to hash long strings
 
-		size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 ^ h5 ^ h6);
+		size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 ^ h5 );
 		uniqueMessageId = boost::lexical_cast<string>(hash_code);
 		//cout << "unique message id is " << uniqueMessageId << endl;
 	}
 
 	std::string toString() {
-		return raw_message;
+         mylogger.log("pico_message : toString  raw_message is ");
+        return data.toString();
 	}
 	msgPtr convert_to_buffered_message() {
         mylogger.log("pico_message : converToBuffers ");
@@ -116,10 +124,12 @@ public:
 
 		
 		long numberOfBuffer = 0;
-		const char* temp_buffer_message  = new char [sizeof(raw_message)];
-        temp_buffer_message = raw_message.c_str();
+//		const char* temp_buffer_message  = new char [sizeof(raw_message)];
+        const char* temp_buffer_message = raw_message.c_str();
+        mylogger.log("pico_message : message is too big ,raw_message is ");
+        mylogger.log(raw_message);
 		mylogger.log("pico_message : message is too big , breaking down the huge string to a list of buffers ...... ");
-        
+        std::cout<<"*temp_buffer_message  is "<<*temp_buffer_message <<endl;
         while (*temp_buffer_message != 0) {
 			pico_buffer currentBuffer;
 			currentBuffer.parentMessageId = uniqueMessageId;
@@ -180,17 +190,11 @@ public:
 		return pico_msg;
 
 	}
-	pico_message() {
-	    mylogger.log("pico_message being created by default constructor ");
 
-    }
 	~pico_message() {
-//        mylogger.log("pico_message being destroyed now.");
+        mylogger.log("pico_message being destroyed now.");
     }
 
-	void set() {
-
-	}
 };
 }
 

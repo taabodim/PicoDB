@@ -435,8 +435,8 @@ void runClient() {
         //and client sends to server
         
         
-        boost::thread hedgeThred(boost::bind(runPicoHedgeFundClient, ptr));
-        hedgeThred.detach();
+//        boost::thread hedgeThred(boost::bind(runPicoHedgeFundClient, ptr));
+//        hedgeThred.detach();
         
 		io_service.run();
 		std::cout << "ptr to client going out of scope" << std::endl;
@@ -729,7 +729,7 @@ void chronoExamples() {
 	//	cout << "system clock is " << std::chrono::system_clock() << endl;
 	//	cout << "high_resolution_clock is " << std::chrono::high_resolution_clock()
 	//			<< endl;
-	// mylogger.log("steady_clock  is "<<std::chrono::steady_clock()<<endl;
+//    mylogger.log("steady_clock  is ",std::chrono::steady_clock());
 
 }
 

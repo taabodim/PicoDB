@@ -15,12 +15,12 @@ class collection_manager{
 public:
 	void insert_record_in_collection(pico_record& record,pico_collection& col)
 	{
-//		if(col.isOpen())
-//		{
-//
-//		}else {
-//			mylogger.log("collection is closed"<<std::endl;
-//		}
+		if(col.isOpen())
+		{
+
+		}else {
+			mylogger.log("collection is closed"<<std::endl;
+		}
 	}
 private:
 

@@ -37,13 +37,14 @@ namespace pico{
             mylogger.log("pico_concurrent_list : poping from the list..");
             queueType msg = underlying_list.front();
             underlying_list.pop_front();
+                         
             return msg;
         }
         bool empty()
         {
             return underlying_list.empty();
         }
-        void push(queueType& msg)
+        void push(queueType msg)
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
             mylogger.log("pushing pico msg to the front");

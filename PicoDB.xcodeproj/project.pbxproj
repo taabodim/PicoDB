@@ -8,9 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A511D64E18E35D6C00628059 /* PicoDB.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = A511D64D18E35D6C00628059 /* PicoDB.1 */; };
-		A511D67A18E3628700628059 /* currency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A511D65518E3628700628059 /* currency.cpp */; };
 		A511D67C18E3628700628059 /* MutilThreadedServerClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A511D65918E3628700628059 /* MutilThreadedServerClient.cpp */; };
-		A511D67D18E3628700628059 /* Runnable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A511D66F18E3628700628059 /* Runnable.cpp */; };
 		A511D67E18E3628700628059 /* jsoncpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A511D67818E3628700628059 /* jsoncpp.cpp */; };
 /* End PBXBuildFile section */
 
@@ -30,7 +28,6 @@
 /* Begin PBXFileReference section */
 		A511D64818E35D6C00628059 /* PicoDB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PicoDB; sourceTree = BUILT_PRODUCTS_DIR; };
 		A511D64D18E35D6C00628059 /* PicoDB.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = PicoDB.1; sourceTree = "<group>"; };
-		A511D65518E3628700628059 /* currency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = currency.cpp; sourceTree = "<group>"; };
 		A511D65618E3628700628059 /* currency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = currency.h; sourceTree = "<group>"; };
 		A511D65718E3628700628059 /* jsonCppExamples.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jsonCppExamples.h; sourceTree = "<group>"; };
 		A511D65918E3628700628059 /* MutilThreadedServerClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MutilThreadedServerClient.cpp; sourceTree = "<group>"; };
@@ -54,7 +51,6 @@
 		A511D66C18E3628700628059 /* TODO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TODO.h; sourceTree = "<group>"; };
 		A511D66D18E3628700628059 /* PicoDB.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; path = PicoDB.1; sourceTree = "<group>"; };
 		A511D66E18E3628700628059 /* PicoDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PicoDB.h; sourceTree = "<group>"; };
-		A511D66F18E3628700628059 /* Runnable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Runnable.cpp; sourceTree = "<group>"; };
 		A511D67018E3628700628059 /* Runnable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Runnable.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		A511D67118E3628700628059 /* SimpleRunnable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleRunnable.h; sourceTree = "<group>"; };
 		A511D67218E3628700628059 /* stock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stock.h; sourceTree = "<group>"; };
@@ -103,7 +99,6 @@
 		A511D64A18E35D6C00628059 /* PicoDB */ = {
 			isa = PBXGroup;
 			children = (
-				A511D65518E3628700628059 /* currency.cpp */,
 				A511D65618E3628700628059 /* currency.h */,
 				A511D65718E3628700628059 /* jsonCppExamples.h */,
 				A511D65918E3628700628059 /* MutilThreadedServerClient.cpp */,
@@ -111,7 +106,6 @@
 				A511D65B18E3628700628059 /* pico */,
 				A511D66D18E3628700628059 /* PicoDB.1 */,
 				A511D66E18E3628700628059 /* PicoDB.h */,
-				A511D66F18E3628700628059 /* Runnable.cpp */,
 				A511D67018E3628700628059 /* Runnable.h */,
 				A511D67118E3628700628059 /* SimpleRunnable.h */,
 				A511D67218E3628700628059 /* stock.h */,
@@ -229,9 +223,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A511D67C18E3628700628059 /* MutilThreadedServerClient.cpp in Sources */,
-				A511D67A18E3628700628059 /* currency.cpp in Sources */,
 				A511D67E18E3628700628059 /* jsoncpp.cpp in Sources */,
-				A511D67D18E3628700628059 /* Runnable.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

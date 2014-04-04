@@ -30,7 +30,7 @@ public:
         writerMessageList = list;
     }
 	~asyncWriter(){
-//        mylogger.log("asyncWriter being destructed....");
+        mylogger.log("asyncWriter being destructed....");
     }
 	void addToAllMessages(msgPtr& msg)
     {
