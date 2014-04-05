@@ -51,15 +51,15 @@ public:
 			writeMessageLock(sessionMutex) {
 
 		socket_ = socket;
-		mylogger.log( "client initializing ");
+		std::cout<<( "client initializing ");
 
 	}
     
 	void start_connect(tcp::resolver::iterator endpoint_iter) {
-		mylogger.log( " start_connect(tcp::resolver::iterator endpoint_iter) ");
+		std::cout<<( " start_connect(tcp::resolver::iterator endpoint_iter) ");
 		if (endpoint_iter != tcp::resolver::iterator()) {
-			mylogger.log(  "Trying ");
-            //mylogger.log(endpoint_iter->endpoint() << "...\n";
+			std::cout<<(  "Trying ");
+            //std::cout<<(endpoint_iter->endpoint() << "...\n";
 
 			// Start the asynchronous connect operation.
 			socket_->async_connect(endpoint_iter->endpoint(),
@@ -68,7 +68,7 @@ public:
 			// There are no more endpoints to try. Shut down the client.
 //				stop();
 		}
-		mylogger.log(  " start_connect ends" );
+		std::cout<<(  " start_connect ends" );
 	}
 	void handle_connect(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
@@ -79,7 +79,7 @@ public:
 // of the asynchronous operation. If the socket is closed at this time then
 // the timeout handler must have run first.
 		if (!socket_->is_open()) {
-			mylogger.log(  "Connect timed out\n");
+			std::cout<<(  "Connect timed out\n");
 
 			// Try the next available endpoint.
 			start_connect(++endpoint_iter);
@@ -88,7 +88,7 @@ public:
 
 	void start(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
-        mylogger.log("client starting the process..going to write_message to server");
+        std::cout<<("client starting the process..going to write_message to server");
         
 		try {
             for(int  i=0;i<1;i++)
@@ -98,14 +98,14 @@ public:
 //			read_messages();
 
 		} catch (const std::exception& e) {
-			mylogger.log(" exception : ",e.what());
+			std::cout<<(" exception : ",e.what());
 		} catch (...) {
-			mylogger.log( "<----->unknown exception thrown.<------>");
+			std::cout<<( "<----->unknown exception thrown.<------>");
 		}
 	}
 //	void readAsync() {
 ////		while (true) {
-//		mylogger.log(" client is going to read asynchronously..\n";
+//		std::cout<<(" client is going to read asynchronously..\n";
 //		read_messages();
 //
 //		//boost::this_thread::sleep(boost::posix_time::seconds(4));
@@ -134,8 +134,8 @@ public:
 	void read_messages() {
 
         auto self(shared_from_this());
-		mylogger.log( "client is trying to read messages" );
-		bufPtr currentBuffer = asyncReader_.getOneBuffer();
+		std::cout<<( "client is trying to read messages" );
+		bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
 		//get a message in pico_buffer
         //convert it to string , if at the end of it is append.. add it to the list of buffers and create a
 		//buffered_message out of all the pico_buffers and then convert the buffere_message to string and process
@@ -149,14 +149,14 @@ public:
                                                           std::size_t t ) {
                                     string app("append");
                                     string str =currentBuffer->getString();
-                                    append_to_last_message(currentBuffer);
+                                    append_to_last_message(*currentBuffer);
                                     if(str.find_last_of(app)== string::npos)
                                     {
-                                        mylogger.log("this buffer is an add on to the last message..dont process anything..read the next buffer");
+                                        std::cout<<("this buffer is an add on to the last message..dont process anything..read the next buffer");
                                         
                                     }
                                     else {
-                                        mylogger.log("message was read completely..process the last message ");
+                                        std::cout<<("message was read completely..process the last message ");
                                         str =last_read_message->toString();
                                         print(error,t,str);
                                         
@@ -172,15 +172,11 @@ public:
     void print(const boost::system::error_code& error,
                std::size_t t,string& str)
     {
-       mylogger.log("Client Received :  ");
-//        mylogger.log(t<<" bytes from server "<<std::endl;
-        if(error) mylogger.log(" error msg : ",error.message());
-                      mylogger.log( " data  read from server is ");
-                      mylogger.log(str);
-        mylogger.log("-------------------------");
+        std::cout<<"Client Received :  "<<t<<" bytes from server "<<std::endl;
+        if(error) std::cout<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------"<<std::endl;
     }
-    void append_to_last_message(bufPtr currentBuffer) {
-		last_read_message->append(*currentBuffer);
+    void append_to_last_message(bufferType currentBuffer) {
+		last_read_message->append(currentBuffer);
         
 	}
 //    void insert(const std::string& key,const std::string& value){
@@ -189,10 +185,8 @@ public:
             std::string value;
       key="They've been spotted and spotted again";
         value="They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot ";
-        //std::string key,std::string value,std::string com,std::string database,std::string us
-        //,std::string col
-       // mylogger.log("insert : key : "+key +" \n value : "+value<<endl;
-        string command("insert");
+        
+            string command("insert");
         string database("currencyDB");
         string user("currencyUser");
         string col("currencyCollection");
@@ -206,37 +200,31 @@ public:
 		
 		if (commandQueue_.empty())
         {
-            mylogger.log("client queue of messages is empty...going to wait on the lock");
+            std::cout<<"client queue of messages is empty...going to wait on the lock"<<endl;
 			messageClientQueueIsEmpty.wait(writeMessageLock);
         }
-		mylogger.log( "client is writing async now");
+		std::cout<< "client is writing async now"<<endl;
 
 		if (!commandQueue_.empty()) {
 			queueType message = commandQueue_.pop();
 
 		
-		 mylogger.log( " client is going to send this message to server : ");
-         mylogger.log(message->db);
-         mylogger.log(message->command);
-         mylogger.log(message->collection);
-         mylogger.log(message->user);
-         mylogger.log(message->raw_message); //this line throws exception , check why
+		 std::cout<<( " client is going to send this message to server : ");
+         std::cout<<(message->json_form_of_message); //this line throws exception , check why
 
-        msgPtr buffered_msg = message->convert_to_buffered_message();
-        
-	
-        while(!buffered_msg->msg_in_buffers->empty())
+        while(! message->buffered_message.msg_in_buffers->empty())
         {
-            mylogger.log("pico_client : popping current Buffer ");
-            auto curBuf = buffered_msg->msg_in_buffers->pop();
-            bufPtr curBufPtr (new pico_buffer(curBuf));
-            writeOneBuffer(curBufPtr);
+            std::cout<<"pico_client : popping current Buffer ";
+          //  bufferType curbufferType = buffered_msg->msg_in_buffers->pop();
+            std::cout<<"pico_client : popping current Buffer this is current buffer ";
+           // std::cout<<(curbufferType->getString());
+            //writeOneBuffer(curbufferType);
         
           
       	}
         }
     }
-    void writeOneBuffer(bufPtr currentBuffer)
+    void writeOneBuffer(bufferTypePtr currentBuffer)
     {
         
         char* data = currentBuffer->getData();
@@ -247,12 +235,12 @@ public:
                                  [this,self,currentBuffer](const boost::system::error_code& error,
                                                            std::size_t t) {
                                      string str = currentBuffer->getString();
-                                      mylogger.log( "Client Sent :  ");
-                                     //mylogger.log(t" bytes from server "<<std::endl;
-                                     if(error) mylogger.log(" error msg : ",error.message());
-                                     mylogger.log( " data sent to server is ");
-                                     mylogger.log(str);
-                                     mylogger.log("-------------------------");
+                                      std::cout<<( "Client Sent :  ");
+                                     //std::cout<<(t" bytes from server "<<std::endl;
+                                     if(error) std::cout<<(" error msg : ",error.message());
+                                     std::cout<<( " data sent to server is ");
+                                     std::cout<<(str);
+                                     std::cout<<("-------------------------");
                                      read_messages();
                                  });
  
@@ -283,8 +271,8 @@ void startTheShell(std::shared_ptr<clientType> ptr) {
 
 		cin >> shellCommand;
 		try{
-		queueType msg ( new pico_message(shellCommand));
-		ptr->queueCommand(msg);
+//		queueType msg ( new pico_message(shellCommand));
+//		ptr->queueCommand(msg);
 		}catch(...)
 		{
 			cout<<("error in parsing command");

@@ -20,15 +20,17 @@ public:
 	std::string user;
 	std::string db;
 	std::string command;
-	pico_record data;
 	std::string collection;
-	
+    std::string key_of_message;
+    std::string value_of_message;
+    std::string json_form_of_message;
+	pico_buffered_message  buffered_message; //a container for all the buffers that make up this pico_message
 	long messageSize;
     logger mylogger;
     
     pico_message(const pico_message& msg)
     {
-        mylogger.log("pico_message copy constructor being called.\n");
+        std::cout<<("pico_message copy constructor being called.\n");
         this->user = msg.user;
         this->db = msg.db;
         this->command = msg.command;
@@ -39,7 +41,6 @@ public:
     }
 	pico_message(std::string message_from_client) {//this is for processing shell commands
 		
-		messageSize = sizeof(raw_message);
 		Json::Value root;   // will contains the root value after parsing.
 		Json::Reader reader;
 
@@ -60,21 +61,35 @@ public:
 		std::string key = root.get("key", "unknown").asString();
 
 		std::string value = root.get("value", "unknown").asString();
-		data.setKeyValue(key, value);
 		set_hash_code();
 	}
     pico_message operator=(pico_message& msg)
     {
-        mylogger.log("pico_message copy operator being called.\n");
+        std::cout<<("pico_message copy operator being called.\n");
         this->user = msg.user;
         this->db = msg.db;
         this->command = msg.command;
-        this->data = msg.data;
         this->collection = msg.collection;
-        this->raw_message = msg.raw_message;
         this->messageSize = msg.messageSize;
         this->mylogger = msg.mylogger;
         return *this;
+    }
+    std::string convert_message_to_json()
+    {
+        
+        Json::Value root;   // will contains the root value after parsing.
+        root["key"] = key_of_message;
+        root["value"] = value_of_message;
+        root["db"]= db;
+        root["user"]= user;
+        root["collection"]= collection;
+        root["command"]= command;
+        
+        Json::StyledWriter writer;
+        // Make a new JSON document for the configuration. Preserve original comments.
+        std::string output = writer.write(root);
+        std::cout<<"json format is "<<root;
+        return output;
     }
     pico_message(std::string key,std::string value,std::string com,std::string database,std::string us
                  ,std::string col){
@@ -83,59 +98,65 @@ public:
 		collection = col;
 		db = database;
 		user = us;
-       
-        data.setKeyValue(key, value);
-          messageSize = sizeof(raw_message)
-		set_hash_code();
+        key_of_message = key;
+        value_of_message = value;
+        json_form_of_message = convert_message_to_json();
+        messageSize = json_form_of_message.size();
+        
+        set_hash_code();
+        
 	}
-
+   
 	void set_hash_code() {
 		std::size_t h1 = std::hash<std::string>()(user);
 		std::size_t h2 = std::hash<std::string>()(db);
 		std::size_t h3 = std::hash<std::string>()(command);
-		std::size_t h4 = std::hash<std::string>()(data.getString());
-		std::size_t h5 = std::hash<std::string>()(collection);
-		//std::size_t h6 = std::hash<std::string>()(raw_message);//find a solution to hash long strings
+		std::size_t h4 = std::hash<std::string>()(collection);
+		//std::size_t h6 = std::hash<std::string>()(data.getString());//find a solution to hash long strings
 
-		size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 ^ h5 );
+		size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 );
 		uniqueMessageId = boost::lexical_cast<string>(hash_code);
-		//cout << "unique message id is " << uniqueMessageId << endl;
+		
+        cout << "unique message id is " << uniqueMessageId << endl;
 	}
 
 	std::string toString() {
-         mylogger.log("pico_message : toString  raw_message is ");
-        return data.toString();
+         std::cout<<("pico_message : toString  data.getString() is ");
+        return json_form_of_message;
 	}
-	msgPtr convert_to_buffered_message() {
-        mylogger.log("pico_message : converToBuffers ");
-        std::shared_ptr<pico_concurrent_list<pico_buffer>>  all_buffers (new pico_concurrent_list<pico_buffer>);
-
+	void convert_to_buffered_message() {
+        std::cout<<("pico_message : converToBuffers ");
+        
+        std::cout<<("pico_message : converToBuffers : messageSize is ");
+        std::cout<<messageSize<<endl;
+        
 		if (messageSize < pico_buffer::max_size) {
-
-			pico_buffer buf(raw_message);
-			buf.parentMessageId = uniqueMessageId;
+            std::cout<<"pico_message : message size is less than max size"<<endl;
+			pico_buffer buf ;
+			buf.parentMessageId= uniqueMessageId;
 			buf.parentSequenceNumber = 0;
-			all_buffers->push(buf);
-            msgPtr msg (new pico_buffered_message (all_buffers));
-			return msg;
+			std::cout<<"pico_message : parentMessageId "<<buf.parentMessageId<<endl;
+            buffered_message.append(buf);
+			std::cout<<"pico_message : pico_buffered_message was created"<<endl;
+        
 		}
 
 		//break down the string
 
 		
 		long numberOfBuffer = 0;
-//		const char* temp_buffer_message  = new char [sizeof(raw_message)];
-        const char* temp_buffer_message = raw_message.c_str();
-        mylogger.log("pico_message : message is too big ,raw_message is ");
-        mylogger.log(raw_message);
-		mylogger.log("pico_message : message is too big , breaking down the huge string to a list of buffers ...... ");
+//		const char* temp_buffer_message  = new char [sizeof(data.getString())];
+        const char* temp_buffer_message = json_form_of_message.c_str();
+        std::cout<<("pico_message : message is too big ,data.getString() is ");
+        std::cout<<(json_form_of_message);
+		std::cout<<("pico_message : message is too big , breaking down the huge string to a list of buffers ...... ");
         std::cout<<"*temp_buffer_message  is "<<*temp_buffer_message <<endl;
         while (*temp_buffer_message != 0) {
-			pico_buffer currentBuffer;
+			bufferType currentBuffer;
 			currentBuffer.parentMessageId = uniqueMessageId;
             
-            mylogger.log("pico_message : uniqureMessageId  ");
-            mylogger.log(uniqueMessageId);
+            std::cout<<("pico_message : uniqureMessageId  ");
+            std::cout<<(uniqueMessageId);
 			
             for (int i = 0; i < pico_buffer::max_size; i++) {
 				currentBuffer.parentSequenceNumber = numberOfBuffer;
@@ -146,25 +167,25 @@ public:
 				}
 				++temp_buffer_message;
 			}
-             mylogger.log("pico_message : buffer pushed back to all_buffers ");
-			all_buffers->push(currentBuffer);
+             std::cout<<("pico_message : buffer pushed back to all_buffers ");
+			 buffered_message.append(currentBuffer);
 			numberOfBuffer++;
 		}
-        msgPtr msg (new pico_buffered_message (all_buffers));
-		return msg;
-	}
+       
+    
+        	}
 	 char* convertMessageToArrayBuffer() {
          
-		char* temp_raw_message  = new char [sizeof(raw_message)];
-         mylogger.log("pico_message : convertMessageToArrayBuffer  " );
-		const char* charOfMessage = raw_message.c_str();
-		for (long i = 0; i < sizeof(raw_message); i++) {
-			temp_raw_message[i] = *charOfMessage;
+		char* raw_msg  = new char [sizeof(json_form_of_message)];
+         std::cout<<("pico_message : convertMessageToArrayBuffer  " );
+		const char* charOfMessage = json_form_of_message.c_str();
+		for (long i = 0; i < sizeof(json_form_of_message); i++) {
+			raw_msg[i] = *charOfMessage;
 			++charOfMessage;
 		}
-//         mylogger.log("pico_message : convertMessageToArrayBuffer temp_raw_message is  "<<(*temp_raw_message)<<endl;
+//         std::cout<<("pico_message : convertMessageToArrayBuffer temp_data.getString() is  "<<(*temp_data.getString())<<endl;
 
-		return temp_raw_message;
+		return raw_msg;
 	}
 	pico_message get_pico_message(list<pico_buffer> all_buffers) {
 		string all_raw_msg;
@@ -173,18 +194,18 @@ public:
 			//get rid of all buffers that are not for this messageId
 			for (list<pico_buffer>::iterator it; it != all_buffers.end();
 					++it) {
-//                mylogger.log("get_pico_message : parentSequenceNumber :  "<<it->parentSequenceNumber<<endl;
-//                mylogger.log("get_pico_message : seq_number :  "<<seq_number<<endl;
+//                std::cout<<("get_pico_message : parentSequenceNumber :  "<<it->parentSequenceNumber<<endl;
+//                std::cout<<("get_pico_message : seq_number :  "<<seq_number<<endl;
 //
 				if (it->parentSequenceNumber == seq_number) {
 					all_raw_msg.append((it->getString()));
 					seq_number++;
 				}
 			}
-			mylogger.log("pico_message : all_raw_msg is ");
+			std::cout<<("pico_message : all_raw_msg is ");
            
             
-            mylogger.log(all_raw_msg);
+            std::cout<<(all_raw_msg);
 		}
 		pico_message pico_msg(all_raw_msg);
 		return pico_msg;
@@ -192,7 +213,7 @@ public:
 	}
 
 	~pico_message() {
-        mylogger.log("pico_message being destroyed now.");
+        std::cout<<("pico_message being destroyed now.");
     }
 
 };

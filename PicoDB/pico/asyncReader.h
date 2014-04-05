@@ -21,10 +21,10 @@ class asyncReader {
 public:
        logger mylogger;
 	asyncReader() {
-		mylogger.log("asyncReader is being constructed....\n");
+		std::cout<<"asyncReader is being constructed....\n";
 	}
 	virtual ~asyncReader() {
-		mylogger.log("asyncReader is being destructed....\n");
+		std::cout<<("asyncReader is being destructed....\n");
 	}
 
 	msgPtr getReadBuffer() {
@@ -32,15 +32,15 @@ public:
 		readerBufferList.push(bufferPtr);
 		return bufferPtr;
 	}
-	bufPtr getOneBuffer() {
+	bufferTypePtr getOneBuffer() {
 
-		bufPtr bufferPtr(new pico_buffer());
-		singleBufferList.push(bufferPtr);
-		return bufferPtr;
+		bufferTypePtr buf (new bufferType());
+		singleBufferList.push(buf);
+		return buf;
 	}
 
 	pico_concurrent_list<msgPtr> readerBufferList;
-	pico_concurrent_list<bufPtr> singleBufferList;
+	pico_concurrent_list<bufferTypePtr> singleBufferList;
 
 private:
 //none as of now

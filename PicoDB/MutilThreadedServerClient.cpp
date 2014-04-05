@@ -288,7 +288,7 @@ int stdFunctionBindingExample()
 //class financialPackage<Stock<double>>{
 //	public :
 //	void printValue(Stock<double> f){
-//		mylogger.log("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
+//		std::cout<<("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
 //	}
 //
 //};
@@ -729,7 +729,7 @@ void chronoExamples() {
 	//	cout << "system clock is " << std::chrono::system_clock() << endl;
 	//	cout << "high_resolution_clock is " << std::chrono::high_resolution_clock()
 	//			<< endl;
-//    mylogger.log("steady_clock  is ",std::chrono::steady_clock());
+//    std::cout<<("steady_clock  is ",std::chrono::steady_clock());
 
 }
 

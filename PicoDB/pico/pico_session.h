@@ -23,7 +23,7 @@ class pico_session: public std::enable_shared_from_this<pico_session> {
     
 private:
 	socketType socket_;
-    typedef std::shared_ptr<pico_message> queueType;
+    typedef pico_message queueType;
 public:
     logger mylogger;
 	pico_session(socketType r_socket) :
@@ -118,7 +118,7 @@ public:
 
 		try {
 
-			queueType reply = requestProcessor_.processRequest(messageFromClient);
+			pico_message reply = requestProcessor_.processRequest(messageFromClient);
 
 			messageToClientQueue_.push(reply);
 			messageClientQueueIsEmpty.notify_all();
@@ -134,7 +134,7 @@ public:
 
 		auto self(shared_from_this());
 		cout << "session is trying to read messages" << endl;
-		bufPtr currentBuffer = asyncReader_.getOneBuffer();
+		bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
 		//get a message in pico_buffer
         //convert it to string , if at the end of it is append.. add it to the list of buffers and create a
 		//buffered_message out of all the pico_buffers and then convert the buffere_message to string and process
@@ -148,14 +148,14 @@ public:
 						std::size_t t ) {
 					string app("append");
 					string str =currentBuffer->getString();
-					append_to_last_message(currentBuffer);
+					append_to_last_message(*currentBuffer);
 					if(str.find_last_of(app)== string::npos)
 					{
-						mylogger.log("this buffer is an add on to the last message..dont process anything..read the next buffer");
+						std::cout<<("this buffer is an add on to the last message..dont process anything..read the next buffer");
 
 					}
 					else {
-						mylogger.log("message was read completely..process the last message ");
+						std::cout<<("message was read completely..process the last message ");
 						str =last_read_message->toString();
                         print(error,t,str);
 						
@@ -169,16 +169,16 @@ public:
 	}
     void print(const boost::system::error_code& error,std::size_t t,string& str)
     {
-//        if(error) mylogger.log(" error msg : "<<error.message()<<std::endl;
+//        if(error) std::cout<<(" error msg : "<<error.message()<<std::endl;
 //        std::cout << "Server received "<<std::endl;
-//        mylogger.log(t<<" bytes read from Client "<<std::endl;
-            mylogger.log(" data read from client is ");
-            mylogger.log(str);
-        mylogger.log("-------------------------");
+//        std::cout<<(t<<" bytes read from Client "<<std::endl;
+            std::cout<<(" data read from client is ");
+            std::cout<<(str);
+        std::cout<<("-------------------------");
     
     }
-	void append_to_last_message(bufPtr currentBuffer) {
-		last_read_message->append(*currentBuffer);
+	void append_to_last_message(const bufferType buf) {
+		last_read_message->append(buf);
 
 	}
 	void write_messages() {
@@ -201,44 +201,42 @@ public:
 //
 //					string str = currentBuffer->getString();
 //					std::cout << "Server sent "<<std::endl;
-//					mylogger.log(t<<" bytes sent to client "<<std::endl;
-//					if(error) mylogger.log(" error msg : "<<error.message()<<std::endl;
-//					mylogger.log( " data sent to client is "<<str<<std::endl;
+//					std::cout<<(t<<" bytes sent to client "<<std::endl;
+//					if(error) std::cout<<(" error msg : "<<error.message()<<std::endl;
+//					std::cout<<( " data sent to client is "<<str<<std::endl;
 //					std::cout << "-------------------------"<<std::endl;
 //					read_messages();
 //				});
 
         
-        queueType message;
-		if (messageToClientQueue_.empty())
+        		if (messageToClientQueue_.empty())
         {
-            mylogger.log("session queue of messages is empty...going to wait on the lock");
+            std::cout<<("session queue of messages is empty...going to wait on the lock");
 			messageClientQueueIsEmpty.wait(writeMessageLock);
         }
 		cout << "session is writing async now\n";
         
 		if (!messageToClientQueue_.empty()) {
-			message = messageToClientQueue_.pop();
+			queueType message = messageToClientQueue_.pop();
             
-		}
-		cout << " session is going to send this message to server : " << message->toString()
+		
+		cout << " session is going to send this message to server : " << message.toString()
         << std::endl;
         
         
         
-        msgPtr buffered_msg = message->convert_to_buffered_message();
         
         
-        while(!buffered_msg->msg_in_buffers->empty())
-        {
-            auto curBuf = buffered_msg->msg_in_buffers->pop();
-            bufPtr curBufPtr (new pico_buffer(curBuf));
+        while(! message.buffered_message.msg_in_buffers->empty())
+            {
+            auto curBuf = message.buffered_message.msg_in_buffers->pop();
+            std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(curBuf));
             writeOneBuffer(curBufPtr);
             
-      	}
-
+            }
+        }
 	}
-    void writeOneBuffer(bufPtr currentBuffer)
+    void writeOneBuffer(bufferTypePtr currentBuffer)
     {
         
         char* data = currentBuffer->getData();
@@ -250,11 +248,11 @@ public:
                                                            std::size_t t) {
                                      string str = currentBuffer->getString();
 //                                     std::cout << "Session Sent :  "<<std::endl;
-//                                     //mylogger.log(t<<" bytes from Client "<<std::endl;
-//                                     if(error) mylogger.log(" error msg : "<<error.message()<<std::endl;
-                                                   mylogger.log(" data sent to client is ");
-                                                   mylogger.log(str);
-                                     mylogger.log("-------------------------");
+//                                     //std::cout<<(t<<" bytes from Client "<<std::endl;
+//                                     if(error) std::cout<<(" error msg : "<<error.message()<<std::endl;
+                                                   std::cout<<(" data sent to client is ");
+                                                   std::cout<<(str);
+                                     std::cout<<("-------------------------");
                                      read_messages();
                                  });
         

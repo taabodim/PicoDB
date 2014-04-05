@@ -24,23 +24,28 @@ using namespace std;
           logger mylogger;
         pico_buffered_message()
         {
-        mylogger.log("empty pico_buffered_message being constructed.....\n");
+        std::cout<<("empty pico_buffered_message being constructed.....\n");
         }
-        pico_buffered_message(std::shared_ptr<pico_concurrent_list<pico_buffer>> list){
-        mylogger.log("pico_buffered_message being constructed....\n");
+        pico_buffered_message(std::shared_ptr<pico_concurrent_list<bufferType>> list){
+        std::cout<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
         }
-        
+        pico_buffered_message(pico_buffered_message& copy){
+            std::cout<<("pico_buffered_message copy constructed....\n");
+            msg_in_buffers = copy.msg_in_buffers;
+            
+        }
         
         virtual ~pico_buffered_message()
         {
-            mylogger.log("pico_buffered_message being desstructed....\n");
+            std::cout<<("pico_buffered_message being desstructed....\n");
             
         }
-        void append(pico_buffer buf)
+        void append(bufferType buf)
         {
         	msg_in_buffers->append(buf);
         }
+        
         void clear()
         {
             
@@ -53,7 +58,9 @@ using namespace std;
 
             return msg_in_buffers->toString();
         }
-        std::shared_ptr<pico_concurrent_list<pico_buffer>> msg_in_buffers;
+        std::shared_ptr<pico_concurrent_list<bufferType>> msg_in_buffers;
+        //since, a list cannot be copied, I create the list on the heap and copy the pointer to it
+        //every time this object wants to copy
     };
 }
 

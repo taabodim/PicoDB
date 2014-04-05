@@ -19,7 +19,7 @@ public:
 		{
 
 		}else {
-			mylogger.log("collection is closed"<<std::endl;
+			std::cout<<("collection is closed"<<std::endl;
 		}
 	}
 private:

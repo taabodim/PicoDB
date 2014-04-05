@@ -13,7 +13,8 @@ using boost::asio::ip::tcp;
 
 namespace pico {
 class pico_buffer;
-typedef std::shared_ptr<pico_buffer> bufPtr;
+typedef pico_buffer bufferType;
+typedef std::shared_ptr<pico_buffer> bufferTypePtr;
 typedef std::shared_ptr<tcp::socket> socketType;
 typedef tcp::acceptor acceptorType;
 
@@ -28,7 +29,7 @@ public:
     
     {
     
-//        mylogger.log("pico buffer being destructed..");
+//        std::cout<<("pico buffer being destructed..");
         
     }
 	bool isBufferBeingUsed() {
@@ -50,10 +51,13 @@ public:
 
 	}
 	// Construct from a std::string.
-	void setData(std::string& data) {
+	void setData(std::string data) {
 		if (bufferBeingUsed)
+        {
+            std::cout<<"exception : buffer is already in use"<<endl;
 			throw new pico_exception("buffer is already in use");
-		bufferBeingUsed = true;
+		}
+            bufferBeingUsed = true;
 		strncpy(data_, data.c_str(), data.size());
 		data_[data.size()] = 0;
 
@@ -63,7 +67,7 @@ public:
 
 	}
 
-	explicit pico_buffer(std::string& data) {
+	explicit pico_buffer(std::string data) {
 
 		setData(data);
 

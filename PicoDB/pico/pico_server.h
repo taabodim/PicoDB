@@ -65,7 +65,7 @@ public:
 	}
 
 	void initClientHandler(socketType socket) {
-		mylogger.log("server accepted a connection...going to start the session");
+		std::cout<<("server accepted a connection...going to start the session");
 		std::shared_ptr<pico_session> clientPtr (new pico_session (socket));
 		//add clients to a set
 		clientPtr->start();

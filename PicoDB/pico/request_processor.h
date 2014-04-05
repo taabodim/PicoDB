@@ -21,29 +21,30 @@ private:
 
 public:
 
-	queueType processRequest(string messageFromClient) {
+	pico_message processRequest(string messageFromClient) {
 		string message("unknown");
-        std::shared_ptr<pico_message> picoMessage (new pico_message(messageFromClient));
+        pico_message picoMessage (messageFromClient);
 		cout << "session: processing request from client request: "
 				<< messageFromClient << std::endl;
-		if (picoMessage->command.compare(insertCommand) == 0) {
+		if (picoMessage.command.compare(insertCommand) == 0) {
 			cout << "inserting one record per client request";
-			string str = insertOneRecord(picoMessage->collection,
-					picoMessage->data);
-			
-		} else if (picoMessage->command.compare(deleteCommand) == 0) {
-			cout << "deleting one record per client request";
-			string str = deleteRecords(picoMessage->collection,
-					picoMessage->data);
-		
-		} else if (picoMessage->command.compare(updateCommand) == 0) {
-			cout << "updating one record per client request";
-			string str = updateRecords(picoMessage->collection,
-					picoMessage->data);
-		} else if (picoMessage->command.compare(findCommand) == 0) {
-			cout << "finding records per client request";
-			string str = findRecords(picoMessage->collection, picoMessage->data);
-		}
+            pico_record record (picoMessage.key_of_message,picoMessage.value_of_message);
+			string str = insertOneRecord(picoMessage.collection,
+					record);
+        }
+//		} else if (picoMessage->command.compare(deleteCommand) == 0) {
+//			cout << "deleting one record per client request";
+//			string str = deleteRecords(picoMessage->collection,
+//					picoMessage->data);
+//		
+//		} else if (picoMessage->command.compare(updateCommand) == 0) {
+//			cout << "updating one record per client request";
+//			string str = updateRecords(picoMessage->collection,
+//					picoMessage->data);
+//		} else if (picoMessage->command.compare(findCommand) == 0) {
+//			cout << "finding records per client request";
+//			string str = findRecords(picoMessage->collection, picoMessage->data);
+//		}
 //		else if (picoMessage.command.compare(addUserToDBCommand) == 0) {
 //			cout << "adding user per client request";
 //			string str = addUser(picoMessage.db,
@@ -63,6 +64,7 @@ public:
 		optionCollection.insert(record);
 		return record.getString();
 	}
+  
 	string deleteRecords(std::string& collection, pico_record record) {
 		pico_collection optionCollection(collection);
 		optionCollection.deleteRecord(record);

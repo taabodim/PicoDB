@@ -118,15 +118,15 @@ public:
 		return key_;
 	}
 	std::string getKeyAsString() {
-        mylogger.log("pico_record getKeyAsString : key_ : ");
-        mylogger.log(key_);
+        std::cout<<("pico_record getKeyAsString : key_ : ");
+        std::cout<<(key_);
 		std::string key(key_);
        
 		return key;
 	}
 	std::string getValueAsString() {
-        mylogger.log("pico_record getValueAsString : value_ : ");
-        mylogger.log(value_);
+        std::cout<<("pico_record getValueAsString : value_ : ");
+        std::cout<<(value_);
 		std::string val(value_);
        
 		return val;

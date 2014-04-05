@@ -22,11 +22,11 @@ public:
     static std::shared_ptr<boost::mutex> log_mutex;
     void log(const std::string& str )
     {
-        boost::interprocess::scoped_lock<boost::mutex> lock( *log_mutex);
+//        boost::interprocess::scoped_lock<boost::mutex> lock( *log_mutex);
         std::cout<<str <<"\n ";
-        
+//        
     }
-    void log(const std::string& str,const std::string& str1 )
+    void log(const std::string str,const std::string str1 )
     {
         boost::interprocess::scoped_lock<boost::mutex> lock( *log_mutex);
         std::cout<<str <<"  "<<str1<<endl;
