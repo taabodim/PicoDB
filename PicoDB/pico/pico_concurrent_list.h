@@ -36,7 +36,7 @@ namespace pico{
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
             std::cout<<("pico_concurrent_list : poping from the list..");
             queueType msg = underlying_list.front();
-         //   underlying_list.pop_front();
+            underlying_list.pop_front();
                          
             return msg;
         }

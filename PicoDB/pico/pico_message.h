@@ -34,10 +34,12 @@ public:
         this->user = msg.user;
         this->db = msg.db;
         this->command = msg.command;
-        //this->data = msg.data;
         this->collection = msg.collection;
         this->messageSize = msg.messageSize;
-        //this->mylogger = msg.mylogger;
+        this->key_of_message=key_of_message;
+        this->value_of_message=value_of_message;
+        this->json_form_of_message=json_form_of_message;
+        this->buffered_message=buffered_message; //a container for all the buffers that make up this pico_message
     }
 	pico_message(std::string message_from_client) {//this is for processing shell commands
 		
@@ -71,7 +73,11 @@ public:
         this->command = msg.command;
         this->collection = msg.collection;
         this->messageSize = msg.messageSize;
-        this->mylogger = msg.mylogger;
+        this->key_of_message=key_of_message;
+        this->value_of_message=value_of_message;
+        this->json_form_of_message=json_form_of_message;
+        this->buffered_message=buffered_message; //a container for all the buffers that make up this pico_message
+  
         return *this;
     }
     std::string convert_message_to_json()
@@ -88,7 +94,7 @@ public:
         Json::StyledWriter writer;
         // Make a new JSON document for the configuration. Preserve original comments.
         std::string output = writer.write(root);
-        std::cout<<"json format is "<<root;
+
         return output;
     }
     pico_message(std::string key,std::string value,std::string com,std::string database,std::string us
@@ -104,7 +110,7 @@ public:
         messageSize = json_form_of_message.size();
         
         set_hash_code();
-        
+        convert_to_buffered_message();
 	}
    
 	void set_hash_code() {
@@ -121,7 +127,6 @@ public:
 	}
 
 	std::string toString() {
-         std::cout<<("pico_message : toString  data.getString() is ");
         return json_form_of_message;
 	}
 	void convert_to_buffered_message() {
@@ -211,7 +216,21 @@ public:
 		return pico_msg;
 
 	}
-
+    void clear()
+    {
+    	std::cout<<("pico_message : clearing the message ");
+        uniqueMessageId="";
+    user="";
+        db="";
+        command="";
+        collection="";
+        key_of_message="";
+        value_of_message="";
+        json_form_of_message="";
+        buffered_message.clear(); //a container for all the buffers that make up this pico_message
+         messageSize=0;
+        
+    }
 	~pico_message() {
         std::cout<<("pico_message being destroyed now.");
     }

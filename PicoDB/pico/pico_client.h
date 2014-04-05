@@ -23,7 +23,7 @@
 #include "AsyncTcpClient.h"
 #include <boost/thread.hpp>
 #include <pico/pico_buffer.h>
-#include <pico/asyncWriter.h>
+#include <pico/writer_buffer_container.h>
 #include <pico/asyncReader.h>
 #include <pico/pico_message.h>
 #include <pico/pico_utils.h>
@@ -39,7 +39,7 @@ namespace pico {
     class DBClient;
  typedef DBClient clientType;
     typedef std::shared_ptr<pico_message> queueType;
-class DBClient: public std::enable_shared_from_this<DBClient> {
+    class DBClient: public std::enable_shared_from_this<DBClient> {
 private:
    
 	
@@ -48,7 +48,7 @@ private:
 public:
     logger mylogger;
 	DBClient(socketType socket) :
-			writeMessageLock(sessionMutex) {
+        writeMessageLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutext) {
 
 		socket_ = socket;
 		std::cout<<( "client initializing ");
@@ -157,12 +157,12 @@ public:
                                     }
                                     else {
                                         std::cout<<("message was read completely..process the last message ");
-                                        str =last_read_message->toString();
+                                        str =last_read_message.toString();
                                         print(error,t,str);
                                         
                                         
                                         processDataFromServer(str);
-                                        last_read_message->clear();
+                                        last_read_message.clear();
                                         
                                     }
                                     
@@ -176,7 +176,7 @@ public:
         if(error) std::cout<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------"<<std::endl;
     }
     void append_to_last_message(bufferType currentBuffer) {
-		last_read_message->append(currentBuffer);
+		last_read_message.append(currentBuffer);
         
 	}
 //    void insert(const std::string& key,const std::string& value){
@@ -215,10 +215,13 @@ public:
         while(! message->buffered_message.msg_in_buffers->empty())
         {
             std::cout<<"pico_client : popping current Buffer ";
-          //  bufferType curbufferType = buffered_msg->msg_in_buffers->pop();
+            bufferType buf = message->buffered_message.msg_in_buffers->pop();
             std::cout<<"pico_client : popping current Buffer this is current buffer ";
-           // std::cout<<(curbufferType->getString());
-            //writeOneBuffer(curbufferType);
+           std::cout<<(buf.getString());
+            std::shared_ptr<pico_buffer> bufPtr(new pico_buffer(buf));
+            writer_buffer_container_.addToAllBuffers(bufPtr);
+            writeOneBuffer(bufPtr);
+            clientIsAllowedToWrite.wait(allowedToWriteLock);
         
           
       	}
@@ -236,8 +239,8 @@ public:
                                                            std::size_t t) {
                                      string str = currentBuffer->getString();
                                       std::cout<<( "Client Sent :  ");
-                                     //std::cout<<(t" bytes from server "<<std::endl;
-                                     if(error) std::cout<<(" error msg : ",error.message());
+                                     std::cout<<t" bytes from server "<<std::endl;
+                                     if(error) std::cout<<" error msg : "<<error.message();
                                      std::cout<<( " data sent to server is ");
                                      std::cout<<(str);
                                      std::cout<<("-------------------------");
@@ -252,12 +255,15 @@ public:
 	}
 //	pico_client_server::pico_buffer buffer;
 
-	asyncWriter asyncWriter_;
+	writer_buffer_container writer_buffer_container_;
 	asyncReader asyncReader_;
-	boost::mutex sessionMutex;   // mutex for the condition variable
+    boost::mutex sessionMutex;   // mutex for the condition variable
+    boost::mutex allowedToWriteLockMutext;
 	boost::condition_variable messageClientQueueIsEmpty;
+    boost::condition_variable clientIsAllowedToWrite;
+    boost::unique_lock<boost::mutex> allowedToWriteLock;
 	boost::unique_lock<boost::mutex> writeMessageLock;
-    	msgPtr last_read_message;
+	pico_buffered_message last_read_message;
 
 };
 

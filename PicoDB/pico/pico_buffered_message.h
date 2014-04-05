@@ -22,13 +22,15 @@ using namespace std;
     class pico_buffered_message{
     public:
           logger mylogger;
-        pico_buffered_message()
+        pico_buffered_message():msg_in_buffers(new pico_concurrent_list<bufferType>())
         {
         std::cout<<("empty pico_buffered_message being constructed.....\n");
+        
         }
-        pico_buffered_message(std::shared_ptr<pico_concurrent_list<bufferType>> list){
+        pico_buffered_message(std::shared_ptr<pico_concurrent_list<bufferType>> list):msg_in_buffers(new pico_concurrent_list<bufferType>()){
         std::cout<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
+            
         }
         pico_buffered_message(pico_buffered_message& copy){
             std::cout<<("pico_buffered_message copy constructed....\n");

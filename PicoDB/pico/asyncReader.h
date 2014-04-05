@@ -9,9 +9,10 @@
 #define ASYNCREADER_H_
 
 #include <pico/pico_buffer.h>
-#include <pico/asyncWriter.h> //for typedef only
+#include <pico/writer_buffer_container.h> //for typedef only
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
+#include <pico/pico_buffered_message.h>
 #include <logger.h>
 using namespace std;
 namespace pico {
