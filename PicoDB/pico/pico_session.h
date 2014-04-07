@@ -151,20 +151,19 @@ public:
 					append_to_last_message(*currentBuffer);
 					if(str.find_last_of(app)== string::npos)
 					{
-						std::cout<<("this buffer is an add on to the last message..dont process anything..read the next buffer");
+						std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
 
 					}
 					else {
-						std::cout<<("message was read completely..process the last message ");
+						std::cout<<("session: message was read completely..process the last message\n ");
 						str =last_read_message.toString();
                         print(error,t,str);
-						
-
 						processDataFromClient(str);
 						last_read_message.clear();
-                        clientIsAllowedToWrite.notify_all();
-					}
-
+                        	}
+                    
+                    clientIsAllowedToWrite.notify_all();
+                    
 				});
 	}
     void print(const boost::system::error_code& error,std::size_t t,string& str)
@@ -214,10 +213,10 @@ public:
             std::cout<<("session queue of messages is empty...going to wait on the lock");
 			messageClientQueueIsEmpty.wait(writeMessageLock);
         }
-		cout << "session is writing async now\n";
-        
-		if (!messageToClientQueue_.empty()) {
-			queueType message = messageToClientQueue_.pop();
+		else {
+            cout << "session is writing async now\n";
+            
+            queueType message = messageToClientQueue_.pop();
             
 		
 		cout << " session is going to send this message to server : " << message.toString()

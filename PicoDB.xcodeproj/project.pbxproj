@@ -34,7 +34,6 @@
 		A511D65A18E3628700628059 /* ObjectPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectPool.h; sourceTree = "<group>"; };
 		A511D65C18E3628700628059 /* asyncReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = asyncReader.h; sourceTree = "<group>"; };
 		A511D65D18E3628700628059 /* AsyncTcpClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncTcpClient.h; sourceTree = "<group>"; };
-		A511D65E18E3628700628059 /* asyncWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = asyncWriter.h; sourceTree = "<group>"; };
 		A511D65F18E3628700628059 /* collection_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = collection_manager.h; sourceTree = "<group>"; };
 		A511D66018E3628700628059 /* pico_buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pico_buffer.h; sourceTree = "<group>"; };
 		A511D66118E3628700628059 /* pico_client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pico_client.h; sourceTree = "<group>"; };
@@ -61,6 +60,7 @@
 		A511D67F18E3839700628059 /* Readme.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
 		A511D68018E3843E00628059 /* gcc-atomic.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "gcc-atomic.hpp"; path = "../../Downloads/boost_1_55_0/gcc-atomic.hpp"; sourceTree = "<group>"; };
 		A511D68118E45E6600628059 /* Examples.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Examples.h; sourceTree = "<group>"; };
+		A57BE9F218EFC45000915B0E /* writer_buffer_container.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = writer_buffer_container.h; sourceTree = "<group>"; };
 		A589B0AE18E645480031AD25 /* pico_concurrent_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_concurrent_list.h; sourceTree = "<group>"; };
 		A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_buffered_message.h; sourceTree = "<group>"; };
 		A598208818ECBE1F00FFB6AE /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = logger.h; path = ../logger.h; sourceTree = "<group>"; };
@@ -124,7 +124,6 @@
 				A598208818ECBE1F00FFB6AE /* logger.h */,
 				A511D65C18E3628700628059 /* asyncReader.h */,
 				A511D65D18E3628700628059 /* AsyncTcpClient.h */,
-				A511D65E18E3628700628059 /* asyncWriter.h */,
 				A511D65F18E3628700628059 /* collection_manager.h */,
 				A511D66018E3628700628059 /* pico_buffer.h */,
 				A511D66118E3628700628059 /* pico_client.h */,
@@ -141,6 +140,7 @@
 				A511D66C18E3628700628059 /* TODO.h */,
 				A589B0AE18E645480031AD25 /* pico_concurrent_list.h */,
 				A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */,
+				A57BE9F218EFC45000915B0E /* writer_buffer_container.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";

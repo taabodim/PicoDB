@@ -430,6 +430,7 @@ void runClient() {
         std::shared_ptr<clientType> ptr(new clientType(socket));
         
 		ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
+        
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
         //and client sends to server
@@ -497,17 +498,18 @@ void clientServerExample() {
        
 	
         using namespace pico;
-		boost::thread serverThread(runServer);
-		sleepViaBoost(4);
-        
-        
+	    
+//        boost::thread serverThread(runServer);
+//		sleepViaBoost(4);
+//        
         
 		boost::thread clientThread(runClient);
         sleepViaBoost(4);
+       
         
-        
-		serverThread.join();
+
         clientThread.join();
+//        serverThread.join();
 		      
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";

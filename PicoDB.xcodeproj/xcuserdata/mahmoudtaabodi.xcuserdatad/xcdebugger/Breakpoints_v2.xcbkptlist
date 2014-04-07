@@ -189,11 +189,11 @@
                   symbolName = "pico::logger::logger()"
                   moduleName = "PicoDB"
                   urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/logger.h"
-                  timestampString = "418367515.705105"
+                  timestampString = "418405062.643191"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "55"
-                  endingLineNumber = "55"
+                  startingLineNumber = "56"
+                  endingLineNumber = "56"
                   offsetFromSymbolStart = "16">
                </Location>
                <Location
@@ -202,13 +202,13 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::logger::logger()"
                   moduleName = "PicoDB"
-                  urlString = "file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/c++/v1/memory"
-                  timestampString = "418367515.705516"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/logger.h"
+                  timestampString = "418405062.643545"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "4773"
-                  endingLineNumber = "4773"
-                  offsetFromSymbolStart = "43">
+                  startingLineNumber = "55"
+                  endingLineNumber = "55"
+                  offsetFromSymbolStart = "26">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -221,6 +221,38 @@
             continueAfterRunningActions = "No"
             symbolName = "malloc_error_break"
             moduleName = "">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PicoDB/pico/pico_session.h"
+            timestampString = "418373280.27158"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "38"
+            endingLineNumber = "38"
+            landmarkName = "start()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PicoDB/pico/pico_server.h"
+            timestampString = "418403705.320555"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "58"
+            endingLineNumber = "58"
+            landmarkName = "acceptConnection()"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

@@ -56,10 +56,9 @@ public:
 	}
     
 	void start_connect(tcp::resolver::iterator endpoint_iter) {
-		std::cout<<( " start_connect(tcp::resolver::iterator endpoint_iter) ");
+		std::cout<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
 		if (endpoint_iter != tcp::resolver::iterator()) {
-			std::cout<<(  "Trying ");
-            //std::cout<<(endpoint_iter->endpoint() << "...\n";
+			std::cout<<  "Trying "<<endpoint_iter->endpoint() << "...\n";
 
 			// Start the asynchronous connect operation.
 			socket_->async_connect(endpoint_iter->endpoint(),
@@ -88,19 +87,19 @@ public:
 
 	void start(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
-        std::cout<<("client starting the process..going to write_message to server");
+        std::cout<<"client starting the process..going to write_message to server\n";
         
 		try {
-            for(int  i=0;i<1;i++)
-                insert();
+//            for(int  i=0;i<1;i++)
+//                insert();
             
 			write_messages();
 //			read_messages();
 
 		} catch (const std::exception& e) {
-			std::cout<<(" exception : ",e.what());
+			std::cout<<" exception : "<<e.what();
 		} catch (...) {
-			std::cout<<( "<----->unknown exception thrown.<------>");
+			std::cout<< "<----->unknown exception thrown.<------>\n";
 		}
 	}
 //	void readAsync() {
@@ -165,7 +164,7 @@ public:
                                         last_read_message.clear();
                                         
                                     }
-                                    
+                                    clientIsAllowedToWrite.notify_all();
                                 });
 
 	}
@@ -183,10 +182,11 @@ public:
         void insert(){
             std::string key;
             std::string value;
-      key="They've been spotted and spotted again";
+        key="They've been spotted and spotted again";
         value="They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot ";
-        
-            string command("insert");
+        value="adasldj";
+        key="asd";
+        string command("insert");
         string database("currencyDB");
         string user("currencyUser");
         string col("currencyCollection");
@@ -239,7 +239,7 @@ public:
                                                            std::size_t t) {
                                      string str = currentBuffer->getString();
                                       std::cout<<( "Client Sent :  ");
-                                     std::cout<<t" bytes from server "<<std::endl;
+                                     std::cout<<t<<" bytes from server "<<std::endl;
                                      if(error) std::cout<<" error msg : "<<error.message();
                                      std::cout<<( " data sent to server is ");
                                      std::cout<<(str);

@@ -46,13 +46,14 @@ public:
 //    }
     
     logger(){
-        if(log_mutex==nullptr)
-        {
-            std::cout<<"logger : initiliazing the mutext for the logger\n";
-            std::shared_ptr<boost::mutex> temp(new boost::mutex());
-            log_mutex=temp;
-        }
-        std::cout<<"logger instance created...\n";};
+//        if(log_mutex==nullptr)
+//        {
+//            std::cout<<"logger : initiliazing the mutext for the logger\n";
+//            std::shared_ptr<boost::mutex> temp(new boost::mutex());
+//            log_mutex=temp;
+//        }
+        std::cout<<"logger instance created...\n";
+    }
     logger operator=(logger& r){
         std::cout<<"assignment operator logger instance called..\n";
         return r;};

@@ -27,7 +27,6 @@
 using boost::asio::ip::tcp;
 using namespace std;
 
-//----------------------------------------------------------------------
 namespace pico {
 typedef std::shared_ptr<tcp::socket> socketType;
 typedef tcp::acceptor acceptorType;
@@ -45,27 +44,33 @@ public:
 			acceptor_(io_service, endpoint), socket(mySocket) {
 		std::cout << "server initializing " << std::endl;
 
-		acceptConnection();
-
-
+        acceptConnection();
 	}
 
 	void acceptConnection() {
-
+        std::cout << "server before waiting for connections " << std::endl;
+        
 		acceptor_.async_accept(*socket, [this](boost::system::error_code ec)
 		{
-			if (!ec)
-			{
-				initClientHandler(socket);
-			}
-
+            std::cout<< "error code is"<<ec<<endl;
+            
+           	std::cout << "server accept handler being calledfor connections " << std::endl;
+            
+//			if (!ec)
+//			{
+//                std::cout<<"server accepted a conneciton"<<endl;
+//				initClientHandler(socket);
+//			}
+//            else{
+//                std::cout<<"server accepted a conneciton but there was some error\n";}
+//
 			acceptConnection();
 		});
 
 	}
 
 	void initClientHandler(socketType socket) {
-		std::cout<<("server accepted a connection...going to start the session");
+		std::cout<<"server accepted a connection...going to start the session";
 		std::shared_ptr<pico_session> clientPtr (new pico_session (socket));
 		//add clients to a set
 		clientPtr->start();
@@ -86,10 +91,10 @@ void runServer() {
 	socketType socket(new tcp::socket(io_service));
 
 	std::shared_ptr<pico_server> serverPtr (new pico_server (io_service, endpoint, socket));
-
 	servers.emplace_back(serverPtr);
-	io_service.run();
-	cout<<" io server is running going out of scope..\n";
+    io_service.run();
+	
+    cout<<" io server is running going out of scope..\n";
 }
 } //end of namespace
 
