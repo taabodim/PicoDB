@@ -60,6 +60,8 @@
 		A511D67F18E3839700628059 /* Readme.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
 		A511D68018E3843E00628059 /* gcc-atomic.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "gcc-atomic.hpp"; path = "../../Downloads/boost_1_55_0/gcc-atomic.hpp"; sourceTree = "<group>"; };
 		A511D68118E45E6600628059 /* Examples.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Examples.h; sourceTree = "<group>"; };
+		A53700F718F3166600C1F898 /* chat_server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_server.h; sourceTree = "<group>"; };
+		A537010D18F3193400C1F898 /* chat_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_message.h; sourceTree = "<group>"; };
 		A57BE9F218EFC45000915B0E /* writer_buffer_container.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = writer_buffer_container.h; sourceTree = "<group>"; };
 		A589B0AE18E645480031AD25 /* pico_concurrent_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_concurrent_list.h; sourceTree = "<group>"; };
 		A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_buffered_message.h; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 		A511D63F18E35D6C00628059 = {
 			isa = PBXGroup;
 			children = (
+				A53700F718F3166600C1F898 /* chat_server.h */,
 				A511D68018E3843E00628059 /* gcc-atomic.hpp */,
 				A511D67F18E3839700628059 /* Readme.txt */,
 				A511D64A18E35D6C00628059 /* PicoDB */,
@@ -102,6 +105,7 @@
 				A511D65618E3628700628059 /* currency.h */,
 				A511D65718E3628700628059 /* jsonCppExamples.h */,
 				A511D65918E3628700628059 /* MutilThreadedServerClient.cpp */,
+				A537010D18F3193400C1F898 /* chat_message.h */,
 				A511D65A18E3628700628059 /* ObjectPool.h */,
 				A511D65B18E3628700628059 /* pico */,
 				A511D66D18E3628700628059 /* PicoDB.1 */,

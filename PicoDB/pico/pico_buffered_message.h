@@ -60,6 +60,10 @@ using namespace std;
 
             return msg_in_buffers->toString();
         }
+        bufferType& getLastBuffer()
+        {
+        msg_in_buffers.under
+        }
         std::shared_ptr<pico_concurrent_list<bufferType>> msg_in_buffers;
         //since, a list cannot be copied, I create the list on the heap and copy the pointer to it
         //every time this object wants to copy

@@ -147,7 +147,7 @@ public:
 				[this,self,currentBuffer](const boost::system::error_code& error,
 						std::size_t t ) {
 					string app("append");
-					string str =currentBuffer->getString();
+					string str =currentBuffer->toString();
 					append_to_last_message(*currentBuffer);
 					if(str.find_last_of(app)== string::npos)
 					{
@@ -162,7 +162,7 @@ public:
 						last_read_message.clear();
                         	}
                     
-                    clientIsAllowedToWrite.notify_all();
+                   // clientIsAllowedToWrite.notify_all();
                     
 				});
 	}
@@ -226,18 +226,19 @@ public:
         
         
         
-        while(! message.buffered_message.msg_in_buffers->empty())
+        while(!message.buffered_message.msg_in_buffers->empty())
             {
             auto curBuf = message.buffered_message.msg_in_buffers->pop();
             std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(curBuf));
             writeOneBuffer(curBufPtr);
-            clientIsAllowedToWrite.wait(allowedToWriteLock);
+//            clientIsAllowedToWrite.wait(allowedToWriteLock);
             }
         }
 	}
     void writeOneBuffer(bufferTypePtr currentBuffer)
     {
         
+        cout << " session is writing one buffer to client : " << std::endl;
         char* data = currentBuffer->getData();
 		std::size_t dataSize = currentBuffer->getSize();
 		auto self(shared_from_this());
@@ -245,7 +246,7 @@ public:
 		boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
                                  [this,self,currentBuffer](const boost::system::error_code& error,
                                                            std::size_t t) {
-                                     string str = currentBuffer->getString();
+                                     string str = currentBuffer->toString();
                                      std::cout << "Session Sent :  "<<std::endl;
                                      std::cout<<t<<" bytes from Client "<<std::endl;
                                      if(error) std::cout<<" error msg : "<<error.message()<<std::endl;

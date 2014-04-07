@@ -49,6 +49,7 @@
 #include <vector>
 #include <PicoHedgeFund.h>
 #include <logger.h>
+#include <chat_server.h>
 using namespace boost::filesystem;
 using namespace pico;
 using namespace std;
@@ -420,7 +421,8 @@ void runPicoHedgeFundClient(std::shared_ptr<clientType> ptr)
 void runClient() {
 	try {
 		std::cout << "starting client" << std::endl;
-		std::string localhost { "localhost" };
+		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
+        //localhost{"localhost"} only the local machine via a special interface only visible to programs running on the same compute
 		std::string port { "8877" };
         
 		boost::asio::io_service io_service;
@@ -428,9 +430,7 @@ void runClient() {
         
 		socketType socket(new tcp::socket(io_service));
         std::shared_ptr<clientType> ptr(new clientType(socket));
-        
-		ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
-        
+		 ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
         //and client sends to server
@@ -499,17 +499,15 @@ void clientServerExample() {
 	
         using namespace pico;
 	    
-//        boost::thread serverThread(runServer);
-//		sleepViaBoost(4);
-//        
-        
+        boost::thread serverThread(runServer);
+		sleepViaBoost(4);
+
+
 		boost::thread clientThread(runClient);
         sleepViaBoost(4);
-       
         
-
-        clientThread.join();
-//        serverThread.join();
+         clientThread.join();
+        serverThread.join();
 		      
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";
@@ -854,13 +852,40 @@ public:
 ////	return String;
 //}
 
+//----------------------------------------------------------------------
+typedef boost::shared_ptr<chat_server> chat_server_ptr;
+typedef std::list<chat_server_ptr> chat_server_list;
 
+void runChatServer()
+{
+    try
+    {
+        
+        std::string port { "8877" };
+        boost::asio::io_service io_service;
+        
+        chat_server_list servers;
+        
+        using namespace std; // For atoi.
+        tcp::endpoint endpoint(tcp::v4(), std::atoi(port.c_str()));
+        chat_server_ptr server(new chat_server(io_service, endpoint));
+        servers.push_back(server);
+        
+        io_service.run();
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() << "\n";
+    }
+    
+}
 int main(int argc, char** argv) {
 	try {
         
 		std::set_unexpected(myunexpected);
        // test_pico_binary_index_tree();
         clientServerExample();
+       // runChatServer();
         //		readingAndWritingRecordData();
         //		jsonCPPexample() ;
         //		readingAndWritingComplexData();

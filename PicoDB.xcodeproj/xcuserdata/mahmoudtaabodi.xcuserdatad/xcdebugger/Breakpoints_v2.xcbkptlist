@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "418366104.352915"
+            timestampString = "418598909.117823"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "170"
-            endingLineNumber = "170"
+            startingLineNumber = "161"
+            endingLineNumber = "161"
             landmarkName = "convert_to_buffered_message()"
             landmarkType = "5">
             <Locations>
@@ -188,8 +188,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::logger::logger()"
                   moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/logger.h"
-                  timestampString = "418405062.643191"
+                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/logger.h"
+                  timestampString = "418584967.075376"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "56"
@@ -202,13 +202,13 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::logger::logger()"
                   moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/logger.h"
-                  timestampString = "418405062.643545"
+                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/logger.h"
+                  timestampString = "418584967.0757"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "55"
-                  endingLineNumber = "55"
-                  offsetFromSymbolStart = "26">
+                  startingLineNumber = "56"
+                  endingLineNumber = "56"
+                  offsetFromSymbolStart = "8">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -245,14 +245,12 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_server.h"
-            timestampString = "418403705.320555"
+            filePath = "chat_server.h"
+            timestampString = "418584763.891193"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "58"
-            endingLineNumber = "58"
-            landmarkName = "acceptConnection()"
-            landmarkType = "5">
+            startingLineNumber = "24"
+            endingLineNumber = "24">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

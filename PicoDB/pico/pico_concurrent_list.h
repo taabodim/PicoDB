@@ -66,7 +66,7 @@ namespace pico{
 //            std::cout<<("index "+index+ " was not found in the list..concurrent list has only "+i+" elements \n");
             return empty;
         }
-        
+       
         void append(queueType t)
         {
          
@@ -90,14 +90,14 @@ namespace pico{
             {
                 queueType t = underlying_list.front();
                  underlying_list.pop_front();
-                str.append(t.getString());
+                str.append(t.toString());
             }
             std::cout<<("this is the string representation of the pico_buffered_message");
             return str;
                     }
         virtual ~pico_concurrent_list()
         {
-//            std::cout<<("pico_concurrent_list being destructed..");
+            std::cout<<("pico_concurrent_list being destructed..");
         }
     };
 }

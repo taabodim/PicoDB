@@ -48,25 +48,26 @@ public:
 	}
 
 	void acceptConnection() {
-        std::cout << "server before waiting for connections " << std::endl;
+      //  std::cout << "server before waiting for connections " << std::endl;
         
 		acceptor_.async_accept(*socket, [this](boost::system::error_code ec)
 		{
-            std::cout<< "error code is"<<ec<<endl;
+           
+			if (!ec)
+			{
+               // std::cout<<"server accepted a conneciton"<<endl;
+				initClientHandler(socket);
+			}
+            else{
+              //  std::cout<<"server accepted a conneciton but there was some error\n";
+              //  std::cout<< "error code is"<<ec.value()<<" "<<ec.message()<<endl;
+                }
             
-           	std::cout << "server accept handler being calledfor connections " << std::endl;
-            
-//			if (!ec)
-//			{
-//                std::cout<<"server accepted a conneciton"<<endl;
-//				initClientHandler(socket);
-//			}
-//            else{
-//                std::cout<<"server accepted a conneciton but there was some error\n";}
-//
-			acceptConnection();
-		});
-
+            //THIS LINE SHOULD BE HERE !!!!
+            acceptConnection();
+ 		});
+        
+    
 	}
 
 	void initClientHandler(socketType socket) {
@@ -91,7 +92,7 @@ void runServer() {
 	socketType socket(new tcp::socket(io_service));
 
 	std::shared_ptr<pico_server> serverPtr (new pico_server (io_service, endpoint, socket));
-	servers.emplace_back(serverPtr);
+	servers.push_back(serverPtr);
     io_service.run();
 	
     cout<<" io server is running going out of scope..\n";

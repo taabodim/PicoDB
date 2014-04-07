@@ -113,7 +113,7 @@ public:
 	char* getData() {
 		return data_;
 	}
-	std::string getString() const {
+	std::string toString() const {
 		std::string temp(data_);	//this  should not be in seperated
 		return temp;
 	}

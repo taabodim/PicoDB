@@ -87,15 +87,22 @@ public:
 
 	void start(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
-        std::cout<<"client starting the process..going to write_message to server\n";
-        
+        std::cout<<"\nclient starting the process..going to write_message to server\n";
+       
 		try {
-//            for(int  i=0;i<1;i++)
-//                insert();
+            if(!ec)
+            {
+            for(int  i=0;i<10;i++)
+                insert();
             
 			write_messages();
 //			read_messages();
-
+            }
+            else{
+                std::cout<<"client : start : error is "<<ec.value()<<" error message is "<<ec.message()<<std::endl;
+                std::cout <<"error name is "<< ec.category().name() << std::endl;
+            }
+            
 		} catch (const std::exception& e) {
 			std::cout<<" exception : "<<e.what();
 		} catch (...) {
@@ -147,15 +154,15 @@ public:
                                 [this,self,currentBuffer](const boost::system::error_code& error,
                                                           std::size_t t ) {
                                     string app("append");
-                                    string str =currentBuffer->getString();
+                                    string str =currentBuffer->toString();
                                     append_to_last_message(*currentBuffer);
                                     if(str.find_last_of(app)== string::npos)
                                     {
-                                        std::cout<<("this buffer is an add on to the last message..dont process anything..read the next buffer");
+                                        std::cout<<("client : this buffer is an add on to the last message..dont process anything..read the next buffer");
                                         
                                     }
                                     else {
-                                        std::cout<<("message was read completely..process the last message ");
+                                        std::cout<<("client : message was read completely..process the last message ");
                                         str =last_read_message.toString();
                                         print(error,t,str);
                                         
@@ -182,7 +189,7 @@ public:
         void insert(){
             std::string key;
             std::string value;
-        key="They've been spotted and spotted again";
+        key="1";
         value="They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot ";
         value="adasldj";
         key="asd";
@@ -209,15 +216,15 @@ public:
 			queueType message = commandQueue_.pop();
 
 		
-		 std::cout<<( " client is going to send this message to server : ");
-         std::cout<<(message->json_form_of_message); //this line throws exception , check why
+		// std::cout<<( " client is going to send this message to server : ");
+         //std::cout<<(message->json_form_of_message); //this line throws exception , check why
 
         while(! message->buffered_message.msg_in_buffers->empty())
         {
             std::cout<<"pico_client : popping current Buffer ";
             bufferType buf = message->buffered_message.msg_in_buffers->pop();
             std::cout<<"pico_client : popping current Buffer this is current buffer ";
-           std::cout<<(buf.getString());
+           
             std::shared_ptr<pico_buffer> bufPtr(new pico_buffer(buf));
             writer_buffer_container_.addToAllBuffers(bufPtr);
             writeOneBuffer(bufPtr);
@@ -229,21 +236,24 @@ public:
     }
     void writeOneBuffer(bufferTypePtr currentBuffer)
     {
-        
         char* data = currentBuffer->getData();
 		std::size_t dataSize = currentBuffer->getSize();
-		auto self(shared_from_this());
+        std::cout<<"client is writing one buffer with this size "<<dataSize<<endl;
+        
+        auto self(shared_from_this());
         
 		boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
                                  [this,self,currentBuffer](const boost::system::error_code& error,
                                                            std::size_t t) {
-                                     string str = currentBuffer->getString();
+                                     string str = currentBuffer->toString();
                                       std::cout<<( "Client Sent :  ");
-                                     std::cout<<t<<" bytes from server "<<std::endl;
-                                     if(error) std::cout<<" error msg : "<<error.message();
-                                     std::cout<<( " data sent to server is ");
-                                     std::cout<<(str);
-                                     std::cout<<("-------------------------");
+                                     std::cout<<t<<" bytes to server "<<std::endl;
+                                     if(error)
+                                         std::cout<<" error msg : "<<error.message()<<std::endl;
+                                     
+                                     std::cout<< " data sent to server is ";
+                                     std::cout<<str;
+                                     std::cout<<"-------------------------";
                                      read_messages();
                                  });
  
