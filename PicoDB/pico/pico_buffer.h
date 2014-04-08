@@ -52,11 +52,11 @@ namespace pico {
         }
         // Construct from a std::string.
         void setData(std::string data) {
-            if (bufferBeingUsed)
-            {
-                std::cout<<"exception : buffer is already in use"<<endl;
-                throw new pico_exception("buffer is already in use");
-            }
+//            if (bufferBeingUsed)
+//            {
+//                std::cout<<"exception : buffer is already in use"<<endl;
+//                throw new pico_exception("buffer is already in use");
+//            }
             bufferBeingUsed = true;
             strncpy(data_, data.c_str(), data.size());
             data_[data.size()] = 0;

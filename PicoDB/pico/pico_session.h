@@ -261,16 +261,16 @@ namespace pico {
                 
                 if(!message.buffered_message.msg_in_buffers->empty())
                 {
-                while(!message.buffered_message.msg_in_buffers->empty())
-                {
-                    auto curBuf = message.buffered_message.msg_in_buffers->pop();
-                    std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(curBuf));
-                    writeOneBuffer(curBufPtr);
-                    clientIsAllowedToWrite.wait(allowedToWriteLock);
-                }
+                    while(!message.buffered_message.msg_in_buffers->empty())
+                    {
+                        auto curBuf = message.buffered_message.msg_in_buffers->pop();
+                        std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(curBuf));
+                        writeOneBuffer(curBufPtr);
+                        clientIsAllowedToWrite.wait(allowedToWriteLock);
+                    }
                 }
                 else{
-                //msg is empty //write a listening msg to client
+                    //msg is empty //write a listening msg to client
                     
                     std::string str("IAMLISTENING");
                     std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(str));
@@ -294,7 +294,7 @@ namespace pico {
                                          std::cout<<t<<" bytes from Client "<<std::endl;
                                          if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
                                          std::cout<<" data sent to client is "<<str<<endl;
-                                          std::cout<<("-------------------------");
+                                         std::cout<<("-------------------------");
                                          read_messages();
                                      });
             

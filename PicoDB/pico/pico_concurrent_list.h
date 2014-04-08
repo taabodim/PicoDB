@@ -34,8 +34,9 @@ namespace pico{
         queueType pop()
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
-            std::cout<<("pico_concurrent_list : poping from end of the list..");
-            queueType msg = underlying_list.back();
+             queueType msg = underlying_list.back();
+            std::cout<<"pico_concurrent_list : poping from end of the list this item .."<<msg.toString()<<endl;
+            
             underlying_list.pop_back();
             
             return msg;
@@ -50,6 +51,13 @@ namespace pico{
             //std::cout<<("pushing pico msg to the front");
             underlying_list.push_front(msg);
             
+        }
+        void printAll()
+        {
+            for (typename list<queueType>::iterator i = underlying_list.begin();
+                 i != underlying_list.end(); ++i) {
+                cout << "list iterator ==> " << i->toString() << endl;
+            }
         }
         queueType get(int index)
         {

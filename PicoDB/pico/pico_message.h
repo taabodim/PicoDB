@@ -30,19 +30,20 @@ namespace pico {
         
         pico_message(const pico_message& msg)
         {
-           // std::cout<<("pico_message copy constructor being called.\n");
+//            std::cout<<"pico_message copy constructor being called.\n";
             this->user = msg.user;
             this->db = msg.db;
             this->command = msg.command;
             this->collection = msg.collection;
             this->messageSize = msg.messageSize;
-            this->key_of_message=key_of_message;
-            this->value_of_message=value_of_message;
-            this->json_form_of_message=json_form_of_message;
-            this->buffered_message=buffered_message; //a container for all the buffers that make up this pico_message
+            this->key_of_message=msg.key_of_message;
+            this->value_of_message=msg.value_of_message;
+            this->json_form_of_message=msg.json_form_of_message;
+            this->buffered_message=msg.buffered_message; //a container for all the buffers that make up this pico_message
+            set_hash_code();
         }
     	pico_message(std::string message_from_client) {//this is for processing shell commands
-    		
+    		json_form_of_message=message_from_client;
     		Json::Value root;   // will contains the root value after parsing.
     		Json::Reader reader;
             
@@ -90,10 +91,10 @@ namespace pico {
             this->collection = msg.collection;
             this->messageSize = msg.messageSize;
             this->key_of_message=key_of_message;
-            this->value_of_message=value_of_message;
-            this->json_form_of_message=json_form_of_message;
-            this->buffered_message=buffered_message; //a container for all the buffers that make up this pico_message
-            
+            this->value_of_message=msg.value_of_message;
+            this->json_form_of_message=msg.json_form_of_message;
+            this->buffered_message=msg.buffered_message; //a container for all the buffers that make up this pico_message
+            this->set_hash_code();
             return *this;
         }
         std::string convert_message_to_json()
@@ -146,9 +147,8 @@ namespace pico {
             return json_form_of_message;
         }
         void convert_to_buffered_message() {
-            std::cout<<("pico_message : converToBuffers ");
             
-            std::cout<<"pico_message : converToBuffers : messageSize is "<<messageSize;
+            std::cout<<"pico_message : converToBuffers : messageSize is "<<messageSize<<endl;
             bool appendAllExceptLastOne =false;
             
             if (messageSize > pico_buffer::max_size-6) {
@@ -159,15 +159,14 @@ namespace pico {
             
             const char* temp_buffer_message = json_form_of_message.c_str();
             //std::cout<<("pico_message : message is too big ,data.getString() is ");
-            std::cout<<(json_form_of_message);
+          //  std::cout<<(json_form_of_message);
             //std::cout<<("pico_message : message is too big , breaking down the huge string to a list of buffers ...... ");
             // std::cout<<"*temp_buffer_message  is "<<*temp_buffer_message <<endl;
             while (*temp_buffer_message != 0) {
                 bufferType currentBuffer;
                 currentBuffer.parentMessageId = uniqueMessageId;
                 
-                std::cout<<("pico_message : uniqureMessageId  ");
-                std::cout<<(uniqueMessageId);
+                std::cout<<"pico_message : uniqureMessageId  "<<uniqueMessageId<<endl;
                 
                 for (int i = 0; i < pico_buffer::max_size-6; i++) {
                     currentBuffer.parentSequenceNumber = numberOfBuffer;
@@ -182,7 +181,7 @@ namespace pico {
                     ++temp_buffer_message;
                 }
                 
-                std::cout<<("pico_message : buffer pushed back to all_buffers ");
+//                std::cout<<("pico_message : buffer pushed back to all_buffers ");
                 addTheEndingTagsToAllBuffers(currentBuffer);//add append at the last characters of all, except the last one which completes the message
                 std::cout<<"pico_message : currentBuffer after append except the last one is "<<currentBuffer.toString();
                 

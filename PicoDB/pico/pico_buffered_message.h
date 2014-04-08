@@ -15,33 +15,36 @@
 #include <list>
 //this class contains a message thats has been transformed into a list of buffers
 using namespace std;
- namespace pico
+namespace pico
 {
     class pico_buffered_message;
     typedef std::shared_ptr<pico_buffered_message> msgPtr;
-
+    
     class pico_buffered_message{
     public:
-          logger mylogger;
+        logger mylogger;
         pico_buffered_message():msg_in_buffers(new pico_concurrent_list<bufferType>())
         {
-    //    std::cout<<("empty pico_buffered_message being constructed.....\n");
-        
+            //    std::cout<<("empty pico_buffered_message being constructed.....\n");
+            
         }
         pico_buffered_message(std::shared_ptr<pico_concurrent_list<bufferType>> list):msg_in_buffers(new pico_concurrent_list<bufferType>()){
-   //     std::cout<<("pico_buffered_message being constructed....\n");
+            //     std::cout<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
             
         }
-        pico_buffered_message(pico_buffered_message& copy){
+        pico_buffered_message(const pico_buffered_message& copy){
             std::cout<<("pico_buffered_message copy constructed....\n");
             msg_in_buffers = copy.msg_in_buffers;
             
         }
-        
+        pico_buffered_message operator=(const pico_buffered_message& copy){
+            msg_in_buffers = copy.msg_in_buffers;
+            return *this;
+        }
         virtual ~pico_buffered_message()
         {
-           // std::cout<<("pico_buffered_message being desstructed....\n");
+            // std::cout<<("pico_buffered_message being desstructed....\n");
             
         }
         void append(bufferType buf)
@@ -54,17 +57,17 @@ using namespace std;
             
             msg_in_buffers->clear();
         }
-
-
+        
+        
         string toString()
         {
-
+            
             return msg_in_buffers->toString();
         }
         
         list<bufferType>::iterator getLastBuffer()
         {
-           return  msg_in_buffers->getLastBuffer();
+            return  msg_in_buffers->getLastBuffer();
         }
         
         list<bufferType>::iterator getFirstBuffer()
