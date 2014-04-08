@@ -15,29 +15,29 @@
 #include <logger.h>
 using namespace std;
 namespace pico{
-   
+    
     template <typename queueType>
     class pico_concurrent_list{
     private:
         boost::mutex mutex_;
         logger mylogger;
-    
+        
     public:
         list<queueType> underlying_list;
         
         pico_concurrent_list()
         {
-            std::cout<<("pico_concurrent_list being constructed");
+            //    std::cout<<("pico_concurrent_list being constructed");
         }
         
-       
+        
         queueType pop()
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
-            std::cout<<("pico_concurrent_list : poping from the list..");
-            queueType msg = underlying_list.front();
-            underlying_list.pop_front();
-                         
+            std::cout<<("pico_concurrent_list : poping from end of the list..");
+            queueType msg = underlying_list.back();
+            underlying_list.pop_back();
+            
             return msg;
         }
         bool empty()
@@ -63,25 +63,34 @@ namespace pico{
                 }
                 i++;
             }
-//            std::cout<<("index "+index+ " was not found in the list..concurrent list has only "+i+" elements \n");
+            //            std::cout<<("index "+index+ " was not found in the list..concurrent list has only "+i+" elements \n");
             return empty;
         }
-       
+        
         void append(queueType t)
         {
-         
-        	underlying_list.push_back(t);
+            
+        	underlying_list.push_front(t);
         }
         void clear()
         {
             
-         while(!underlying_list.empty())
-         {
-            underlying_list.pop_front();
-         }
+            while(!underlying_list.empty())
+            {
+                underlying_list.pop_front();
+            }
             
-         }
+        }
         
+        typename list<queueType>::iterator getLastBuffer()
+        {
+            return  underlying_list.begin();
+        }
+        
+        typename list<queueType>::iterator getFirstBuffer()
+        {
+            return underlying_list.end();
+        }
         
         string toString()
         {
@@ -89,15 +98,16 @@ namespace pico{
             while(!underlying_list.empty())
             {
                 queueType t = underlying_list.front();
-                 underlying_list.pop_front();
+                underlying_list.pop_front();
+                std::cout<<"this is the string thats going to be appneded"<<t.toString()<<endl;
                 str.append(t.toString());
             }
-            std::cout<<("this is the string representation of the pico_buffered_message");
+            std::cout<<"this is the string representation of the pico_buffered_message"<<str<<endl;
             return str;
-                    }
+        }
         virtual ~pico_concurrent_list()
         {
-            std::cout<<("pico_concurrent_list being destructed..");
+            // std::cout<<("pico_concurrent_list being destructed..\n");
         }
     };
 }

@@ -30,6 +30,7 @@
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_buffered_message.h>
 #include <logger.h>
+#include <pico/pico_session.h> //for the checking if appended function
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -38,7 +39,7 @@ namespace pico {
     
     class DBClient;
  typedef DBClient clientType;
-    typedef std::shared_ptr<pico_message> queueType;
+   typedef pico_message queueType;
     class DBClient: public std::enable_shared_from_this<DBClient> {
 private:
    
@@ -148,33 +149,89 @@ public:
         
 		//if the append is not at the end..convert the pico_buffer to string and process
 		//
-		boost::asio::async_read(*socket_,
+        boost::asio::async_read(*socket_,
                                 boost::asio::buffer(currentBuffer->getData(),
                                                     pico_buffer::max_size),
                                 [this,self,currentBuffer](const boost::system::error_code& error,
                                                           std::size_t t ) {
-                                    string app("append");
-                                    string str =currentBuffer->toString();
-                                    append_to_last_message(*currentBuffer);
-                                    if(str.find_last_of(app)== string::npos)
-                                    {
-                                        std::cout<<("client : this buffer is an add on to the last message..dont process anything..read the next buffer");
-                                        
-                                    }
-                                    else {
-                                        std::cout<<("client : message was read completely..process the last message ");
-                                        str =last_read_message.toString();
-                                        print(error,t,str);
-                                        
-                                        
-                                        processDataFromServer(str);
-                                        last_read_message.clear();
-                                        
-                                    }
+                                    processTheMessageJustRead(currentBuffer,t);
+                                    
                                     clientIsAllowedToWrite.notify_all();
+                                    
                                 });
+//		boost::asio::async_read(*socket_,
+//                                boost::asio::buffer(currentBuffer->getData(),
+//                                                    pico_buffer::max_size),
+//                                [this,self,currentBuffer](const boost::system::error_code& error,
+//                                                          std::size_t t ) {
+//                                    string app("append");
+//                                    string str =currentBuffer->toString();
+//                                    append_to_last_message(*currentBuffer);
+//                                    if(str.find_last_of(app)== string::npos)
+//                                    {
+//                                        std::cout<<("client : this buffer is an add on to the last message..dont process anything..read the next buffer");
+//                                        
+//                                    }
+//                                    else {
+//                                        std::cout<<("client : message was read completely..process the last message ");
+//                                        str =last_read_message.toString();
+//                                        print(error,t,str);
+//                                        
+//                                        
+//                                        processDataFromServer(str);
+//                                        last_read_message.clear();
+//                                        
+//                                    }
+//                                    clientIsAllowedToWrite.notify_all();
+//                                });
 
 	}
+        
+        void processTheMessageJustRead(bufferTypePtr currentBuffer,std::size_t t){
+            
+            string str =currentBuffer->toString();
+            append_to_last_message(*currentBuffer);
+            std::cout<<"\nthis is the message that server read just now \n "<<str<<endl;
+            if(pico_session::find_last_of_string(currentBuffer))
+            {
+                std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+                processIncompleteData();
+            }
+            else {
+                std::cout<<("session: message was read completely..process the last message\n ");
+                str =last_read_message.toString();
+                // print(error,t,str);
+                processDataFromOtherSide(str);
+                last_read_message.clear();
+            }
+        }
+        void processDataFromOtherSide(std::string msg) {
+            
+            try {
+                
+//                pico_message reply = requestProcessor_.processRequest(msg);
+//                
+//                messageToClientQueue_.push(reply);
+//                messageClientQueueIsEmpty.notify_all();
+//                
+                std::cout<<"this is the complete message from server : "<<msg<<endl;
+                write_messages();
+                
+            } catch (std::exception &e) {
+                cout << " this is the error : " << e.what() << endl;
+            }
+        }
+        void  processIncompleteData()
+        {
+            string msg("dear server your incomplete message was received successfuly");
+            
+            pico_message reply = pico_message::build_message_from_string(msg);
+            
+          	commandQueue_.push(reply);
+            messageClientQueueIsEmpty.notify_all();
+            write_messages();
+            
+        }
     void print(const boost::system::error_code& error,
                std::size_t t,string& str)
     {
@@ -198,7 +255,7 @@ public:
         string user("currencyUser");
         string col("currencyCollection");
         
-        queueType msg (  new pico_message(key,value,command,database,user,col) );
+        queueType msg (key,value,command,database,user,col );
         queueCommand(msg);
         
     }
@@ -219,10 +276,10 @@ public:
 		// std::cout<<( " client is going to send this message to server : ");
          //std::cout<<(message->json_form_of_message); //this line throws exception , check why
 
-        while(! message->buffered_message.msg_in_buffers->empty())
+        while(! message.buffered_message.msg_in_buffers->empty())
         {
             std::cout<<"pico_client : popping current Buffer ";
-            bufferType buf = message->buffered_message.msg_in_buffers->pop();
+            bufferType buf = message.buffered_message.msg_in_buffers->pop();
             std::cout<<"pico_client : popping current Buffer this is current buffer ";
            
             std::shared_ptr<pico_buffer> bufPtr(new pico_buffer(buf));
@@ -263,7 +320,6 @@ public:
         commandQueue_.push(queueValue);
 		messageClientQueueIsEmpty.notify_all();
 	}
-//	pico_client_server::pico_buffer buffer;
 
 	writer_buffer_container writer_buffer_container_;
 	asyncReader asyncReader_;

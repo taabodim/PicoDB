@@ -23,15 +23,16 @@ public:
 
 	pico_message processRequest(string messageFromClient) {
 		string message("unknown");
-        pico_message picoMessage (messageFromClient);
-		cout << "session: processing request from client request: "
-				<< messageFromClient << std::endl;
-		if (picoMessage.command.compare(insertCommand) == 0) {
-			cout << "inserting one record per client request";
-            pico_record record (picoMessage.key_of_message,picoMessage.value_of_message);
-			string str = insertOneRecord(picoMessage.collection,
-					record);
-        }
+       pico_message picoMessage= pico_message::build_message_from_string(message);
+//        pico_message picoMessage (messageFromClient);
+//		cout << "session: processing request from client request: "
+//				<< messageFromClient << std::endl;
+//		if (picoMessage.command.compare(insertCommand) == 0) {
+//			cout << "inserting one record per client request";
+//            pico_record record (picoMessage.key_of_message,picoMessage.value_of_message);
+//			string str = insertOneRecord(picoMessage.collection,
+//					record);
+//        }
 //		} else if (picoMessage->command.compare(deleteCommand) == 0) {
 //			cout << "deleting one record per client request";
 //			string str = deleteRecords(picoMessage->collection,

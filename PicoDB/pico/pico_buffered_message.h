@@ -12,6 +12,7 @@
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
 #include <logger.h>
+#include <list>
 //this class contains a message thats has been transformed into a list of buffers
 using namespace std;
  namespace pico
@@ -24,11 +25,11 @@ using namespace std;
           logger mylogger;
         pico_buffered_message():msg_in_buffers(new pico_concurrent_list<bufferType>())
         {
-        std::cout<<("empty pico_buffered_message being constructed.....\n");
+    //    std::cout<<("empty pico_buffered_message being constructed.....\n");
         
         }
         pico_buffered_message(std::shared_ptr<pico_concurrent_list<bufferType>> list):msg_in_buffers(new pico_concurrent_list<bufferType>()){
-        std::cout<<("pico_buffered_message being constructed....\n");
+   //     std::cout<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
             
         }
@@ -40,7 +41,7 @@ using namespace std;
         
         virtual ~pico_buffered_message()
         {
-            std::cout<<("pico_buffered_message being desstructed....\n");
+           // std::cout<<("pico_buffered_message being desstructed....\n");
             
         }
         void append(bufferType buf)
@@ -60,9 +61,15 @@ using namespace std;
 
             return msg_in_buffers->toString();
         }
-        bufferType& getLastBuffer()
+        
+        list<bufferType>::iterator getLastBuffer()
         {
-        msg_in_buffers.under
+           return  msg_in_buffers->getLastBuffer();
+        }
+        
+        list<bufferType>::iterator getFirstBuffer()
+        {
+            return msg_in_buffers->getFirstBuffer();
         }
         std::shared_ptr<pico_concurrent_list<bufferType>> msg_in_buffers;
         //since, a list cannot be copied, I create the list on the heap and copy the pointer to it
