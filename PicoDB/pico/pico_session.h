@@ -29,10 +29,9 @@ namespace pico {
         pico_session(socketType r_socket) :
         writeMessageLock(sessionMutex) ,allowedToWriteLock(allowedToWriteLockMutext){
             socket_ = r_socket;
-            
-            
-            
-        }
+         }
+ 
+        
         void start() {
             
             try {
@@ -44,40 +43,67 @@ namespace pico {
                 cout << "<----->unknown exception thrown.<------>";
             }
         }
-        void readWriteSync() {
-            
-            string msgFromClient = read_messages_sync();
-            if (msgFromClient.compare("insert") == 0) {
-                cout << "server recienved insert message from client" << endl;
-                //insertData to client
-                
-                std::cout << "server reading message : " << msgFromClient
+        void read_messages() {
+            //we read until the whole message is read
+            //then we write until the whole message is written
+            auto self(shared_from_this());
+            cout << "session is trying to read messages" << endl;
+            bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
+            boost::asio::async_read(*socket_,
+                                    boost::asio::buffer(currentBuffer->getData(),
+                                                        pico_buffer::max_size),
+                                    [this,self,currentBuffer](const boost::system::error_code& error,
+                                                              std::size_t t ) {
+                                        
+                                        processTheMessageJustRead(currentBuffer,t);
+                                        writeOneBuffer();
+                                        
+                                    });
+        }
+        void write_messages() {
+              if (messageToClientQueue_.empty())
+            {
+                std::cout<<("session queue of messages is empty...going to wait on the lock");
+                messageClientQueueIsEmpty.wait(writeMessageLock);
+            }
+            else {
+                cout << "session is writing async now\n";
+                queueType message = messageToClientQueue_.pop();
+                cout << " session is going to send this message to server : " << message.toString()
                 << std::endl;
-                write_messages_sync();
-                boost::this_thread::sleep(boost::posix_time::seconds(4));
+                  while(!message.buffered_message.msg_in_buffers->empty())
+                {
+                    auto curBuf = message.buffered_message.msg_in_buffers->pop();
+                    std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(curBuf));
+                    //write all buffers to bufferQueue
+                    bufferQueue_.push(curBufPtr);
+
+                }
             }
         }
-        
-        void write_messages_sync() {
+        void writeOneBuffer()
+        {
+            bufferTypePtr currentBuffer = bufferQueue_.pop();
+            cout << " session is writing one buffer to client : " << std::endl;
+            char* data = currentBuffer->getData();
+            std::size_t dataSize = currentBuffer->getSize();
+            auto self(shared_from_this());
+            
+            boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
+                                     [this,self,currentBuffer](const boost::system::error_code& error,
+                                                               std::size_t t) {
+                                         string str = currentBuffer->toString();
+                                         std::cout << "Session Sent :  "<<std::endl;
+                                         std::cout<<t<<" bytes from Client "<<std::endl;
+                                         if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
+                                         std::cout<<" data sent to client is "<<str<<endl;
+                                         std::cout<<("-------------------------");
+                                         
+                                         read_messages();
+                                     });
             
         }
-        string read_messages_sync() {
-            
-            //		char* data = buffer.getData();
-            //		std::size_t dataSize = buffer.getSize();
-            //
-            //		std::cout << "data to send is : " << data << std::endl;
-            //		std::cout << "dataSize to send is : " << dataSize << std::endl;
-            //
-            //		boost::array<char, 128> buf;
-            //		boost::system::error_code error;
-            //
-            //		size_t len = socket_->read_some(boost::asio::buffer(buf), error);
-            //		return buffer.getString();
-            string empty;
-            return empty;
-        }
-        
+
         void processCommand() {
             //		std::cout << "processCommand :  " << readBuffer.getString() << "\n ";
             //
@@ -123,43 +149,19 @@ namespace pico {
                 messageToClientQueue_.push(reply);
                 messageClientQueueIsEmpty.notify_all();
                 
-                write_messages();
-                
             } catch (std::exception &e) {
                 cout << " this is the error : " << e.what() << endl;
             }
             
         }
-        void read_messages() {
-            
-            auto self(shared_from_this());
-            cout << "session is trying to read messages" << endl;
-            bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
-            //get a message in pico_buffer
-            //convert it to string , if at the end of it is append.. add it to the list of buffers and create a
-            //buffered_message out of all the pico_buffers and then convert the buffere_message to string and process
-            
-            //if the append is not at the end..convert the pico_buffer to string and process
-            //
-            boost::asio::async_read(*socket_,
-                                    boost::asio::buffer(currentBuffer->getData(),
-                                                        pico_buffer::max_size),
-                                    [this,self,currentBuffer](const boost::system::error_code& error,
-                                                              std::size_t t ) {
-                                        processTheMessageJustRead(currentBuffer,t);
-                                        
-                                        clientIsAllowedToWrite.notify_all();
-                                        
-                                    });
-        }
+       
         void processTheMessageJustRead(bufferTypePtr currentBuffer,std::size_t t){
             
             string str =currentBuffer->toString();
-            std::cout<<"\nthis is the message that server read just now \n "<<str<<endl;
-            if(str.empty())
-            {
-                processIncompleteData();
-            }else          if(find_last_of_string(currentBuffer))
+            std::cout<<"session : this is the message that server read just now \n "<<str<<endl;
+            
+            
+            if(find_last_of_string(currentBuffer))
             {
                 std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
                 
@@ -173,7 +175,8 @@ namespace pico {
                 // print(error,t,str);
                 
                 processDataFromClient(str);
-                //                last_read_message.clear();
+                last_read_message.clear();
+              
             }
         }
         static bool find_last_of_string(bufferTypePtr currentBuffer)
@@ -191,7 +194,7 @@ namespace pico {
         }
         void  processIncompleteData()
         {
-            string msg("dear client your incomplete message was received successfuly");
+            string msg("1");
             
             pico_message reply = pico_message::build_message_from_string(msg);
             
@@ -205,17 +208,69 @@ namespace pico {
             if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
             std::cout << "Server received "<<std::endl;
             std::cout<<t<<" bytes read from Client "<<std::endl;
-            std::cout<<(" data read from client is ");
-            std::cout<<(str);
-            std::cout<<("-------------------------");
+            std::cout<<(" data read from client is ")<<endl;
+            std::cout<<(str)<<endl;
+            std::cout<<("-------------------------")<<endl;
             
         }
         void append_to_last_message(string str) {
             last_read_message.append(str);
             
         }
-        void write_messages() {
-            
+        
+//        writer_buffer_container writer_buffer_container_;
+        asyncReader asyncReader_;
+        request_processor requestProcessor_;
+        pico_concurrent_list<queueType> messageToClientQueue_;
+        pico_concurrent_list<bufferTypePtr> bufferQueue_;
+        boost::mutex sessionMutex;   // mutex for the condition variable
+        boost::mutex allowedToWriteLockMutext;
+        boost::condition_variable messageClientQueueIsEmpty;
+        boost::condition_variable clientIsAllowedToWrite;
+        boost::unique_lock<boost::mutex> allowedToWriteLock;
+        boost::unique_lock<boost::mutex> writeMessageLock;
+        string last_read_message;
+ 
+    
+    
+    
+    
+    
+        //        void readWriteSync() {
+        //
+        //            string msgFromClient = read_messages_sync();
+        //            if (msgFromClient.compare("insert") == 0) {
+        //                cout << "server recienved insert message from client" << endl;
+        //                //insertData to client
+        //
+        //                std::cout << "server reading message : " << msgFromClient
+        //                << std::endl;
+        //                write_messages_sync();
+        //                boost::this_thread::sleep(boost::posix_time::seconds(4));
+        //            }
+        //        }
+        //
+        //        void write_messages_sync() {
+        //
+        //        }
+        //        string read_messages_sync() {
+        //
+        //            //		char* data = buffer.getData();
+        //            //		std::size_t dataSize = buffer.getSize();
+        //            //
+        //            //		std::cout << "data to send is : " << data << std::endl;
+        //            //		std::cout << "dataSize to send is : " << dataSize << std::endl;
+        //            //
+        //            //		boost::array<char, 128> buf;
+        //            //		boost::system::error_code error;
+        //            //
+        //            //		size_t len = socket_->read_some(boost::asio::buffer(buf), error);
+        //            //		return buffer.getString();
+        //            string empty;
+        //            return empty;
+        //        }
+
+//        write_messages_async_normal(){
             //		if (messageToClientQueue_.empty())
             //			messageClientQueueIsEmpty.wait(writeMessageLock);
             //
@@ -240,77 +295,8 @@ namespace pico {
             //					std::cout << "-------------------------"<<std::endl;
             //					read_messages();
             //				});
-            
-            
-            if (messageToClientQueue_.empty())
-            {
-                std::cout<<("session queue of messages is empty...going to wait on the lock");
-                messageClientQueueIsEmpty.wait(writeMessageLock);
-            }
-            else {
-                cout << "session is writing async now\n";
-                
-                queueType message = messageToClientQueue_.pop();
-                
-                
-                cout << " session is going to send this message to server : " << message.toString()
-                << std::endl;
-                
-                
-                
-                
-                if(!message.buffered_message.msg_in_buffers->empty())
-                {
-                    while(!message.buffered_message.msg_in_buffers->empty())
-                    {
-                        auto curBuf = message.buffered_message.msg_in_buffers->pop();
-                        std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(curBuf));
-                        writeOneBuffer(curBufPtr);
-                        clientIsAllowedToWrite.wait(allowedToWriteLock);
-                    }
-                }
-                else{
-                    //msg is empty //write a listening msg to client
-                    
-                    std::string str("IAMLISTENING");
-                    std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(str));
-                    writeOneBuffer(curBufPtr);
-                }
-            }
-        }
-        void writeOneBuffer(bufferTypePtr currentBuffer)
-        {
-            
-            cout << " session is writing one buffer to client : " << std::endl;
-            char* data = currentBuffer->getData();
-            std::size_t dataSize = currentBuffer->getSize();
-            auto self(shared_from_this());
-            
-            boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
-                                     [this,self,currentBuffer](const boost::system::error_code& error,
-                                                               std::size_t t) {
-                                         string str = currentBuffer->toString();
-                                         std::cout << "Session Sent :  "<<std::endl;
-                                         std::cout<<t<<" bytes from Client "<<std::endl;
-                                         if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
-                                         std::cout<<" data sent to client is "<<str<<endl;
-                                         std::cout<<("-------------------------");
-                                         read_messages();
-                                     });
-            
-        }
-        
-        writer_buffer_container writer_buffer_container_;
-        asyncReader asyncReader_;
-        request_processor requestProcessor_;
-        pico_concurrent_list<queueType> messageToClientQueue_;
-        boost::mutex sessionMutex;   // mutex for the condition variable
-        boost::mutex allowedToWriteLockMutext;
-        boost::condition_variable messageClientQueueIsEmpty;
-        boost::condition_variable clientIsAllowedToWrite;
-        boost::unique_lock<boost::mutex> allowedToWriteLock;
-        boost::unique_lock<boost::mutex> writeMessageLock;
-        string last_read_message;
+
+//        }
     };
 }
 

@@ -40,7 +40,8 @@ namespace pico {
             this->value_of_message=msg.value_of_message;
             this->json_form_of_message=msg.json_form_of_message;
             this->buffered_message=msg.buffered_message; //a container for all the buffers that make up this pico_message
-            set_hash_code();
+            this->set_hash_code();
+            this->convert_to_buffered_message();
         }
     	pico_message(std::string message_from_client) {//this is for processing shell commands
     		json_form_of_message=message_from_client;
@@ -65,6 +66,7 @@ namespace pico {
             
             std::string value = root.get("value", "unknown").asString();
             set_hash_code();
+            convert_to_buffered_message();
         }
         static pico_message build_message_from_string(string value)
         {
@@ -95,6 +97,7 @@ namespace pico {
             this->json_form_of_message=msg.json_form_of_message;
             this->buffered_message=msg.buffered_message; //a container for all the buffers that make up this pico_message
             this->set_hash_code();
+            this->convert_to_buffered_message();
             return *this;
         }
         std::string convert_message_to_json()
@@ -166,7 +169,7 @@ namespace pico {
                 bufferType currentBuffer;
                 currentBuffer.parentMessageId = uniqueMessageId;
                 
-                std::cout<<"pico_message : uniqureMessageId  "<<uniqueMessageId<<endl;
+                std::cout<<"\npico_message : uniqureMessageId  "<<uniqueMessageId<<endl;
                 
                 for (int i = 0; i < pico_buffer::max_size-6; i++) {
                     currentBuffer.parentSequenceNumber = numberOfBuffer;

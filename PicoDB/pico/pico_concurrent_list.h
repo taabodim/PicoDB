@@ -35,7 +35,8 @@ namespace pico{
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
              queueType msg = underlying_list.back();
-            std::cout<<"pico_concurrent_list : poping from end of the list this item .."<<msg.toString()<<endl;
+            std::cout<<"pico_concurrent_list : poping from end of the list this item ..\n";
+//            std::cout<<msg.toString()<<endl;
             
             underlying_list.pop_back();
             
@@ -107,10 +108,10 @@ namespace pico{
             {
                 queueType t = underlying_list.front();
                 underlying_list.pop_front();
-                std::cout<<"this is the string thats going to be appneded"<<t.toString()<<endl;
+                std::cout<<"pico_concurrent_list : this is the string thats going to be appneded"<<t.toString()<<endl;
                 str.append(t.toString());
             }
-            std::cout<<"this is the string representation of the pico_buffered_message"<<str<<endl;
+//            std::cout<<"this is the string representation of the pico_buffered_message"<<str<<endl;
             return str;
         }
         virtual ~pico_concurrent_list()

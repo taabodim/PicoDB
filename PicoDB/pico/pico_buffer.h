@@ -117,10 +117,14 @@ namespace pico {
             std::string temp(data_);	//this  should not be in seperated
             return temp;
         }
+        std::string toString()  {
+            std::string temp(data_);	//this  should not be in seperated
+            return temp;
+        }
         size_t getSize() {
             return arraySize;
         }
-        const static int max_size = 128;
+        const static int max_size = 248;
         const static int command_size = 24;
         char data_[max_size];
     private:
