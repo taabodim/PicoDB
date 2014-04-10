@@ -38,7 +38,7 @@ public:
 
 	acceptorType acceptor_;
 	socketType socket;
-    logger mylogger;
+    //logger mylogger;
 	pico_server(boost::asio::io_service& io_service, const tcp::endpoint& endpoint,
 			socketType mySocket) :
 			acceptor_(io_service, endpoint), socket(mySocket) {

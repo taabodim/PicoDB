@@ -33,7 +33,7 @@ public:
 	std::string type;
 	std::string utctime;
 	std::string volume;
-    logger mylogger;
+//    //logger mylogger;
     
 	Currency() {//default constructor
         std::cout<<( "default constructor called" );

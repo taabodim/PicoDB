@@ -17,7 +17,7 @@ class pico_record {
 public:
 
 	offsetType offset_of_record;
-   logger mylogger;
+   //logger mylogger;
 	// Construct from a std::string.
 	void setValue(std::string& data) {
 		strncpy(value_, data.c_str(), data.size());

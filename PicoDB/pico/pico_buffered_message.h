@@ -22,7 +22,7 @@ namespace pico
     
     class pico_buffered_message{
     public:
-        logger mylogger;
+        //logger mylogger;
         pico_buffered_message():msg_in_buffers(new pico_concurrent_list<bufferType>())
         {
             //    std::cout<<("empty pico_buffered_message being constructed.....\n");

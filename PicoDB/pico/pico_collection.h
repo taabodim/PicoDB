@@ -20,7 +20,7 @@ namespace pico {
 class pico_collection {
     
 public:
-    logger mylogger;
+    //logger mylogger;
 	pico_binary_index_tree index_of_collection;
 	pico_collection() = delete;
 	pico_collection(std::string name) {

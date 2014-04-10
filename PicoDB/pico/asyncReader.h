@@ -20,7 +20,7 @@ namespace pico {
 class asyncReader {
 
 public:
-       logger mylogger;
+       //logger mylogger;
 	asyncReader() {
 		std::cout<<"asyncReader is being constructed....\n";
 	}

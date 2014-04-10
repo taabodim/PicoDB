@@ -16,11 +16,25 @@
 using namespace std;
 namespace pico{
     
+    template<typename queueType>
+    struct is_unique_ptr{
+        static const bool value=false;
+    };
+    
+  
+    
+    template<>
+    struct is_unique_ptr<bufferTypeUnqiuePtr>{
+        static const bool value=true;
+    };
+    
+   
+    
     template <typename queueType>
     class pico_concurrent_list{
     private:
         boost::mutex mutex_;
-        logger mylogger;
+        //logger mylogger;
         
     public:
         list<queueType> underlying_list;
@@ -29,18 +43,24 @@ namespace pico{
         {
             //    std::cout<<("pico_concurrent_list being constructed");
         }
-        
-        
+       
         queueType pop()
         {
+            queueType msg;
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
-             queueType msg = underlying_list.back();
-            std::cout<<"pico_concurrent_list : poping from end of the list this item ..\n";
-//            std::cout<<msg.toString()<<endl;
-            
+           if(underlying_list.size()>0)
+           {
+            msg = underlying_list.back();
             underlying_list.pop_back();
             
+            std::cout<<"pico_concurrent_list : poping from end of the list this item ..\n";
+//          std::cout<<msg.toString()<<endl;
+            
             return msg;
+           }else{
+               std::cout<<"pico_concurrent_list : returning empty message!!!"<<std::endl;
+               return msg;//empty message
+           }
         }
         bool empty()
         {

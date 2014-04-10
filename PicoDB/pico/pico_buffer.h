@@ -15,12 +15,13 @@ namespace pico {
     class pico_buffer;
     typedef pico_buffer bufferType;
     typedef std::shared_ptr<pico_buffer> bufferTypePtr;
+    typedef std::unique_ptr<pico_buffer> bufferTypeUnqiuePtr;
     typedef std::shared_ptr<tcp::socket> socketType;
     typedef tcp::acceptor acceptorType;
     
     class pico_buffer {
     public:
-        logger mylogger;
+//        logger mylogger;
         std::string parentMessageId; //this is the id of the parent that
         //this buffer belongs to
         long parentSequenceNumber; //this is the number ,that defines

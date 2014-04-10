@@ -20,7 +20,7 @@ namespace pico {
         
         offsetType key_of_pico_record; //this key is calculated based on the hash of each pico record
         offsetType pico_record_offset; //this is the place of record in the file
-        logger mylogger;
+        //logger mylogger;
         std::shared_ptr<pico_record_node> left; //left node in the tree
         std::shared_ptr<pico_record_node> right; //right node in the tree
         void printNode()
@@ -43,7 +43,7 @@ namespace pico {
     
     class pico_binary_index_tree { //this tree saves all the
     public:
-        logger mylogger;
+        //logger mylogger;
         std::shared_ptr<pico_record_node> root;
         
         pico_binary_index_tree() {

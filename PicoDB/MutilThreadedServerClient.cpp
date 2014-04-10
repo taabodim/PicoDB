@@ -50,6 +50,7 @@
 #include <PicoHedgeFund.h>
 #include <logger.h>
 #include <chat_server.h>
+#include <pico/pico_client.h>
 using namespace boost::filesystem;
 using namespace pico;
 using namespace std;
@@ -492,7 +493,10 @@ void forwarding_example()
     auto t = make_unique<B>(2, i, 3);
 }
 
-std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
+//std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
+
+std::string DBClient::logFileName ("clientLog.log");
+
 void clientServerExample() {
 	try {
        

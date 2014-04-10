@@ -24,7 +24,7 @@ namespace pico {
     {
     public:
         std::shared_ptr<DBClient> client_;
-        logger mylogger;
+        //logger mylogger;
         PicoHedgeFund(std::shared_ptr<DBClient> client)
         {
             std::cout<<(" hedge fund is going to buy some currencies");

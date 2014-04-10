@@ -47,9 +47,10 @@ namespace pico {
         socketType socket_;
         pico_concurrent_list <queueType> commandQueue_;
     public:
+        static string logFileName;
         logger mylogger;
         DBClient(socketType socket) :
-        writeMessageLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutext) {
+        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutext) ,mylogger(logFileName){
             
             socket_ = socket;
             std::cout<<( "client initializing ");
@@ -96,9 +97,8 @@ namespace pico {
                     for(int  i=0;i<1;i++)
                         insert();
                     
-                    write_messages();
-                    
-                }
+                    writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
+                    }
                 else{
                     std::cout<<"client : start : error is "<<ec.value()<<" error message is "<<ec.message()<<std::endl;
                     std::cout <<"error name is "<< ec.category().name() << std::endl;
@@ -121,7 +121,7 @@ namespace pico {
         
         void processDataFromServer(string messageFromServer) {
             
-            write_messages();
+            writeOneBuffer();
         }
         void readSynchronously() {
             for (;;) {
@@ -138,12 +138,12 @@ namespace pico {
                 std::cout << "client got this " << buf.data() << std::endl;
             }
         }
-        void read_messages() {
+        void read_one_buffer() {
             
             auto self(shared_from_this());
-            std::cout<<"client is trying to read messages\n" ;
+            std::cout<<"client is trying to read one buffer\n" ;
             bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
-    
+            
             boost::asio::async_read(*socket_,
                                     boost::asio::buffer(currentBuffer->getData(),
                                                         pico_buffer::max_size),
@@ -151,8 +151,8 @@ namespace pico {
                                                               std::size_t t ) {
                                         
                                         processTheMessageJustRead(currentBuffer,t);
-//                                         clientIsAllowedToWrite.notify_all();
-                                       
+                                        //                                         clientIsAllowedToWrite.notify_all();
+                                        
                                         
                                     });
             //		boost::asio::async_read(*socket_,
@@ -188,6 +188,8 @@ namespace pico {
             string str =currentBuffer->toString();
             append_to_last_message(*currentBuffer);
             std::cout<<"\nthis is the message that client read just now \n "<<str<<endl;
+            //log to file the string that was just read.
+            mylogger.log(str);
             if(pico_session::find_last_of_string(currentBuffer))
             {
                 std::cout<<("client: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
@@ -213,7 +215,7 @@ namespace pico {
                 //                messageClientQueueIsEmpty.notify_all();
                 //
                 std::cout<<"this is the complete message from server : "<<msg<<endl;
-                write_messages();
+                writeOneBuffer();
                 
             } catch (std::exception &e) {
                 cout << " this is the error : " << e.what() << endl;
@@ -222,11 +224,10 @@ namespace pico {
         void  processIncompleteData()
         {
             string msg("1");
-
+            
             pico_message reply = pico_message::build_message_from_string(msg);
-          	commandQueue_.push(reply);
-            messageClientQueueIsEmpty.notify_all();
-          
+          	queueMessages(reply);
+            
             
         }
         void print(const boost::system::error_code& error,
@@ -245,51 +246,26 @@ namespace pico {
             std::string value;
             key="They've";
             value="They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot";
-            // value="gone there";
+            value="gone there";
             string command("insert");
             string database("currencyDB");
             string user("currencyUser");
             string col("currencyCollection");
             
             queueType msg (key,value,command,database,user,col );
-            queueCommand(msg);
+            queueMessages(msg);
             
-//            queueType msgReadFromQueue = commandQueue_.pop();
-//            std::cout<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
-            
-        }
-        void write_messages() {
-            
-            if (commandQueue_.empty())
-            {
-                std::cout<<"client queue of messages is empty...going to wait on the lock"<<endl;
-                messageClientQueueIsEmpty.wait(writeMessageLock);
-            }
-            else {
-                std::cout<< "client is writing async now"<<endl;
-                
-                queueType message = commandQueue_.pop();
-                
-                
-                std::cout<< " client is going to send this message to server : ";
-                std::cout<<message.json_form_of_message<<endl; //this line throws exception , check why
-                
-                while(!message.buffered_message.msg_in_buffers->empty())
-                {
-                    
-                    std::cout<<"pico_client : popping current Buffer ";
-                    bufferType buf = message.buffered_message.msg_in_buffers->pop();
-//                    std::cout<<"pico_client : popping current Buffer this is current buffer ";
-                    
-                    std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
-                    bufferQueue_.push(curBufPtr);
-                   
-                }
-            }
+            //            queueType msgReadFromQueue = commandQueue_.pop();
+            //            std::cout<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
             
         }
-        void writeOneBuffer()
+             void writeOneBuffer()
         {
+            if(bufferQueue_.empty())
+            {
+                cout<<"client : bufferQueue is empty..waiting ..."<<endl;
+                bufferQueueIsEmpty.wait(writeOneBufferLock);
+            }
             bufferTypePtr currentBuffer = bufferQueue_.pop();
             char* data = currentBuffer->getData();
             std::size_t dataSize = currentBuffer->getSize();
@@ -309,25 +285,42 @@ namespace pico {
                                          std::cout<< " data sent to server is \n";
                                          std::cout<<str<<endl;
                                          std::cout<<"-------------------------"<<endl;
-                                         read_messages();
+                                         string logMsg("data sent to server is ");
+                                         logMsg.append(str);
+                                         mylogger.log(logMsg);
+                                         read_one_buffer();
                                      });
             
         }
-        void queueCommand(queueType queueValue) {
+        void queueMessages(queueType message) {
+          //TODO put a lock here to make the all the buffers in a message go after each other.
+        boost::interprocess::scoped_lock<boost::mutex> queueMessagesLock(queueMessagesMutext);
             
-            commandQueue_.push(queueValue);
-            messageClientQueueIsEmpty.notify_all();
+            //put all the buffers in the message in the buffer queue
+            while(!message.buffered_message.msg_in_buffers->empty())
+            {
+                
+                std::cout<<"pico_client : popping current Buffer ";
+                bufferType buf = message.buffered_message.msg_in_buffers->pop();
+                //                    std::cout<<"pico_client : popping current Buffer this is current buffer ";
+                
+                std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
+                bufferQueue_.push(curBufPtr);
+                
+            }
+           bufferQueueIsEmpty.notify_all();
         }
         
-//        writer_buffer_container writer_buffer_container_;
+        //        writer_buffer_container writer_buffer_container_;
         pico_concurrent_list<bufferTypePtr> bufferQueue_;
         asyncReader asyncReader_;
         boost::mutex sessionMutex;   // mutex for the condition variable
         boost::mutex allowedToWriteLockMutext;
-        boost::condition_variable messageClientQueueIsEmpty;
+        boost::mutex queueMessagesMutext;
+        boost::condition_variable bufferQueueIsEmpty;
         boost::condition_variable clientIsAllowedToWrite;
         boost::unique_lock<boost::mutex> allowedToWriteLock;
-        boost::unique_lock<boost::mutex> writeMessageLock;
+        boost::unique_lock<boost::mutex> writeOneBufferLock;
         pico_buffered_message last_read_message;
         
     };

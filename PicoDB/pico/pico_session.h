@@ -25,7 +25,7 @@ namespace pico {
         socketType socket_;
         typedef pico_message queueType;
     public:
-        logger mylogger;
+        //logger mylogger;
         pico_session(socketType r_socket) :
         writeMessageLock(sessionMutex) ,allowedToWriteLock(allowedToWriteLockMutext){
             socket_ = r_socket;
@@ -55,7 +55,7 @@ namespace pico {
                                     [this,self,currentBuffer](const boost::system::error_code& error,
                                                               std::size_t t ) {
                                         
-                                        processTheMessageJustRead(currentBuffer,t);
+                                        processTheBufferJustRead(currentBuffer,t);
                                         writeOneBuffer();
                                         
                                     });
@@ -74,9 +74,9 @@ namespace pico {
                   while(!message.buffered_message.msg_in_buffers->empty())
                 {
                     auto curBuf = message.buffered_message.msg_in_buffers->pop();
-                    std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(curBuf));
                     //write all buffers to bufferQueue
-                    bufferQueue_.push(curBufPtr);
+                    std::unique_ptr<bufferType> uniquePtr(new pico_buffer(curBuf));
+                    bufferQueue_.push(std::move(uniquePtr));
 
                 }
             }
@@ -155,7 +155,7 @@ namespace pico {
             
         }
        
-        void processTheMessageJustRead(bufferTypePtr currentBuffer,std::size_t t){
+        void processTheBufferJustRead(bufferTypePtr currentBuffer,std::size_t t){
             
             string str =currentBuffer->toString();
             std::cout<<"session : this is the message that server read just now \n "<<str<<endl;
@@ -222,7 +222,7 @@ namespace pico {
         asyncReader asyncReader_;
         request_processor requestProcessor_;
         pico_concurrent_list<queueType> messageToClientQueue_;
-        pico_concurrent_list<bufferTypePtr> bufferQueue_;
+        pico_concurrent_list<bufferTypePtr> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
         boost::mutex sessionMutex;   // mutex for the condition variable
         boost::mutex allowedToWriteLockMutext;
         boost::condition_variable messageClientQueueIsEmpty;

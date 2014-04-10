@@ -26,8 +26,9 @@ namespace pico {
         std::string json_form_of_message;
     	pico_buffered_message  buffered_message; //a container for all the buffers that make up this pico_message
     	long messageSize;
-        logger mylogger;
-        
+        //logger mylogger;
+         pico_message()
+        {}
         pico_message(const pico_message& msg)
         {
 //            std::cout<<"pico_message copy constructor being called.\n";
