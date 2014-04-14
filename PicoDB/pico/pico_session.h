@@ -165,9 +165,9 @@ namespace pico {
             
             string str =currentBuffer->toString();
            
-//            string logMsg("session : this is the message that server read just now ");
-//            logMsg.append(str);
-//            mylogger.log(logMsg);
+            string logMsg("session : this is the message that server read just now ");
+            logMsg.append(str);
+            mylogger.log(logMsg);
             
             if(ignoreMe(currentBuffer))
                   processIncompleteData();
@@ -180,11 +180,12 @@ namespace pico {
             }
             else {
                 std::cout<<"session : this is the complete messaage!\n";
+                  append_to_last_message(str);
                 string logMsg;
                 logMsg.append("this is the complete message read from session :");
                 logMsg.append(last_read_message);
                 mylogger.log(logMsg);
-                
+              
                 processDataFromClient(str);
                 last_read_message.clear();
               
