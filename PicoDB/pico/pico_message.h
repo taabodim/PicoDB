@@ -44,8 +44,17 @@ namespace pico {
             this->set_hash_code();
             this->convert_to_buffered_message();
         }
-    	pico_message(std::string message_from_client) {//this is for processing shell commands
-    		json_form_of_message=message_from_client;
+        pico_message(std::string message_from_client)
+        {
+            pico_message(message_from_client,false);
+        }
+    	pico_message(std::string message_from_client,bool simpleMessage) {//this is for processing shell commands
+    		if(simpleMessage)
+            {
+                 json_form_of_message=message_from_client;
+            }
+            else{
+            json_form_of_message=message_from_client;
     		Json::Value root;   // will contains the root value after parsing.
     		Json::Reader reader;
             
@@ -62,14 +71,20 @@ namespace pico {
             collection = root.get("collection", "unknown").asString();
             db = root.get("db", "unknown").asString();
             user = root.get("user", "unknown").asString();
-            
-            std::string key = root.get("key", "unknown").asString();
-            
-            std::string value = root.get("value", "unknown").asString();
+            key_of_message = root.get("key", "unknown").asString();
+            value_of_message = root.get("value", "unknown").asString();
+            }
             set_hash_code();
             convert_to_buffered_message();
         }
         static pico_message build_message_from_string(string value)
+        {
+            
+            pico_message msg(value,true);
+            return msg;
+        }
+        
+        static pico_message build_complete_message_from_string(string value)
         {
             Json::Value root;   // will contains the root value after parsing.
             root["key"] = "simpleMessage";
@@ -198,7 +213,7 @@ namespace pico {
         }
         void removeTheEndingTags(list<bufferType>::iterator currentBuffer)
         {
-            int pos = pico_buffer::max_size-6;
+            int pos = pico_buffer::max_size-1;
             currentBuffer->data_[pos] = '\0';
             currentBuffer->data_[--pos] = '\0';
             currentBuffer->data_[--pos] = '\0';
@@ -210,7 +225,7 @@ namespace pico {
         void addTheEndingTagsToAllBuffers(bufferType& currentBuffer)
         
         {
-            int pos = pico_buffer::max_size-6;
+            int pos = pico_buffer::max_size-1;
             currentBuffer.data_[pos] = 'd';
             currentBuffer.data_[--pos] = 'n';
             currentBuffer.data_[--pos] = 'e';

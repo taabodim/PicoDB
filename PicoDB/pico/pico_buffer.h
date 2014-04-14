@@ -21,16 +21,13 @@ namespace pico {
     
     class pico_buffer {
     public:
-//        logger mylogger;
+
         std::string parentMessageId; //this is the id of the parent that
         //this buffer belongs to
         long parentSequenceNumber; //this is the number ,that defines
         //which part of message or record this buffer belongs to
-        ~pico_buffer()
-        
+        virtual ~pico_buffer()
         {
-            
-            //        std::cout<<("pico buffer being destructed..");
             
         }
         bool isBufferBeingUsed() {
@@ -115,17 +112,24 @@ namespace pico {
             return data_;
         }
         std::string toString() const {
-            std::string temp(data_);	//this  should not be in seperated
+            char dest[max_size];
+            std::copy(std::begin(data_), std::end(data_), std::begin(dest));
+            
+            std::string temp(dest);
             return temp;
         }
         std::string toString()  {
-            std::string temp(data_);	//this  should not be in seperated
+            char src[max_size];
+            char dest[max_size];
+            std::copy(std::begin(data_), std::end(data_), std::begin(dest));
+            
+            std::string temp(dest);	//this  should not be in seperated , this method empties the data_...fix it!!
             return temp;
         }
         size_t getSize() {
             return arraySize;
         }
-        const static int max_size = 248;
+        const static int max_size = 248; //this should be more than 168 because the smallest message size that i send is 168
         const static int command_size = 24;
         char data_[max_size];
     private:

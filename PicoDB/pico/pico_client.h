@@ -89,7 +89,7 @@ namespace pico {
         
         void start(const boost::system::error_code& ec,
                    tcp::resolver::iterator endpoint_iter) {
-            std::cout<<"\nclient starting the process..going to write_message to server\n";
+//            std::cout<<"\nclient starting the process..going to write_message to server\n";
             
             try {
                 if(!ec)
@@ -138,10 +138,10 @@ namespace pico {
                 std::cout << "client got this " << buf.data() << std::endl;
             }
         }
-        void read_one_buffer() {
+        void readOneBuffer() {
             
             auto self(shared_from_this());
-            std::cout<<"client is trying to read one buffer\n" ;
+           // std::cout<<"client is trying to read one buffer\n" ;
             bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
             
             boost::asio::async_read(*socket_,
@@ -187,7 +187,7 @@ namespace pico {
             
             string str =currentBuffer->toString();
             append_to_last_message(*currentBuffer);
-            std::cout<<"\nthis is the message that client read just now \n "<<str<<endl;
+            //std::cout<<"\nthis is the message that client read just now \n "<<str<<endl;
             //log to file the string that was just read.
             mylogger.log(str);
             if(pico_session::find_last_of_string(currentBuffer))
@@ -197,7 +197,13 @@ namespace pico {
             }
             else {
                 std::cout<<"client : message was read completely..process the last message\n ";
+                string logMsg;
+                logMsg.append("this is the complete message read from session :");
                 str =last_read_message.toString();
+                logMsg.append(str);
+                mylogger.log(logMsg);
+
+                
                 // print(error,t,str);
                 processDataFromOtherSide(str);
                 last_read_message.clear();
@@ -223,7 +229,7 @@ namespace pico {
         }
         void  processIncompleteData()
         {
-            string msg("1");
+            string msg("ignore");
             
             pico_message reply = pico_message::build_message_from_string(msg);
           	queueMessages(reply);
@@ -245,8 +251,7 @@ namespace pico {
             std::string key;
             std::string value;
             key="They've";
-            value="They've been spotted and spotted again, those objects in the southern Indian Ocean. Every time a report comes out that something has been seen that may be related to missing Malaysia Flight 370, hopes have risen. And then, they have fallen. It's seemed like a daily exercise.showed about 300 objects ranging in size from 6 feet (2 meters) to 50 feet (15 meters). When photographed Monday, they were about 125 miles (201 kilometers) away from the spot";
-            value="gone there";
+            value="Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it. They didn't use the word 'confirm.' So it could be that it's a real lead, but it could also not be. I think that, at the moment, everyone needs to wait for final, confirmed information.That view was echoed by Sarah Bajc, whose partner, Philip Wood, was among the passengers.Every time some official gives one of those absolute statements of 'We're sure it's the pings from the black boxes' or 'We're sure it's in the ocean,' we all crash, she told CNNs New Day.Our feet get knocked out from underneath us. But then it always ends up reversing itself, and they step back from it.She expressed skepticism about the way the investigation has been handled. The fox is very much in charge of the henhouse here, she told New Day. We've got a country leading the investigation who also has the primary liability in the case, and it makes us question every step that's taken.\" More cluesA senior Malaysian government official and another source involved in the investigation divulged new details about the flight to CNN on Thursday, including information about what radar detected, the last words from the cockpit and how high the plane was flying after it went off the grid.Malaysia Airlines Flight 370 disappeared from military radar for about 120 nautical miles after it crossed back over the Malay Peninsula, sources said. Based on available data, this means the plane must have dipped in altitude to between 4,000 and 5,000 feet, sources said.The dip could have been programmed into the computers controlling the plane as an emergency maneuver, said aviation expert David Soucie.The real issue here is it looks like -- more and more -- somebody in the cockpit was directing this plane and directing it away from land,said Peter Goelz, a CNN aviation analyst and former National Transportation Safety Board managing director.And it looks as though they were doing it to avoid any kind of detection.But former U.S. Department of Transportation Inspector General Mary Schiavo was not convinced. She said the reported dip could have occurred in response to a loss of pressure, to reach a level where pressurization was not needed and those aboard the plane would have been able to breathe without oxygen, or to get out of the way of commercial traffic123456endOfMessage";
             string command("insert");
             string database("currencyDB");
             string user("currencyUser");
@@ -278,17 +283,17 @@ namespace pico {
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
                                          std::cout<<"Client Sent :  \n";
-                                         std::cout<<t<<" bytes to server "<<std::endl;
+//                                         std::cout<<t<<" bytes to server "<<std::endl;
                                          if(error)
                                              std::cout<<" error msg : "<<error.message()<<std::endl;
                                          
                                          std::cout<< " data sent to server is \n";
-                                         std::cout<<str<<endl;
-                                         std::cout<<"-------------------------"<<endl;
+//                                         std::cout<<str<<endl;
+                                        // std::cout<<"-------------------------"<<endl;
                                          string logMsg("data sent to server is ");
                                          logMsg.append(str);
                                          mylogger.log(logMsg);
-                                         read_one_buffer();
+                                         readOneBuffer();
                                      });
             
         }

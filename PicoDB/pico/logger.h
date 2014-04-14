@@ -25,8 +25,10 @@ public:
     void log(std::string str )
     {
         boost::interprocess::scoped_lock<boost::mutex> lock(log_mutex);
-        std::cout<<"logger : writing the log to file....\n";
+       // std::cout<<"logger : writing the log to file....\n";
+        str.append("\n");
         append(str);
+        
     }
     void append(std::string str)
     {
@@ -47,11 +49,7 @@ public:
         std::cout<<"logger instance created...\n";
     }
     logger()=delete;
-//    logger operator=(logger& r){
-//        std::cout<<"assignment operator logger instance called..\n";
-//        return r;
-//    
-//    };
+
    
   
     

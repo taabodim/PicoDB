@@ -495,8 +495,8 @@ void forwarding_example()
 
 //std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
 
-std::string DBClient::logFileName ("clientLog.log");
-
+std::string DBClient::logFileName ("client");
+std::string pico_session::logFileName ("session");
 void clientServerExample() {
 	try {
        
