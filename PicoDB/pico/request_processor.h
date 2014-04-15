@@ -8,6 +8,7 @@
 #ifndef REQUESTPROCESSOR_H_
 #define REQUESTPROCESSOR_H_
 #include <pico/pico_message.h>
+#include <pico/pico_utils.h>
 #include <logger.h>
 using namespace std;
 namespace pico {
@@ -30,7 +31,7 @@ public:
         logMsg.append(messageFromClient);
         mylogger.log(logMsg);
         
-        const pico_message picoMessage(messageFromClient);
+        pico_message picoMessage(messageFromClient);
         
         logMsg.clear();
         logMsg.append("request_processor : this is the message was created ");
@@ -40,58 +41,64 @@ public:
 		cout << "session: processing request from client request: "
 				<< messageFromClient << std::endl;
 
-//list<pico_record> all_records = convertPicoMessageToPicoRecords();
-
-        pico_record record ;
-        record.setKey(picoMessage.getKey());
-        record.setValue(picoMessage.getValue());
+       	string str("message want processed");
 		
 		if (picoMessage.command.compare(insertCommand) == 0) {
 			cout << "inserting one record per client request";
-           	string str = insertOneRecord(picoMessage.getCollection(),
-					record);
-        } else if (picoMessage.command.compare(deleteCommand) == 0) {
-			cout << "deleting one record per client request";
-			string str = deleteRecords(picoMessage.getCollection(),
-					record);
-		
-		} else if (picoMessage.command.compare(updateCommand) == 0) {
-			cout << "updating one record per client request";
-			string str = updateRecords(picoMessage.getCollection(),
-					record);
-		} else if (picoMessage.command.compare(findCommand) == 0) {
-			cout << "finding records per client request";
-			string str = findRecords(picoMessage.getCollection(),record);
-		}
-		else if (picoMessage.command.compare(addUserToDBCommand) == 0) {
-			cout << "adding user per client request";
-			string str = addUser(picoMessage.getDB(),
-					picoMessage.getUser());
-			return str;
-		} else if (picoMessage.command.compare(deleteUserToDBCommand) == 0) {
-			cout << "deleting user per client request";
-			string str = deleteUser(picoMessage.getDB(),
-					picoMessage.getUser());
-			return str;
-		}
+           	 str = insertOneMessage(picoMessage);
+        }
+//            else if (picoMessage.command.compare(deleteCommand) == 0) {
+//			cout << "deleting one record per client request";
+//			string str = deleteRecords(picoMessage);
+//		
+//		} else if (picoMessage.command.compare(updateCommand) == 0) {
+//			cout << "updating one record per client request";
+//			string str = updateRecords(picoMessage);
+//		} else if (picoMessage.command.compare(findCommand) == 0) {
+//			cout << "finding records per client request";
+//			string str = findRecords(picoMessage);
+//		}
+//		else if (picoMessage.command.compare(addUserToDBCommand) == 0) {
+//			cout << "adding user per client request";
+//			string str = addUser(picoMessage);
+//			return str;
+//		} else if (picoMessage.command.compare(deleteUserToDBCommand) == 0) {
+//			cout << "deleting user per client request";
+//			string str = deleteUser(picoMessage);
+//			return str;
+//		}
 
-		return picoMessage;
+        pico_message retMsg = pico_message::build_message_from_string(str);
+		return retMsg;
 	}
-	string insertOneRecord(const std::string collection, pico_record record) {
-		pico_collection optionCollection(collection);
-		optionCollection.insert(record);
-		return record.getString();
+	string insertOneMessage(pico_message picoMsg)
+    {
+
+        int i=0;
+		pico_collection optionCollection(picoMsg.getCollection());
+       while(!picoMsg.recorded_message.msg_in_buffers->empty())
+        
+       {
+           pico_record record = picoMsg.recorded_message.msg_in_buffers->pop();
+           std::cout<<"request_processor : record that is going to be saved is this : "<<record.toString()<<std::endl;
+           optionCollection.insert(record);
+           i++;
+       }
+        string result("one message was added to database in ");
+        result.append(convertToString(i));
+        result.append(" seperate records");
+        return result;
 	}
   
 	string deleteRecords(const std::string collection, pico_record record) {
-		pico_collection optionCollection(collection);
-		optionCollection.deleteRecord(record);
+//		pico_collection optionCollection(picoMsg.getCollection());
+//		optionCollection.deleteRecord(record);
 		std::string msg("record was deleted");
 		return msg;
 	}
 	string updateRecords(const std::string collection, pico_record record) {
-		pico_collection optionCollection(collection);
-		size_t num = optionCollection.update(record);
+//		pico_collection optionCollection(picoMsg.getCollection());
+//		size_t num = optionCollection.update(record);
 		//TODO add num to the reply
 		std::string msg("records were updated");
 //			msg.append(num);

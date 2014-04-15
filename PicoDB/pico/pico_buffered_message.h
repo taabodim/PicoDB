@@ -17,18 +17,18 @@
 using namespace std;
 namespace pico
 {
-    class pico_buffered_message;
-    typedef std::shared_ptr<pico_buffered_message> msgPtr;
-    
+//    class pico_buffered_message;
+//    typedef std::shared_ptr<pico_buffered_message> msgPtr;
+    template <typename type>
     class pico_buffered_message{
     public:
         //logger mylogger;
-        pico_buffered_message():msg_in_buffers(new pico_concurrent_list<bufferType>())
+        pico_buffered_message():msg_in_buffers(new pico_concurrent_list<type>())
         {
             //    std::cout<<("empty pico_buffered_message being constructed.....\n");
             
         }
-        pico_buffered_message(std::shared_ptr<pico_concurrent_list<bufferType>> list):msg_in_buffers(new pico_concurrent_list<bufferType>()){
+        pico_buffered_message(std::shared_ptr<pico_concurrent_list<type>> list):msg_in_buffers(new pico_concurrent_list<type>()){
             //     std::cout<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
             
@@ -47,7 +47,7 @@ namespace pico
             // std::cout<<("pico_buffered_message being desstructed....\n");
             
         }
-        void append(bufferType buf)
+        void append(type buf)
         {
         	msg_in_buffers->append(buf);
         }
@@ -65,16 +65,16 @@ namespace pico
             return msg_in_buffers->toString();
         }
         
-        list<bufferType>::iterator getLastBuffer()
+        typename list<type>::iterator getLastBuffer()
         {
             return  msg_in_buffers->getLastBuffer();
         }
         
-        list<bufferType>::iterator getFirstBuffer()
+        typename list<type>::iterator getFirstBuffer()
         {
             return msg_in_buffers->getFirstBuffer();
         }
-        std::shared_ptr<pico_concurrent_list<bufferType>> msg_in_buffers;
+        std::shared_ptr<pico_concurrent_list<type>> msg_in_buffers;
         //since, a list cannot be copied, I create the list on the heap and copy the pointer to it
         //every time this object wants to copy
     };

@@ -382,7 +382,7 @@ void create100RecordsInCollection(){
         string value = "valueForThisKey";
         value.append(key);
         pico_record x1(key, value);
-        cout<<"pico_record is "<<x1.getString()<<std::endl;
+        cout<<"pico_record is "<<x1.toString()<<std::endl;
         optionCollection.insert(x1);
 	}
     
@@ -537,8 +537,8 @@ void readingAndWritingRecordData() {
 	}
 	cout << " number of records are : " << optionCollection.getNumberOfRecords()
 			<< " \n";
-	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
-	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
+	cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
+	cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
 	optionCollection.update(x1, x2);
 	//optionCollection.deleteRecord(x1);
 

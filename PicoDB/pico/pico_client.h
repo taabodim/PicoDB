@@ -328,7 +328,7 @@ namespace pico {
         boost::condition_variable clientIsAllowedToWrite;
         boost::unique_lock<boost::mutex> allowedToWriteLock;
         boost::unique_lock<boost::mutex> writeOneBufferLock;
-        pico_buffered_message last_read_message;
+        pico_buffered_message<bufferType> last_read_message;
         
     };
     

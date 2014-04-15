@@ -17,6 +17,7 @@ class pico_record {
 public:
 
 	offsetType offset_of_record;
+    offsetType previousRecordOffset;
    //logger mylogger;
 	// Construct from a std::string.
 	void setValue(const std::string  realData) {
@@ -138,7 +139,7 @@ public:
        
 		return val;
 	}
-	std::string getString() const {
+	std::string toString() const {
 		string str;
 		std::string keyStr("{ key : ");
 		std::string keyStr1(key_);

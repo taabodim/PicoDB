@@ -138,8 +138,8 @@ namespace pico {
             }
             cout << " number of records are : "
             << optionCollection.getNumberOfRecords() << " \n";
-            cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
-            cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
+            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
+            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
             optionCollection.update(x1, x2);
             //optionCollection.deleteRecord(x1);
             
