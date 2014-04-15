@@ -39,7 +39,9 @@ public:
 
 		cout << "session: processing request from client request: "
 				<< messageFromClient << std::endl;
-   
+
+//list<pico_record> all_records = convertPicoMessageToPicoRecords();
+
         pico_record record ;
         record.setKey(picoMessage.getKey());
         record.setValue(picoMessage.getValue());
