@@ -121,7 +121,7 @@ namespace pico{
             return underlying_list.end();
         }
         
-        string toString()
+        string toString() 
         {
             string str;
             while(!underlying_list.empty())

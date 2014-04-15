@@ -124,7 +124,7 @@ public:
     ~Currency() {
         std::cout<<( "destructor for currency called");
     }
-    std::string toString() const {
+    const std::string toString() const {
         
         return "name : " + name + " price  " + price + " symbol " + symbol + " ts "
         + ts + " type " + type + " utctime " + utctime + "  volume  "

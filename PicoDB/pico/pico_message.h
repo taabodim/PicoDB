@@ -17,19 +17,20 @@ namespace pico {
     private:
         string uniqueMessageId;
     public:
+        std::string key_of_message;
+        std::string value_of_message;
         std::string user;
         std::string db;
         std::string command;
         std::string collection;
-        std::string key_of_message;
-        std::string value_of_message;
         std::string json_form_of_message;
     	pico_buffered_message  buffered_message; //a container for all the buffers that make up this pico_message
     	long messageSize;
         //logger mylogger;
          pico_message()
         {}
-        pico_message(const pico_message& msg)
+        pico_message(const pico_message& msg) :key_of_message(msg.key_of_message),
+        value_of_message(msg.value_of_message)
         {
 //            std::cout<<"pico_message copy constructor being called.\n";
             this->user = msg.user;
@@ -37,25 +38,17 @@ namespace pico {
             this->command = msg.command;
             this->collection = msg.collection;
             this->messageSize = msg.messageSize;
-            this->key_of_message=msg.key_of_message;
-            this->value_of_message=msg.value_of_message;
+//            this->key_of_message(msg.key_of_message);
+//            this->value_of_message(msg.value_of_message);
             this->json_form_of_message=msg.json_form_of_message;
             this->buffered_message=msg.buffered_message; //a container for all the buffers that make up this pico_message
             this->set_hash_code();
             this->convert_to_buffered_message();
+            
         }
-        pico_message(std::string message_from_client)
+        pico_message(const std::string message_from_client)
         {
-            pico_message(message_from_client,false);
-        }
-    	pico_message(std::string message_from_client,bool simpleMessage) {//this is for processing shell commands
-    		if(simpleMessage)
-            {
-                 json_form_of_message=message_from_client;
-            }
-            else{
-            json_form_of_message=message_from_client;
-    		Json::Value root;   // will contains the root value after parsing.
+           	Json::Value root;   // will contains the root value after parsing.
     		Json::Reader reader;
             
     		bool parsingSuccessful = reader.parse(message_from_client, root);
@@ -66,18 +59,48 @@ namespace pico {
                 
                 throw new pico_exception("failed to parse message from client");
             }
-            
-            command = root.get("command", "unknown").asString();
-            collection = root.get("collection", "unknown").asString();
-            db = root.get("db", "unknown").asString();
-            user = root.get("user", "unknown").asString();
-            key_of_message = root.get("key", "unknown").asString();
-            value_of_message = root.get("value", "unknown").asString();
-            }
-            set_hash_code();
-            convert_to_buffered_message();
+            this->json_form_of_message=message_from_client;
+            this->command = root.get("command", "unknown").asString();
+            this->collection = root.get("collection", "unknown").asString();
+            this->db = root.get("db", "unknown").asString();
+            this->user = root.get("user", "unknown").asString();
+            this->key_of_message = root.get("key", "unknown").asString();
+            this->value_of_message = root.get("value", "unknown").asString();
+        
+        this->set_hash_code();
+        this->convert_to_buffered_message();
         }
-        static pico_message build_message_from_string(string value)
+    	pico_message(const std::string message_from_client,bool simpleMessage) {//this is for processing shell commands
+    		 this->json_form_of_message=message_from_client;
+//            if(simpleMessage)
+//            {
+//                
+//            }
+//            else{
+//           
+//    		Json::Value root;   // will contains the root value after parsing.
+//    		Json::Reader reader;
+//            
+//    		bool parsingSuccessful = reader.parse(message_from_client, root);
+//    		if (!parsingSuccessful) {
+//    			// report to the user the failure and their locations in the document.
+//    			std::cout << "Failed to parse message\n"
+//                << reader.getFormattedErrorMessages();
+//                
+//                throw new pico_exception("failed to parse message from client");
+//            }
+//            
+//            this->command = root.get("command", "unknown").asString();
+//            this->collection = root.get("collection", "unknown").asString();
+//            this->db = root.get("db", "unknown").asString();
+//            this->user = root.get("user", "unknown").asString();
+//            this->key_of_message = root.get("key", "unknown").asString();
+//            this->value_of_message = root.get("value", "unknown").asString();
+//            }
+            this->set_hash_code();
+            this->convert_to_buffered_message();
+        }
+        static pico_message build_message_from_string(const string value)
         {
             
             pico_message msg(value,true);
@@ -154,15 +177,16 @@ namespace pico {
             std::size_t h2 = std::hash<std::string>()(db);
             std::size_t h3 = std::hash<std::string>()(command);
             std::size_t h4 = std::hash<std::string>()(collection);
-    		//std::size_t h6 = std::hash<std::string>()(data.getString());//find a solution to hash long strings
+    		std::size_t h5 = std::hash<std::string>()(key_of_message);//find a solution to hash long strings
+            std::size_t h6 = std::hash<std::string>()(value_of_message);//find a solution to hash long
             
-            size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 );
+            size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 ^ h5 ^ h6 );
             uniqueMessageId = boost::lexical_cast<string>(hash_code);
             
             cout << "unique message id is " << uniqueMessageId << endl;
         }
         
-        std::string toString() {
+        std::string toString() const {
             return json_form_of_message;
         }
         void convert_to_buffered_message() {
@@ -222,6 +246,18 @@ namespace pico {
             currentBuffer->data_[--pos] = '\0';
             
         }
+        static void removeTheEndingTags(bufferTypePtr currentBuffer)
+        {
+            int pos = pico_buffer::max_size-1;
+            currentBuffer->data_[pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            
+        }
+        
         void addTheEndingTagsToAllBuffers(bufferType& currentBuffer)
         
         {
@@ -289,7 +325,31 @@ namespace pico {
         ~pico_message() {
           //  std::cout<<("pico_message being destroyed now.\n");
         }
+         std::string getKey() const
+        {
+            return this->key_of_message;
+        }
         
+         std::string getValue() const
+        {
+            return this->value_of_message.substr();
+         }
+         std::string getCommand() const
+        {
+            return this->command;
+        }
+        std::string getCollection() const
+        {
+            return this->collection;
+        }
+        std::string getDB() const
+        {
+            return this->db;
+        }
+        std::string getUser() const
+        {
+            return this->user;
+        }
     };
 }
 

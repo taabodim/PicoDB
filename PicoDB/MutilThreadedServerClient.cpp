@@ -497,6 +497,7 @@ void forwarding_example()
 
 std::string DBClient::logFileName ("client");
 std::string pico_session::logFileName ("session");
+std::string request_processor::logFileName ("session");
 void clientServerExample() {
 	try {
        

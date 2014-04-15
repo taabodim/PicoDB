@@ -19,43 +19,49 @@ public:
 	offsetType offset_of_record;
    //logger mylogger;
 	// Construct from a std::string.
-	void setValue(std::string& data) {
-		strncpy(value_, data.c_str(), data.size());
-		value_[data.size()] = 0;
+	void setValue(const std::string  realData) {
+          string data = realData.substr();
+          std::size_t length = data.copy(value_,data.size(),0);
+       // data[length]='\0';
+        
+//		strncpy(value_, data.c_str(), data.size());
+		value_[data.size()] = '\0';
 
-		for (int i = data.size(); i < max_value_size; i++) {
-			value_[i] = 0;
+		for (size_t i = data.size(); i < max_value_size; i++) {
+			value_[i] = '\0';
 		}
 
 	}
 
-	void setKeyValue(std::string& key, std::string& value) {
+	void setKeyValue(std::string  key, std::string  value) {
 		setKey(key);
 		setValue(value);
 	}
-	void setKey(std::string& data) {
+	void setKey(const std::string  realData) {
+        string data = realData.substr();
+        std::size_t length = data.copy(key_,data.size(),0);
+      //  data[length]='\0';
+		//strncpy(key_, data.c_str(), data.size());
+		key_[data.size()] = '\0';
 
-		strncpy(key_, data.c_str(), data.size());
-		key_[data.size()] = 0;
-
-		for (int i = data.size(); i < max_key_size; i++) {
-			key_[i] = 0;
+		for (size_t i = data.size(); i < max_key_size; i++) {
+			key_[i] = '\0';
 		}
 
 	}
 
-	explicit pico_record(std::string& key, std::string& value) {
+	explicit pico_record(std::string key, std::string value) {
 		setKey(key);
 		setValue(value);
 
 	}
-	explicit pico_record(const char* key, const char* value) {
-		std::string keystr(key);
-		std::string valuestr(value);
-		setKey(keystr);
-		setValue(valuestr);
-
-	}
+//	explicit pico_record(const char* key, const char* value) {
+//		std::string keystr(key);
+//		std::string valuestr(value);
+//		setKey(keystr);
+//		setValue(valuestr);
+//
+//	}
 	pico_record() {
 
 		for (int i = 0; i < max_value_size; i++) {
@@ -66,7 +72,7 @@ public:
 		}
 	}
 
-	pico_record(const pico_record& buffer) {
+	pico_record(const pico_record&  buffer) {
 
 		std::copy(std::begin(buffer.key_), std::end(buffer.key_),
 				std::begin(this->key_));
@@ -75,8 +81,9 @@ public:
 				std::begin(this->value_));
 
 	}
+    
 
-	pico_record operator=(pico_record& buffer) {
+	pico_record operator=(pico_record&  buffer) {
 		std::cout << "pico_record copy assigned\n";
 		std::copy(std::begin(buffer.key_), std::end(buffer.key_),
 				std::begin(this->key_));
@@ -86,7 +93,7 @@ public:
 
 		return *this;
 	}
-	pico_record operator=(pico_record&& buffer) { //move assignment
+	pico_record operator=(pico_record&&   buffer) { //move assignment
 		std::cout << "pico_record move assigned\n";
 		std::copy(std::begin(buffer.key_), std::end(buffer.key_),
 				std::begin(this->key_));
@@ -96,7 +103,7 @@ public:
 
 		return *this;
 	}
-	bool operator==(pico_record& buffer) {
+	bool operator==(pico_record  buffer) {
 		for (int i = 0; i < max_key_size; i++) {
 			key_[i] = buffer.key_[i];
 		}
