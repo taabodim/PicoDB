@@ -197,7 +197,7 @@ namespace pico {
                 
             }
         }
-        bool ignoreMe(bufferTypePtr currentBuffer)
+        static bool ignoreMe(bufferTypePtr currentBuffer)
         {
             string ignore("ignore");
             string comparedTo = currentBuffer->toString();

@@ -149,20 +149,22 @@ namespace pico {
             
             return output;
         }
-        pico_message(std::string key, std::string value, std::string com,
+        pico_message(std::string newKey, std::string newValue, std::string com,
                      std::string database, std::string us, std::string col) {
             
             command = com;
             collection = col;
             db = database;
             user = us;
-            key = key;
-            value = value;
+            key = newKey;
+            value = newValue;
             json_form_of_message = convert_message_to_json();
             messageSize = json_form_of_message.size();
             json_key_value_pair = createTheKeyValuePair();
             set_hash_code();
             convert_to_buffered_message();
+            convert_to_list_of_records();
+
         }
         
         void set_hash_code() {
@@ -196,8 +198,12 @@ namespace pico {
             
             
             pico_record firstRecord;
+            
+           
+            addKeyMarkerToFirstRecord(firstRecord);
+            
             const char* keyArray = key.c_str();
-            int i=0;
+            int i=6;
             while (*keyArray != 0) {
                 firstRecord.key_[i]=*keyArray;
                 ++i;
@@ -233,6 +239,17 @@ namespace pico {
                }
            
             
+        }
+        void addKeyMarkerToFirstRecord(pico_record& firstRecord) //this argument has to be passed by ref
+        {
+        string keyMarker("itskey");
+            const char* keyArray = keyMarker.c_str();
+            int i=0;
+            while (*keyArray != 0) {
+                firstRecord.key_[i]=*keyArray;
+                ++i;
+                ++keyArray;
+            }//the key marker is put to first 6 letters of the first record
         }
         void convert_to_buffered_message() {
             

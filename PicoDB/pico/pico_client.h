@@ -186,30 +186,65 @@ namespace pico {
         void processTheMessageJustRead(bufferTypePtr currentBuffer,std::size_t t){
             
             string str =currentBuffer->toString();
-            append_to_last_message(*currentBuffer);
-            //std::cout<<"\nthis is the message that client read just now \n "<<str<<endl;
-            //log to file the string that was just read.
-            mylogger.log(str);
-            if(pico_session::find_last_of_string(currentBuffer))
+            string logMsg("client : this is the message that client read just now ");
+            logMsg.append(str);
+            mylogger.log(logMsg);
+            
+            if(pico_session::ignoreMe(currentBuffer))
+                processIncompleteData();
+            else if(pico_session::find_last_of_string(currentBuffer))
             {
-                std::cout<<("client: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+                std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+                pico_message::removeTheEndingTags(currentBuffer);
+                string strWithoutJunk =currentBuffer->toString();
+                append_to_last_message(strWithoutJunk);
                 processIncompleteData();
             }
             else {
-                std::cout<<"client : message was read completely..process the last message\n ";
+                
+                pico_message::removeTheEndingTags(currentBuffer);
+                string strWithoutJunk =currentBuffer->toString();
+                append_to_last_message(strWithoutJunk);
+                
+                
                 string logMsg;
                 logMsg.append("this is the complete message read from session :");
-                str =last_read_message.toString();
-                logMsg.append(str);
+                logMsg.append(last_read_message);
                 mylogger.log(logMsg);
-
                 
-                // print(error,t,str);
-                processDataFromOtherSide(str);
+                processDataFromServer(last_read_message);
                 last_read_message.clear();
-                //reading from server is done
-                //now we go to writing mode
+                
             }
+ 
+            
+//            append_to_last_message(*currentBuffer);
+//            //std::cout<<"\nthis is the message that client read just now \n "<<str<<endl;
+//            //log to file the string that was just read.
+//            mylogger.log(str);
+//            
+//            
+//            
+//            if(pico_session::find_last_of_string(currentBuffer))
+//            {
+//                std::cout<<("client: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+//                processIncompleteData();
+//            }
+//            else {
+//                std::cout<<"client : message was read completely..process the last message\n ";
+//                string logMsg;
+//                logMsg.append("this is the complete message read from session :");
+//                str =last_read_message.toString();
+//                logMsg.append(str);
+//                mylogger.log(logMsg);
+//
+//                
+//                // print(error,t,str);
+//                processDataFromOtherSide(str);
+//                last_read_message.clear();
+//                //reading from server is done
+//                //now we go to writing mode
+//            }
         }
         void processDataFromOtherSide(std::string msg) {
             
@@ -242,8 +277,8 @@ namespace pico {
             std::cout<<"Client Received :  "<<t<<" bytes from server "<<std::endl;
             if(error) std::cout<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------"<<std::endl;
         }
-        void append_to_last_message(bufferType currentBuffer) {
-            last_read_message.append(currentBuffer);
+        void append_to_last_message(string str) {
+            last_read_message.append(str);
             
         }
         //    void insert(const std::string& key,const std::string& value){
@@ -328,7 +363,7 @@ namespace pico {
         boost::condition_variable clientIsAllowedToWrite;
         boost::unique_lock<boost::mutex> allowedToWriteLock;
         boost::unique_lock<boost::mutex> writeOneBufferLock;
-        pico_buffered_message<bufferType> last_read_message;
+        string last_read_message;
         
     };
     
