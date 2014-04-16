@@ -148,35 +148,7 @@ namespace pico {
                                                               std::size_t t ) {
                                         
                                         processTheMessageJustRead(currentBuffer,t);
-                                        //                                         clientIsAllowedToWrite.notify_all();
-                                        
-                                        
                                     });
-            //		boost::asio::async_read(*socket_,
-            //                                boost::asio::buffer(currentBuffer->getData(),
-            //                                                    pico_buffer::max_size),
-            //                                [this,self,currentBuffer](const boost::system::error_code& error,
-            //                                                          std::size_t t ) {
-            //                                    string app("append");
-            //                                    string str =currentBuffer->toString();
-            //                                    append_to_last_message(*currentBuffer);
-            //                                    if(str.find_last_of(app)== string::npos)
-            //                                    {
-            //                                        std::cout<<("client : this buffer is an add on to the last message..dont process anything..read the next buffer");
-            //
-            //                                    }
-            //                                    else {
-            //                                        std::cout<<("client : message was read completely..process the last message ");
-            //                                        str =last_read_message.toString();
-            //                                        print(error,t,str);
-            //
-            //
-            //                                        processDataFromServer(str);
-            //                                        last_read_message.clear();
-            //
-            //                                    }
-            //                                    clientIsAllowedToWrite.notify_all();
-            //                                });
             
         }
         
@@ -187,8 +159,8 @@ namespace pico {
             logMsg.append(str);
             mylogger.log(logMsg);
             
-            if(ignoreMe(str))
-                processIncompleteData();
+            if(sendmetherestofdata(str))
+                ignoreThisMessageAndWriterNextBuffer();
             else
                 if(pico_session::find_last_of_string(currentBuffer))
             {
@@ -196,7 +168,7 @@ namespace pico {
                 pico_message::removeTheEndingTags(currentBuffer);
                 string strWithoutJunk =currentBuffer->toString();
                 append_to_last_message(strWithoutJunk);
-                processIncompleteData();
+                tellHimSendTheRestOfData();
             }
             else {
                 
@@ -214,40 +186,11 @@ namespace pico {
                 last_read_message.clear();
                 
             }
- 
-            
-//            append_to_last_message(*currentBuffer);
-//            //std::cout<<"\nthis is the message that client read just now \n "<<str<<endl;
-//            //log to file the string that was just read.
-//            mylogger.log(str);
-//            
-//            
-//            
-//            if(pico_session::find_last_of_string(currentBuffer))
-//            {
-//                std::cout<<("client: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
-//                processIncompleteData();
-//            }
-//            else {
-//                std::cout<<"client : message was read completely..process the last message\n ";
-//                string logMsg;
-//                logMsg.append("this is the complete message read from session :");
-//                str =last_read_message.toString();
-//                logMsg.append(str);
-//                mylogger.log(logMsg);
-//
-//                
-//                // print(error,t,str);
-//                processDataFromOtherSide(str);
-//                last_read_message.clear();
-//                //reading from server is done
-//                //now we go to writing mode
-//            }
         }
-        
-        bool ignoreMe( string comparedTo)
+       
+        bool sendmetherestofdata( string comparedTo)
         {
-            string ignore("ignore");
+            string ignore("sendmetherestofdata");
             
             if(comparedTo.compare(ignore)==0 || comparedTo.empty())
                 return true;
@@ -256,26 +199,25 @@ namespace pico {
         void processDataFromOtherSide(std::string msg) {
             
             try {
-                
-                //                pico_message reply = requestProcessor_.processRequest(msg);
-                //
-                //                messageToClientQueue_.push(reply);
-                //                messageClientQueueIsEmpty.notify_all();
-                //
                 std::cout<<"this is the complete message from server : "<<msg<<endl;
+                //process the data from server and queue the right message or dont
                 writeOneBuffer();
                 
             } catch (std::exception &e) {
                 cout << " this is the error : " << e.what() << endl;
             }
         }
-        void  processIncompleteData()
+        void tellHimSendTheRestOfData()
         {
-            string msg("ignore");
+            string msg("sendmetherestofdata");
             
             pico_message reply = pico_message::build_message_from_string(msg);
           	queueMessages(reply);
             
+        }
+        void  ignoreThisMessageAndWriterNextBuffer()
+        {
+            writeOneBuffer();
             
         }
         void print(const boost::system::error_code& error,
@@ -313,13 +255,14 @@ namespace pico {
            
             if(bufferQueue_.empty())
             {
-                cout<<"client : bufferQueue is empty..waiting ..."<<endl;
+                string logMsg("client : bufferQueue is empty..waiting ...");
+                mylogger.log(logMsg);
+                
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
             }
             bufferTypePtr currentBuffer = bufferQueue_.pop();
             char* data = currentBuffer->getData();
             std::size_t dataSize = currentBuffer->getSize();
-            std::cout<<"client is writing one buffer with this size "<<dataSize<<endl;
             
             auto self(shared_from_this());
             

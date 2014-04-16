@@ -75,7 +75,7 @@ public:
     {
 
         int i=0;
-		pico_collection optionCollection(picoMsg.getCollection());
+		pico_collection optionCollection(picoMsg.collection);
        while(!picoMsg.recorded_message.msg_in_buffers->empty())
         
        {

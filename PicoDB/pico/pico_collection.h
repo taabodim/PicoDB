@@ -18,7 +18,8 @@
 namespace pico {
     
 class pico_collection {
-    
+    //add this to some logic that doesnt call other functions who have this
+    //boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex)
 public:
     //logger mylogger;
     boost::mutex collectionMutex;
@@ -76,8 +77,7 @@ public:
         }
     }
 	offsetType getEndOfFileOffset() {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
-		outfile.flush();
+       outfile.flush();
 		
         std::fstream file;
 		file.open(filename, std::fstream::in | std::fstream::binary);
@@ -102,8 +102,7 @@ public:
 	}
 
 	size_t getNumberOfRecords() {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
-		list<offsetType> all_records_offsets = read_all_records_offsets();
+    	list<offsetType> all_records_offsets = read_all_records_offsets();
 		return all_records_offsets.size();
 	}
 
@@ -111,13 +110,11 @@ public:
 		return filename;
 	}
 	offsetType getEndOfFileOffsett() {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
-		infile.seekg(0, std::ifstream::end);
+ 		infile.seekg(0, std::ifstream::end);
 		return infile.tellg();
 	}
 	pico_record get(int index) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
-		pico_record record;
+   		pico_record record;
 		offsetType offset = index * record.max_size;
 		if (offset > getEndOfFileOffsett())
 			return empty_record;
@@ -128,7 +125,7 @@ public:
 	}
 	void deleteRecord(pico_record& record) {
         
-		boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+		
 		//delete this record all over the file
 		list<offsetType> list_of_offset = findAllOffsettsOfRecord(record);
 		while (!list_of_offset.empty()) {
@@ -141,7 +138,7 @@ public:
 
 	}
 	list<pico_record> find(pico_record& record) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 		list<pico_record> all_records;
 		list<offsetType> list_of_offset = findAllOffsettsOfRecord(record);
 		while (!list_of_offset.empty()) {
@@ -155,7 +152,7 @@ public:
 		return all_records;
 	}
 	pico_record retrieve(offsetType offset) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 
 		pico_record record_read_from_file;
 		infile.seekg(offset);
@@ -166,7 +163,7 @@ public:
 		return record_read_from_file;
 	}
     list<pico_record> read_all_records() {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 		list<pico_record> list_of_records;
 		offsetType endOfFile_Offset = getEndOfFileOffset();
 		cout << "read_all_records : offset of end of file is " << endOfFile_Offset << std::endl;
@@ -197,7 +194,7 @@ public:
 
     
 	list<offsetType> read_all_records_offsets() {
-boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+
 		list<offsetType> list_of_offsets;
 		offsetType endOfFile_Offset = getEndOfFileOffset();
 		cout << " offset of end of file is " << endOfFile_Offset << std::endl;
@@ -227,7 +224,7 @@ boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
 	}
 
 	list<offsetType> findAllOffsettsOfRecord(pico_record& record) {
-boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+
 		list<offsetType> list_of_offsets;
 		offsetType endOfFile_Offset = getEndOfFileOffset();
 		cout << " offset of end of file is " << endOfFile_Offset << std::endl;
@@ -253,7 +250,7 @@ boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
 		return list_of_offsets;
 	}
 	void update(pico_record& old_record, pico_record& new_record) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 		list<offsetType> list_of_offset = findAllOffsettsOfRecord(old_record);
 		while (!list_of_offset.empty()) {
 
@@ -265,7 +262,7 @@ boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
 		}
 	}
 	size_t update(pico_record& record) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 		list<offsetType> list_of_offset = findAllOffsettsOfRecord(record);
 		size_t num = 0;
 		while (!list_of_offset.empty()) {
@@ -281,7 +278,7 @@ boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
 		return num;
 	}
 	void updateOneRecord(offsetType record_offset, pico_record& new_record) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 		cout << "updating a record at offset " << record_offset << endl;
 		outfile.seekp(record_offset);
 		new_record.offset_of_record = record_offset;
@@ -291,7 +288,7 @@ boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
 	}
   
 	void deleteOneRecord(offsetType offset) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 		long firstOffset = outfile.tellp();
 		outfile.seekp(offset, ios::beg);
 		long offsetToWrite = outfile.tellp();
@@ -306,7 +303,7 @@ boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
 	}
 
 	void insert(pico_record& record) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 		cout << "inserting to collection\n";
 		size_t record_offset = outfile.tellp();
 		outfile.seekp(record_offset);
@@ -318,7 +315,7 @@ boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
          index_of_collection.add_to_tree(record);
 	}
 	void insert(pico_record& record, int index) {
-        boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex);
+        
 		size_t record_offset = index * record.max_size;
 		outfile.seekp(record_offset);
 		record.offset_of_record = record_offset;

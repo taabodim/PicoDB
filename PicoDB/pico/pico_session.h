@@ -1,4 +1,4 @@
-/*
+  /*
  * ClientHandler.h
  *
  *  Created on: Mar 11, 2014
@@ -91,7 +91,7 @@ namespace pico {
             
             
             bufferTypePtr currentBuffer = bufferQueue_.pop();
-            cout << " session is writing one buffer to client : " << std::endl;
+            cout << " session is writing one buffer to client : " <<currentBuffer->toString()<< std::endl;
             char* data = currentBuffer->getData();
             std::size_t dataSize = currentBuffer->getSize();
             auto self(shared_from_this());
@@ -111,17 +111,7 @@ namespace pico {
             
         }
         
-        void processCommand() {
-            //		std::cout << "processCommand :  " << readBuffer.getString() << "\n ";
-            //
-            //		if (readBuffer.getString().compare("insert") == 0) {
-            //			cout << "server recieved insert message from client" << endl;
-            //			//insertData to client
-            //			write_messages();
-            //		}
-            //		write_messages();
-        }
-        
+       
         void readingAndWritingRecordData() {
             
             string key1 = "keyfromkey1";
@@ -169,16 +159,17 @@ namespace pico {
             logMsg.append(str);
             mylogger.log(logMsg);
             
-            if(ignoreMe(str))
-                processIncompleteData();
+            if(sendmetherestofdata(str))
+                ignoreThisMessageAndWriterNextBuffer();
             
-            else if(find_last_of_string(currentBuffer))
+            else
+                if(find_last_of_string(currentBuffer))
             {
                 std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
                 pico_message::removeTheEndingTags(currentBuffer);
                 string strWithoutJunk =currentBuffer->toString();
                 append_to_last_message(strWithoutJunk);
-                processIncompleteData();
+                tellHimSendTheRestOfData();
             }
             else {
                 
@@ -197,9 +188,9 @@ namespace pico {
                 
             }
         }
-         bool ignoreMe( string comparedTo)
+        bool sendmetherestofdata(string comparedTo)
         {
-            string ignore("ignore");
+            string ignore("sendmetherestofdata");
             
             if(comparedTo.compare(ignore)==0 || comparedTo.empty())
                 return true;
@@ -222,13 +213,20 @@ namespace pico {
             return true;
             
         }
-        void  processIncompleteData()
+        void tellHimSendTheRestOfData()
         {
-            string msg("ignore");
+            string msg("sendmetherestofdata");
             
             pico_message reply = pico_message::build_message_from_string(msg);
-            queueMessages(reply);
+          	queueMessages(reply);
+            
         }
+        void  ignoreThisMessageAndWriterNextBuffer()
+        {
+            writeOneBuffer();
+            
+        }
+       
         void print(const boost::system::error_code& error,std::size_t t,string& str)
         {
             if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
