@@ -93,16 +93,12 @@ public:
 	string deleteRecords(pico_message picoMsg) {
         int i=0;
 		pico_collection optionCollection(picoMsg.collection);
-        while(!picoMsg.recorded_message.msg_in_buffers->empty())
-            
-        {
-            pico_record record = picoMsg.recorded_message.msg_in_buffers->pop();
-            std::cout<<"request_processor : record that is going to be deleted from this : "<<record.toString()<<std::endl;
-            optionCollection.deleteRecord(record);
-            i++;
-        }
-        string result("one message was deleted from database in ");
-        result.append(convertToString(i));
+
+            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+            std::cout<<"request_processor : record that is going to be deleted from this : "<<firstrecord.toString()<<std::endl;
+            optionCollection.deleteRecord(firstrecord);
+
+        string result("one message was deleted from database in unknown(todo)");
         result.append(" seperate records");
         return result;
 	}

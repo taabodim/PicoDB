@@ -386,7 +386,7 @@ void create100RecordsInCollection(){
         optionCollection.insert(x1);
 	}
     
-	cout << " number of records are : " << optionCollection.getNumberOfRecords()
+	cout << " number of records are : " << optionCollection.getNumberOfMessages()
     << " \n";
 //	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
 //	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
@@ -535,7 +535,7 @@ void readingAndWritingRecordData() {
 	for (int i = 0; i < 10; i++) {
 		optionCollection.insert(x1);
 	}
-	cout << " number of records are : " << optionCollection.getNumberOfRecords()
+	cout << " number of records are : " << optionCollection.getNumberOfMessages()
 			<< " \n";
 	cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
 	cout << " record 4 : " << optionCollection.get(3).toString() << " \n";

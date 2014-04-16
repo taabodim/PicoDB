@@ -127,7 +127,7 @@ namespace pico {
                 optionCollection.insert(x1);
             }
             cout << " number of records are : "
-            << optionCollection.getNumberOfRecords() << " \n";
+            << optionCollection.getNumberOfMessages() << " \n";
             cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
             cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
             optionCollection.update(x1, x2);

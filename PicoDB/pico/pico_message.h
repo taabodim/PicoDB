@@ -74,7 +74,7 @@ namespace pico {
             this->json_key_value_pair = createTheKeyValuePair();
             this->set_hash_code();
             this->convert_to_buffered_message();
-        this->convert_to_list_of_records();
+            this->convert_to_list_of_records();
         }
         
         pico_message(const std::string message_from_client, bool simpleMessage) { //this is for processing shell commands

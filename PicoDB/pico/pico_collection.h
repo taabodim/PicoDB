@@ -46,8 +46,8 @@ public:
 				std::fstream::out | std::fstream::app | std::fstream::binary);
        // test_reading_from_collection();
         
-		list<pico_record> all_pico_records = read_all_records();
-		index_of_collection.build_tree(all_pico_records);
+		list<pico_record> all_pico_messages = read_all_Messages_offsets();//write a function to get all the begining records for putting them in the tree
+		index_of_collection.build_tree(all_pico_messages);
 
 	}
     void test_reading_from_collection()
@@ -76,7 +76,7 @@ public:
             delete[] buffer;
         }
     }
-	offsetType getEndOfFileOffset() {
+	offsetType getEndOfFileOffset() {//was debugged
        outfile.flush();
 		
         std::fstream file;
@@ -89,6 +89,18 @@ public:
         return file.tellg();
 
 	}
+    list<offsetType> get_All_Offsets_InAFile()
+    {
+        list<offsetType> alloffsets;
+        offsetType lastOffset =getEndOfFileOffset();
+        std::cout<<" pico_collection : lastOffset is  "<<lastOffset<<endl;
+        for(int i=0;i<lastOffset; i=i+ pico_record::max_size)
+        {
+             std::cout<<" pico_collection : one Offset is  "<<i<<endl;
+            alloffsets.push_back(i);
+        }
+        return alloffsets;
+    }
 	bool collectionExists(const std::string& name) {
 		std::fstream f;
 		f.open(name, std::fstream::in);
@@ -101,9 +113,9 @@ public:
 		}
 	}
 
-	size_t getNumberOfRecords() {
-    	list<offsetType> all_records_offsets = read_all_records_offsets();
-		return all_records_offsets.size();
+	size_t getNumberOfMessages() {
+    	list<offsetType> all_Messages_offsets = read_all_Messages_offsets();
+		return all_Messages_offsets.size();
 	}
 
 	string getName() {
@@ -123,25 +135,54 @@ public:
 		infile.read((char*) record.value_, record.max_value_size);
 		return record;
 	}
-	void deleteRecord(pico_record& record) {
+	void deleteRecord(pico_record& firstRecordOfMessageToBeDeleted) {
         
 		
 		//delete this record all over the file
-		list<offsetType> list_of_offset = findAllOffsettsOfRecord(record);
+		list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(firstRecordOfMessageToBeDeleted);
 		while (!list_of_offset.empty()) {
 
-			long offset = list_of_offset.front();
-			cout << "  offset in the list is  " << offset << endl;
+			long offsetOfFirstRecordOfMessage = list_of_offset.front();
+            std::cout << "  offset in the list is  " << offsetOfFirstRecordOfMessage << endl;
 			list_of_offset.pop_front();
-			deleteOneRecord(offset);
+            
+			deleteOneMessage(offsetOfFirstRecordOfMessage);
 		}
 
 	}
-	list<pico_record> find(pico_record& record) {
+    void deleteOneMessage(offsetType offsetOfFirstRecordOfMessage)
+    
+    {
+        list<offsetType> all_offsets_for_this_message;
+        all_offsets_for_this_message.push_back(offsetOfFirstRecordOfMessage);
+        
+        offsetType nextOffset=-1;
+       do
+        {
+         nextOffset = offsetOfFirstRecordOfMessage+ pico_record::max_size;
+        pico_record  nextRecord = retrieve(nextOffset);
+        if(recordStartsWithConKEY(nextRecord))
+            {
+                all_offsets_for_this_message.push_back(nextOffset);
+            }
+        } while(nextOffset<=getEndOfFileOffset());
+        
+            
+        while(!all_offsets_for_this_message.empty())
+        {
+            deleteOneRecord(all_offsets_for_this_message.front());
+            all_offsets_for_this_message.pop_front();
+        }
+    
+    
+    }
+  
+        list<pico_record> find(pico_record& firstRecordOfMessageToBeFound) {
         
 		list<pico_record> all_records;
-		list<offsetType> list_of_offset = findAllOffsettsOfRecord(record);
-		while (!list_of_offset.empty()) {
+		list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(firstRecordOfMessageToBeFound);
+		
+        while (!list_of_offset.empty()) {
 
 			offsetType offset = list_of_offset.front();
 			cout << "  offset in the list is  " << offset << endl;
@@ -162,7 +203,7 @@ public:
 				record_read_from_file.max_value_size);
 		return record_read_from_file;
 	}
-    list<pico_record> read_all_records() {
+    list<pico_record> read_all_records() { //this function was debugged!
         
 		list<pico_record> list_of_records;
 		offsetType endOfFile_Offset = getEndOfFileOffset();
@@ -193,26 +234,28 @@ public:
 	}
 
     
-	list<offsetType> read_all_records_offsets() {
+	list<offsetType> read_all_Messages_offsets() {
 
 		list<offsetType> list_of_offsets;
 		offsetType endOfFile_Offset = getEndOfFileOffset();
 		cout << " offset of end of file is " << endOfFile_Offset << std::endl;
-		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-				pico_record::getRecordSize()) {
+		
+        for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
+				pico_record::max_size) {
             cout << " read_all_records_offsets : reading one record from offset "<<offset  << std::endl;
             
 			pico_record record_read_from_file;
 			infile.seekg(offset);
 			infile.read((char*) record_read_from_file.key_,
                         pico_record::max_key_size);
-			infile.read((char*) record_read_from_file.value_,
-                        pico_record::max_value_size);
-            cout << " read_all_records_offsets : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString()<< std::endl;
             
-
-			if (!record_read_from_file.getKeyAsString().empty()) {
-
+//            
+//			infile.read((char*) record_read_from_file.value_,
+//                        pico_record::max_value_size);
+//            cout << " read_all_records_offsets : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString()<< std::endl;
+            
+            if(recordStartsWithBEGKEY(record_read_from_file))
+            {
 				list_of_offsets.push_back(offset);
 			}
             else{
@@ -223,7 +266,32 @@ public:
         return list_of_offsets;
 	}
 
-	list<offsetType> findAllOffsettsOfRecord(pico_record& record) {
+    bool recordStartsWithBEGKEY(pico_record& currentRecord)
+    {
+    if(currentRecord.key_[0]=='B' &&
+       currentRecord.key_[1]=='E' &&
+       currentRecord.key_[2]=='G' &&
+       currentRecord.key_[3]=='K' &&
+       currentRecord.key_[4]=='E' &&
+       currentRecord.key_[5]=='Y')
+        return true;
+        
+        return false;
+    }
+    
+    bool recordStartsWithConKEY(pico_record& currentRecord)
+    {
+        if(currentRecord.key_[0]=='C' &&
+           currentRecord.key_[1]=='O' &&
+           currentRecord.key_[2]=='N' &&
+           currentRecord.key_[3]=='K' &&
+           currentRecord.key_[4]=='E' &&
+           currentRecord.key_[5]=='Y')
+            return true;
+        
+        return false;
+    }
+	list<offsetType> read_all_offsets_that_match_this_record(pico_record& record) {
 
 		list<offsetType> list_of_offsets;
 		offsetType endOfFile_Offset = getEndOfFileOffset();
@@ -235,8 +303,8 @@ public:
 			infile.seekg(offset);
 			infile.read((char*) record_read_from_file.key_,
 					record_read_from_file.max_key_size);
-			infile.read((char*) record_read_from_file.value_,
-					record_read_from_file.max_value_size);
+//			infile.read((char*) record_read_from_file.value_,
+//					record_read_from_file.max_value_size);
 			cout << " before comparing the records" << std::endl;
 
 			if (record_read_from_file == record) {
@@ -251,7 +319,7 @@ public:
 	}
 	void update(pico_record& old_record, pico_record& new_record) {
         
-		list<offsetType> list_of_offset = findAllOffsettsOfRecord(old_record);
+		list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(old_record);
 		while (!list_of_offset.empty()) {
 
 			offsetType offset = list_of_offset.front();
@@ -263,7 +331,7 @@ public:
 	}
 	size_t update(pico_record& record) {
         
-		list<offsetType> list_of_offset = findAllOffsettsOfRecord(record);
+		list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(record);
 		size_t num = 0;
 		while (!list_of_offset.empty()) {
 
@@ -287,12 +355,12 @@ public:
 		outfile.flush();
 	}
   
-	void deleteOneRecord(offsetType offset) {
+	void deleteOneRecord(offsetType offsetOfFirstRecordOfMessage) {
         
 		long firstOffset = outfile.tellp();
-		outfile.seekp(offset, ios::beg);
+		outfile.seekp(offsetOfFirstRecordOfMessage, ios::beg);
 		long offsetToWrite = outfile.tellp();
-		std::cout << " one record was deleted offset is " << offset
+		std::cout << " one record was deleted offset is " << firstOffset
 				<< " tellp is " << offsetToWrite << " firstOffset is "
 				<< firstOffset << "\n";
 		pico_record empty_record;
