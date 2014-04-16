@@ -190,6 +190,19 @@ namespace pico {
         std::string toKeyValuePairString() const {
             return json_key_value_pair;
         }
+//        void addConMarkerToFirstRecord(pico_record& continuingRecord) //this argument has to be passed by ref
+//        {
+//         
+//                string keyMarker("CONKEY"); //its the key that marks the key of the continuing records
+//                const char* keyArray = keyMarker.c_str();
+//                int i=0;
+//                while (*keyArray != 0) {
+//                    continuingRecord.key_[i]=*keyArray;
+//                    ++i;
+//                    ++keyArray;
+//                }//the key marker is put to first 6 letters of the first record
+//            
+//        }
         void convert_to_list_of_records() {
             
             std::cout
@@ -229,13 +242,16 @@ namespace pico {
 			while (*valueArray != 0) {
                 pico_record currentRecord;
                 
+             //   addConMarkerToFirstRecord(currentRecord);
+                replicateTheFirstRecordKeyToOtherRecords(firstRecord,currentRecord);
+                
                 for (int i = 0; i < pico_record::max_value_size ; i++) {
                     
                     if (*valueArray != 0) {
                         currentRecord.value_[i] = *valueArray;
                     } else {
                         break;
-                    }
+                    }//adding the rest of values to the second and third and etc records
                     ++valueArray;
                 }
                 recorded_message.append(currentRecord);
@@ -243,9 +259,24 @@ namespace pico {
            
             
         }
+        void replicateTheFirstRecordKeyToOtherRecords(pico_record& firstRecord,pico_record&  currentRecord)
+        {
+            //except the first six key that should be CONKEY
+            currentRecord.key_[0]='C';
+            currentRecord.key_[1]='O';
+            currentRecord.key_[2]='N';
+            currentRecord.key_[3]='K';
+            currentRecord.key_[4]='E';
+            currentRecord.key_[5]='Y';
+          
+            for(int i=6;i<pico_record::max_key_size;i++)
+            {
+                currentRecord.key_[i]= firstRecord.key_[i];
+            }
+        }
         void addKeyMarkerToFirstRecord(pico_record& firstRecord) //this argument has to be passed by ref
         {
-        string keyMarker("itskey");
+        string keyMarker("BEGKEY"); //its the key that marks the key of the first record
             const char* keyArray = keyMarker.c_str();
             int i=0;
             while (*keyArray != 0) {
