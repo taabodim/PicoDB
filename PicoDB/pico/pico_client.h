@@ -119,10 +119,7 @@ namespace pico {
         //
         //	}
         
-        void processDataFromServer(string messageFromServer) {
-            
-            writeOneBuffer();
-        }
+     
         void readSynchronously() {
             for (;;) {
                 boost::array<char, 128> buf;
@@ -190,9 +187,10 @@ namespace pico {
             logMsg.append(str);
             mylogger.log(logMsg);
             
-            if(pico_session::ignoreMe(currentBuffer))
+            if(ignoreMe(str))
                 processIncompleteData();
-            else if(pico_session::find_last_of_string(currentBuffer))
+            else
+                if(pico_session::find_last_of_string(currentBuffer))
             {
                 std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
                 pico_message::removeTheEndingTags(currentBuffer);
@@ -212,7 +210,7 @@ namespace pico {
                 logMsg.append(last_read_message);
                 mylogger.log(logMsg);
                 
-                processDataFromServer(last_read_message);
+                processDataFromOtherSide(last_read_message);
                 last_read_message.clear();
                 
             }
@@ -245,6 +243,15 @@ namespace pico {
 //                //reading from server is done
 //                //now we go to writing mode
 //            }
+        }
+        
+        bool ignoreMe( string comparedTo)
+        {
+            string ignore("ignore");
+            
+            if(comparedTo.compare(ignore)==0 || comparedTo.empty())
+                return true;
+            return false;
         }
         void processDataFromOtherSide(std::string msg) {
             
@@ -303,6 +310,7 @@ namespace pico {
         }
              void writeOneBuffer()
         {
+           
             if(bufferQueue_.empty())
             {
                 cout<<"client : bufferQueue is empty..waiting ..."<<endl;
@@ -319,14 +327,11 @@ namespace pico {
                                      [this,self,currentBuffer](const boost::system::error_code& error,
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
-                                         std::cout<<"Client Sent :  \n";
+
 //                                         std::cout<<t<<" bytes to server "<<std::endl;
                                          if(error)
                                              std::cout<<" error msg : "<<error.message()<<std::endl;
-                                         
-                                         std::cout<< " data sent to server is \n";
-//                                         std::cout<<str<<endl;
-                                        // std::cout<<"-------------------------"<<endl;
+
                                          string logMsg("data sent to server is ");
                                          logMsg.append(str);
                                          mylogger.log(logMsg);

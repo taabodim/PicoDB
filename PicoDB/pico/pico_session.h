@@ -85,7 +85,7 @@ namespace pico {
             
             if(bufferQueue_.empty())
             {
-                cout<<"client : bufferQueue is empty..waiting ..."<<endl;
+                cout<<"session : bufferQueue is empty..waiting ..."<<endl;
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
             }
             
@@ -169,7 +169,7 @@ namespace pico {
             logMsg.append(str);
             mylogger.log(logMsg);
             
-            if(ignoreMe(currentBuffer))
+            if(ignoreMe(str))
                 processIncompleteData();
             
             else if(find_last_of_string(currentBuffer))
@@ -197,11 +197,11 @@ namespace pico {
                 
             }
         }
-        static bool ignoreMe(bufferTypePtr currentBuffer)
+         bool ignoreMe( string comparedTo)
         {
             string ignore("ignore");
-            string comparedTo = currentBuffer->toString();
-            if(comparedTo.compare(ignore)==0)
+            
+            if(comparedTo.compare(ignore)==0 || comparedTo.empty())
                 return true;
             return false;
         }

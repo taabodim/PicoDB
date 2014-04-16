@@ -47,9 +47,8 @@ namespace pico {
             this->json_form_of_message = msg.json_form_of_message;
             this->json_key_value_pair = msg.json_key_value_pair;
             this->buffered_message = msg.buffered_message; //a container for all the buffers that make up this pico_message
-            this->set_hash_code();
-            this->convert_to_buffered_message();
-            this->convert_to_list_of_records();
+            this->uniqueMessageId=msg.uniqueMessageId;
+            this->recorded_message = msg.recorded_message;
             
         }
         pico_message(const std::string message_from_client) {
@@ -59,7 +58,7 @@ namespace pico {
             bool parsingSuccessful = reader.parse(message_from_client, root);
             if (!parsingSuccessful) {
                 // report to the user the failure and their locations in the document.
-                std::cout << "Failed to parse message\n"
+                std::cout << "Failed to parse message :"<<message_from_client<<"\n"
                 << reader.getFormattedErrorMessages();
                 
                 throw new pico_exception("failed to parse message from client");
@@ -80,16 +79,20 @@ namespace pico {
         
         pico_message(const std::string message_from_client, bool simpleMessage) { //this is for processing shell commands
             this->json_form_of_message = message_from_client;
-            this->json_key_value_pair = createTheKeyValuePair();
-            this->set_hash_code();
-            this->convert_to_buffered_message();
-            this->convert_to_list_of_records();
+            //this->json_key_value_pair = createTheKeyValuePair(); this line should always be commented because when the msg is simple
+            //it will mess up the parser
+            if(!message_from_client.empty())
+            {
+                this->set_hash_code();
+                this->convert_to_buffered_message();
+                this->convert_to_list_of_records();
+            }
         }
         std::string createTheKeyValuePair() {
             
             Json::Value root;   // will contains the root value after parsing.
-            root["key"] = key;
-            root["value"] = value;
+            root["key"] = this->key;
+            root["value"] = this->value;
             Json::StyledWriter writer;
             // Make a new JSON document for the configuration. Preserve original comments.
             std::string output = writer.write(root);
@@ -176,9 +179,9 @@ namespace pico {
             std::size_t h6 = std::hash<std::string>()(value); //find a solution to hash long
             
             size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 ^ h5 ^ h6);
-            uniqueMessageId = boost::lexical_cast < string > (hash_code);
+            this->uniqueMessageId = boost::lexical_cast < string > (hash_code);
             
-            cout << "unique message id is " << uniqueMessageId << endl;
+            cout << "unique message id is " << this->uniqueMessageId << endl;
         }
         
         std::string toString() const {

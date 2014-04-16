@@ -112,18 +112,18 @@ namespace pico {
             return data_;
         }
         std::string toString() const {
-            char dest[max_size];
-            std::copy(std::begin(data_), std::end(data_), std::begin(dest));
-            
-            std::string temp(dest);
+//            char dest[max_size];
+//            std::copy(std::begin(data_), std::end(data_), std::begin(dest));
+//            
+            std::string temp(data_);
             return temp;
         }
         std::string toString()  {
-            char src[max_size];
-            char dest[max_size];
-            std::copy(std::begin(data_), std::end(data_), std::begin(dest));
+//            char src[max_size];
+//            char dest[max_size];
+//            std::copy(std::begin(data_), std::end(data_), std::begin(dest));
             
-            std::string temp(dest);	//this  should not be in seperated , this method empties the data_...fix it!!
+            std::string temp(data_);	//this  should not be in seperated , this method empties the data_...fix it!!
             return temp;
         }
         size_t getSize() {

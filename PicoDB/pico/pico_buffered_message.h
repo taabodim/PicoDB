@@ -34,7 +34,7 @@ namespace pico
             
         }
         pico_buffered_message(const pico_buffered_message& copy){
-            std::cout<<("pico_buffered_message copy constructed....\n");
+            //std::cout<<("pico_buffered_message copy constructed....\n");
             msg_in_buffers = copy.msg_in_buffers;
             
         }

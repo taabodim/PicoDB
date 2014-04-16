@@ -53,7 +53,7 @@ namespace pico{
             msg = underlying_list.back();
             underlying_list.pop_back();
             
-            std::cout<<"pico_concurrent_list : poping from end of the list this item ..\n";
+      //      std::cout<<"pico_concurrent_list : poping from end of the list this item ..\n";
 //          std::cout<<msg.toString()<<endl;
             
             return msg;
