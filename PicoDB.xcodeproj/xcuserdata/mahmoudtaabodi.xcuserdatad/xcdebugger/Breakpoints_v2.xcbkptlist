@@ -202,36 +202,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "419377563.910818"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "185"
-            endingLineNumber = "185"
-            landmarkName = "processTheMessageJustRead(bufferTypePtr currentBuffer,std::size_t t)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "419377563.910818"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "335"
-            endingLineNumber = "335">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -296,7 +266,7 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/request_processor.h"
@@ -316,27 +286,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419367470.700815"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "36"
-            endingLineNumber = "36"
-            landmarkName = "pico_collection(std::string name)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "295"
-            endingLineNumber = "295"
+            startingLineNumber = "286"
+            endingLineNumber = "286"
             landmarkName = "read_all_offsets_that_match_this_record(pico_record&amp; record)"
             landmarkType = "5">
          </BreakpointContent>
@@ -348,11 +302,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "321"
-            endingLineNumber = "321"
+            startingLineNumber = "307"
+            endingLineNumber = "307"
             landmarkName = "update(pico_record&amp; old_record, pico_record&amp; new_record)"
             landmarkType = "5">
          </BreakpointContent>
@@ -364,11 +318,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "333"
-            endingLineNumber = "333"
+            startingLineNumber = "319"
+            endingLineNumber = "319"
             landmarkName = "update(pico_record&amp; record)"
             landmarkType = "5">
          </BreakpointContent>
@@ -380,11 +334,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "349"
-            endingLineNumber = "349"
+            startingLineNumber = "335"
+            endingLineNumber = "335"
             landmarkName = "updateOneRecord(offsetType record_offset, pico_record&amp; new_record)"
             landmarkType = "5">
          </BreakpointContent>
@@ -392,11 +346,11 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419375152.1625"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "139"
@@ -412,28 +366,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "181"
-            endingLineNumber = "181"
+            startingLineNumber = "185"
+            endingLineNumber = "185"
             landmarkName = "find(pico_record&amp; firstRecordOfMessageToBeFound)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "196"
-            endingLineNumber = "196"
-            landmarkName = "retrieve(offsetType offset)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -444,11 +382,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "207"
-            endingLineNumber = "207"
+            startingLineNumber = "217"
+            endingLineNumber = "217"
             landmarkName = "read_all_records()"
             landmarkType = "5">
          </BreakpointContent>
@@ -460,11 +398,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419375229.072965"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "80"
-            endingLineNumber = "80"
+            startingLineNumber = "82"
+            endingLineNumber = "82"
             landmarkName = "getEndOfFileOffset()"
             landmarkType = "5">
          </BreakpointContent>
@@ -476,11 +414,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419375236.080122"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "101"
-            endingLineNumber = "101"
+            startingLineNumber = "102"
+            endingLineNumber = "102"
             landmarkName = "get_All_Offsets_InAFile()"
             landmarkType = "5">
          </BreakpointContent>
@@ -492,28 +430,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419375243.96834"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "117"
-            endingLineNumber = "117"
+            startingLineNumber = "118"
+            endingLineNumber = "118"
             landmarkName = "getNumberOfMessages()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419375251.784693"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "125"
-            endingLineNumber = "125"
-            landmarkName = "getEndOfFileOffsett()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -540,12 +462,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "359"
-            endingLineNumber = "359"
-            landmarkName = "deleteOneRecord(offsetType offsetOfFirstRecordOfMessage)"
+            startingLineNumber = "342"
+            endingLineNumber = "342"
+            landmarkName = "deleteOneRecord(offsetType offsetOfToBeDeletedRecord)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -556,7 +478,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419376512.407009"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "155"
@@ -568,32 +490,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "271"
-            endingLineNumber = "271"
-            landmarkName = "recordStartsWithBEGKEY(pico_record&amp; currentRecord)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377298.019591"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "284"
-            endingLineNumber = "284"
-            landmarkName = "recordStartsWithConKEY(pico_record&amp; currentRecord)"
+            startingLineNumber = "172"
+            endingLineNumber = "172"
+            landmarkName = "deleteOneMessage(offsetType offsetOfFirstRecordOfMessage)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -604,12 +510,76 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419377154.541881"
+            timestampString = "419464797.599818"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "168"
-            endingLineNumber = "168"
-            landmarkName = "deleteOneMessage(offsetType offsetOfFirstRecordOfMessage)"
+            startingLineNumber = "267"
+            endingLineNumber = "267"
+            landmarkName = "read_all_firstRecords_offsets()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PicoDB/pico/request_processor.h"
+            timestampString = "419455032.494585"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "77"
+            endingLineNumber = "77"
+            landmarkName = "insertOneMessage(pico_message picoMsg)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PicoDB/pico/pico_collection.h"
+            timestampString = "419464797.599818"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "390"
+            endingLineNumber = "390"
+            landmarkName = "append(pico_record&amp; record, int index)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PicoDB/pico/pico_collection.h"
+            timestampString = "419464797.599818"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "424"
+            endingLineNumber = "424"
+            landmarkName = "recordIsEmpty(pico_record&amp; currentRecord)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PicoDB/pico/pico_collection.h"
+            timestampString = "419464797.599818"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "399"
+            endingLineNumber = "399"
+            landmarkName = "recordStartsWithBEGKEY(pico_record&amp; currentRecord)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

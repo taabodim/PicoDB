@@ -148,12 +148,12 @@ namespace pico {
             } else if (key >= leaf->key_of_pico_record) {
                 if (leaf->right != nullptr)
                 {
-                    std::cout<<("pico_index : insert : key is larger checking the right node ");
+//                    std::cout<<("pico_index : insert : key is larger checking the right node ");
                     
                     insert(nodeToBeInserted, leaf->right);
                 }
                 else {
-                    std::cout<<("pico_index : insert : key is larger adding a right node to this node");
+//                    std::cout<<("pico_index : insert : key is larger adding a right node to this node");
                     
                     leaf->right = std::shared_ptr<pico_record_node>(new pico_record_node());
                     leaf->right->key_of_pico_record = key;

@@ -31,6 +31,7 @@
 #include <pico/pico_buffered_message.h>
 #include <logger.h>
 #include <pico/pico_session.h> //for the checking if appended function
+#include <pico/pico_test.h>
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -89,17 +90,14 @@ namespace pico {
         
         void start(const boost::system::error_code& ec,
                    tcp::resolver::iterator endpoint_iter) {
-//            std::cout<<"\nclient starting the process..going to write_message to server\n";
+            //            std::cout<<"\nclient starting the process..going to write_message to server\n";
             
             try {
                 if(!ec)
                 {
-//                    for(int  i=0;i<10;i++)
-//                        insert();
-                    for(int  i=0;i<10;i++)
-                        deleteTest();
+                    currentTestCase();
                     writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
-                    }
+                }
                 else{
                     std::cout<<"client : start : error is "<<ec.value()<<" error message is "<<ec.message()<<std::endl;
                     std::cout <<"error name is "<< ec.category().name() << std::endl;
@@ -120,7 +118,7 @@ namespace pico {
         //
         //	}
         
-     
+        
         void readSynchronously() {
             for (;;) {
                 boost::array<char, 128> buf;
@@ -139,7 +137,7 @@ namespace pico {
         void readOneBuffer() {
             
             auto self(shared_from_this());
-           // std::cout<<"client is trying to read one buffer\n" ;
+            // std::cout<<"client is trying to read one buffer\n" ;
             bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
             
             boost::asio::async_read(*socket_,
@@ -164,31 +162,31 @@ namespace pico {
                 ignoreThisMessageAndWriterNextBuffer();
             else
                 if(pico_session::find_last_of_string(currentBuffer))
-            {
-                std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
-                pico_message::removeTheEndingTags(currentBuffer);
-                string strWithoutJunk =currentBuffer->toString();
-                append_to_last_message(strWithoutJunk);
-                tellHimSendTheRestOfData();
-            }
-            else {
-                
-                pico_message::removeTheEndingTags(currentBuffer);
-                string strWithoutJunk =currentBuffer->toString();
-                append_to_last_message(strWithoutJunk);
-                
-                
-                string logMsg;
-                logMsg.append("this is the complete message read from session :");
-                logMsg.append(last_read_message);
-                mylogger.log(logMsg);
-                
-                processDataFromOtherSide(last_read_message);
-                last_read_message.clear();
-                
-            }
+                {
+                    std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+                    pico_message::removeTheEndingTags(currentBuffer);
+                    string strWithoutJunk =currentBuffer->toString();
+                    append_to_last_message(strWithoutJunk);
+                    tellHimSendTheRestOfData();
+                }
+                else {
+                    
+                    pico_message::removeTheEndingTags(currentBuffer);
+                    string strWithoutJunk =currentBuffer->toString();
+                    append_to_last_message(strWithoutJunk);
+                    
+                    
+                    string logMsg;
+                    logMsg.append("this is the complete message read from session :");
+                    logMsg.append(last_read_message);
+                    mylogger.log(logMsg);
+                    
+                    processDataFromOtherSide(last_read_message);
+                    last_read_message.clear();
+                    
+                }
         }
-       
+        
         bool sendmetherestofdata( string comparedTo)
         {
             string ignore("sendmetherestofdata");
@@ -231,14 +229,8 @@ namespace pico {
             last_read_message.append(str);
             
         }
-        //    void insert(const std::string& key,const std::string& value){
-        void insert(){
-            std::string key;
-            std::string value;
-            key="They've";
-            value="Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it. They didn't use the word 'confirm.' So it could be that it's a real lead, but it could also not be. I think that, at the moment, everyone needs to wait for final, confirmed information.That view was echoed by Sarah Bajc, whose partner, Philip Wood, was among the passengers.Every time some official gives one of those absolute statements of 'We're sure it's the pings from the black boxes' or 'We're sure it's in the ocean,' we all crash, she told CNNs New Day.Our feet get knocked out from underneath us. But then it always ends up reversing itself, and they step back from it.She expressed skepticism about the way the investigation has been handled. The fox is very much in charge of the henhouse here, she told New Day. We've got a country leading the investigation who also has the primary liability in the case, and it makes us question every step that's taken.\" More cluesA senior Malaysian government official and another source involved in the investigation divulged new details about the flight to CNN on Thursday, including information about what radar detected, the last words from the cockpit and how high the plane was flying after it went off the grid.Malaysia Airlines Flight 370 disappeared from military radar for about 120 nautical miles after it crossed back over the Malay Peninsula, sources said. Based on available data, this means the plane must have dipped in altitude to between 4,000 and 5,000 feet, sources said.The dip could have been programmed into the computers controlling the plane as an emergency maneuver, said aviation expert David Soucie.The real issue here is it looks like -- more and more -- somebody in the cockpit was directing this plane and directing it away from land,said Peter Goelz, a CNN aviation analyst and former National Transportation Safety Board managing director.And it looks as though they were doing it to avoid any kind of detection.But former U.S. Department of Transportation Inspector General Mary Schiavo was not convinced. She said the reported dip could have occurred in response to a loss of pressure, to reach a level where pressurization was not needed and those aboard the plane would have been able to breathe without oxygen, or to get out of the way of commercial traffic123456endOfMessage";
+        void insert(std::string key,std::string value){
             
-            value="Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from ;radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it.endOfMessage";
             string command("insert");
             string database("currencyDB");
             string user("currencyUser");
@@ -252,13 +244,8 @@ namespace pico {
             
         }
         
-        void deleteTest(){
-            std::string key;
-            std::string value;
-            key="They've";
-            value="Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it. They didn't use the word 'confirm.' So it could be that it's a real lead, but it could also not be. I think that, at the moment, everyone needs to wait for final, confirmed information.That view was echoed by Sarah Bajc, whose partner, Philip Wood, was among the passengers.Every time some official gives one of those absolute statements of 'We're sure it's the pings from the black boxes' or 'We're sure it's in the ocean,' we all crash, she told CNNs New Day.Our feet get knocked out from underneath us. But then it always ends up reversing itself, and they step back from it.She expressed skepticism about the way the investigation has been handled. The fox is very much in charge of the henhouse here, she told New Day. We've got a country leading the investigation who also has the primary liability in the case, and it makes us question every step that's taken.\" More cluesA senior Malaysian government official and another source involved in the investigation divulged new details about the flight to CNN on Thursday, including information about what radar detected, the last words from the cockpit and how high the plane was flying after it went off the grid.Malaysia Airlines Flight 370 disappeared from military radar for about 120 nautical miles after it crossed back over the Malay Peninsula, sources said. Based on available data, this means the plane must have dipped in altitude to between 4,000 and 5,000 feet, sources said.The dip could have been programmed into the computers controlling the plane as an emergency maneuver, said aviation expert David Soucie.The real issue here is it looks like -- more and more -- somebody in the cockpit was directing this plane and directing it away from land,said Peter Goelz, a CNN aviation analyst and former National Transportation Safety Board managing director.And it looks as though they were doing it to avoid any kind of detection.But former U.S. Department of Transportation Inspector General Mary Schiavo was not convinced. She said the reported dip could have occurred in response to a loss of pressure, to reach a level where pressurization was not needed and those aboard the plane would have been able to breathe without oxygen, or to get out of the way of commercial traffic123456endOfMessage";
+        void deleteTest(std::string key,std::string value){
             
-            value="Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from ;radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it.endOfMessage";
             string command("delete");
             string database("currencyDB");
             string user("currencyUser");
@@ -271,10 +258,10 @@ namespace pico {
             //            std::cout<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
             
         }
-
-             void writeOneBuffer()
+        
+        void writeOneBuffer()
         {
-           
+            
             if(bufferQueue_.empty())
             {
                 string logMsg("client : bufferQueue is empty..waiting ...");
@@ -292,11 +279,11 @@ namespace pico {
                                      [this,self,currentBuffer](const boost::system::error_code& error,
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
-
-//                                         std::cout<<t<<" bytes to server "<<std::endl;
+                                         
+                                         //                                         std::cout<<t<<" bytes to server "<<std::endl;
                                          if(error)
                                              std::cout<<" error msg : "<<error.message()<<std::endl;
-
+                                         
                                          string logMsg("data sent to server is ");
                                          logMsg.append(str);
                                          mylogger.log(logMsg);
@@ -305,8 +292,8 @@ namespace pico {
             
         }
         void queueMessages(queueType message) {
-          //TODO put a lock here to make the all the buffers in a message go after each other.
-        boost::interprocess::scoped_lock<boost::mutex> queueMessagesLock(queueMessagesMutext);
+            //TODO put a lock here to make the all the buffers in a message go after each other.
+            boost::interprocess::scoped_lock<boost::mutex> queueMessagesLock(queueMessagesMutext);
             
             //put all the buffers in the message in the buffer queue
             while(!message.buffered_message.msg_in_buffers->empty())
@@ -320,8 +307,34 @@ namespace pico {
                 bufferQueue_.push(curBufPtr);
                 
             }
-           bufferQueueIsEmpty.notify_all();
+            bufferQueueIsEmpty.notify_all();
         }
+        void currentTestCase()
+        {
+            writeTenKEY0KEY1KEY2DeleteAllKEY2();
+        }
+        
+        void writeOneDeleteOne()
+        {
+            for(int  i=0;i<1;i++)
+                insert(pico_test::smallKey0,pico_test::smallValue0);
+            for(int  i=0;i<1;i++)
+                deleteTest(pico_test::smallKey0,pico_test::smallValue0);
+            
+        }
+        void writeTenKEY0KEY1KEY2DeleteAllKEY2()
+        {
+            for(int  i=0;i<10;i++)
+            {
+                insert(pico_test::smallKey0,pico_test::smallValue0);
+                insert(pico_test::smallKey1,pico_test::smallValue1);
+                insert(pico_test::smallKey2,pico_test::smallValue2);
+            }
+//            for(int  i=0;i<10;i++)
+//                deleteTest(pico_test::smallKey2,pico_test::smallKey2);
+//            
+        }
+        
         
         //        writer_buffer_container writer_buffer_container_;
         pico_concurrent_list<bufferTypePtr> bufferQueue_;

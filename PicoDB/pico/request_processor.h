@@ -81,7 +81,7 @@ public:
        {
            pico_record record = picoMsg.recorded_message.msg_in_buffers->pop();
            std::cout<<"request_processor : record that is going to be saved is this : "<<record.toString()<<std::endl;
-           optionCollection.insert(record);
+           optionCollection.append(record);
            i++;
        }
         string result("one message was added to database in ");

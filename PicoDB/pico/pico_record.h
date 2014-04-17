@@ -66,10 +66,10 @@ public:
 	pico_record() {
 
 		for (int i = 0; i < max_value_size; i++) {
-			value_[i] = 0;
+			value_[i] = '\0';
 		}
 		for (int i = 0; i < max_key_size; i++) {
-			key_[i] = 0;
+			key_[i] = '\0';
 		}
 	}
 
