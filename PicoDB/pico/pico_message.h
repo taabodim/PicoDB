@@ -19,6 +19,7 @@ namespace pico {
     public:
         std::string key;
         std::string value;
+        std::string oldvalue;
         std::string user;
         std::string db;
         std::string command;
@@ -44,6 +45,7 @@ namespace pico {
             this->messageSize = msg.messageSize;
             this->key = msg.key;
             this->value = msg.value;
+            this->oldvalue= msg.oldvalue;
             this->json_form_of_message = msg.json_form_of_message;
             this->json_key_value_pair = msg.json_key_value_pair;
             this->buffered_message = msg.buffered_message; //a container for all the buffers that make up this pico_message
@@ -70,7 +72,8 @@ namespace pico {
             this->user = root.get("user", "unknown").asString();
             this->key = root.get("key", "unknown").asString();
             this->value = root.get("value", "unknown").asString();
-            
+            this->oldvalue= root.get("oldvalue", "unknown").asString();
+
             this->json_key_value_pair = createTheKeyValuePair();
             this->set_hash_code();
             this->convert_to_buffered_message();
@@ -108,6 +111,7 @@ namespace pico {
             Json::Value root;   // will contains the root value after parsing.
             root["key"] = "simpleMessage";
             root["value"] = value;
+             root["oldvalue"] = "unknown";
             root["db"] = "unknown";
             root["user"] = "unknown";
             root["collection"] = "unknown";
@@ -128,6 +132,7 @@ namespace pico {
             this->messageSize = msg.messageSize;
             this->key = msg.key;
             this->value = msg.value;
+            this->oldvalue = msg.oldvalue;
             this->json_form_of_message = msg.json_form_of_message;
             this->buffered_message = msg.buffered_message; //a container for all the buffers that make up this pico_message
             this->json_key_value_pair = createTheKeyValuePair();
@@ -141,6 +146,7 @@ namespace pico {
             Json::Value root;   // will contains the root value after parsing.
             root["key"] = key;
             root["value"] = value;
+            root["oldvalue"] = oldvalue;
             root["db"] = db;
             root["user"] = user;
             root["collection"] = collection;
@@ -169,6 +175,24 @@ namespace pico {
             convert_to_list_of_records();
 
         }
+        pico_message(std::string newKey,std::string old_value_arg, std::string newValue, std::string com,
+                     std::string database, std::string us, std::string col) {
+            command = com;
+            collection = col;
+            db = database;
+            user = us;
+            key = newKey;
+            oldvalue = old_value_arg;
+            value = newValue;
+            
+            json_form_of_message = convert_message_to_json();
+            messageSize = json_form_of_message.size();
+            json_key_value_pair = createTheKeyValuePair();
+            set_hash_code();
+            convert_to_buffered_message();
+            convert_to_list_of_records();
+        
+        }
         
         void set_hash_code() {
             std::size_t h1 = std::hash<std::string>()(user);
@@ -177,8 +201,9 @@ namespace pico {
             std::size_t h4 = std::hash<std::string>()(collection);
             std::size_t h5 = std::hash<std::string>()(key); //find a solution to hash long strings
             std::size_t h6 = std::hash<std::string>()(value); //find a solution to hash long
+            std::size_t h7 = std::hash<std::string>()(oldvalue);
             
-            size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 ^ h5 ^ h6);
+            size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 ^ h5 ^ h6 ^ h7);
             this->uniqueMessageId = boost::lexical_cast < string > (hash_code);
             
             cout << "unique message id is " << this->uniqueMessageId << endl;
@@ -216,7 +241,7 @@ namespace pico {
             pico_record firstRecord;
             
            
-            addKeyMarkerToFirstRecord(firstRecord);
+            pico_record::addKeyMarkerToFirstRecord(firstRecord);
             
             const char* keyArray = key.c_str();
             int i=6;
@@ -243,7 +268,7 @@ namespace pico {
                 pico_record currentRecord;
                 
              //   addConMarkerToFirstRecord(currentRecord);
-                replicateTheFirstRecordKeyToOtherRecords(firstRecord,currentRecord);
+                pico_record::replicateTheFirstRecordKeyToOtherRecords(firstRecord,currentRecord);
                 
                 for (int i = 0; i < pico_record::max_value_size ; i++) {
                     
@@ -259,33 +284,7 @@ namespace pico {
            
             
         }
-        void replicateTheFirstRecordKeyToOtherRecords(pico_record& firstRecord,pico_record&  currentRecord)
-        {
-            //except the first six key that should be CONKEY
-            currentRecord.key_[0]='C';
-            currentRecord.key_[1]='O';
-            currentRecord.key_[2]='N';
-            currentRecord.key_[3]='K';
-            currentRecord.key_[4]='E';
-            currentRecord.key_[5]='Y';
-          
-            for(int i=6;i<pico_record::max_key_size;i++)
-            {
-                currentRecord.key_[i]= firstRecord.key_[i];
-            }
-        }
-        void addKeyMarkerToFirstRecord(pico_record& firstRecord) //this argument has to be passed by ref
-        {
-        string keyMarker("BEGKEY"); //its the key that marks the key of the first record
-            const char* keyArray = keyMarker.c_str();
-            int i=0;
-            while (*keyArray != 0) {
-                firstRecord.key_[i]=*keyArray;
-                ++i;
-                ++keyArray;
-            }//the key marker is put to first 6 letters of the first record
-        }
-        void convert_to_buffered_message() {
+               void convert_to_buffered_message() {
             
             std::cout << "pico_message : converToBuffers : messageSize is "
             << messageSize << endl;
@@ -410,6 +409,7 @@ namespace pico {
             collection = "";
             key = "";
             value = "";
+            oldvalue = "";
             json_form_of_message = "";
             buffered_message.clear(); //a container for all the buffers that make up this pico_message
             messageSize = 0;
@@ -418,25 +418,7 @@ namespace pico {
         ~pico_message() {
             //  std::cout<<("pico_message being destroyed now.\n");
         }
-        std::string getKey() const {
-            return this->key;
-        }
-        
-        std::string getValue() const {
-            return this->value.substr();
-        }
-        std::string getCommand() const {
-            return this->command;
-        }
-        std::string getCollection() const {
-            return this->collection;
-        }
-        std::string getDB() const {
-            return this->db;
-        }
-        std::string getUser() const {
-            return this->user;
-        }
+
     };
 }
 

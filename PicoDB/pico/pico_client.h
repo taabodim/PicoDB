@@ -259,6 +259,21 @@ namespace pico {
             
         }
         
+        void update(std::string key,std::string oldValue,std::string newValue){
+            
+            string command("update");
+            string database("currencyDB");
+            string user("currencyUser");
+            string col("currencyCollection");
+            
+            queueType msg (key,oldValue,newValue,command,database,user,col );
+            queueMessages(msg);
+            
+            //            queueType msgReadFromQueue = commandQueue_.pop();
+            //            std::cout<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
+            
+        }
+        
         void writeOneBuffer()
         {
             
@@ -311,7 +326,7 @@ namespace pico {
         }
         void currentTestCase()
         {
-            writeTenKEY0KEY1KEY2DeleteAllKEY2();
+            writeThe_same_record_to_check_if_we_update_or_insert_multiple();
         }
         
         void writeOneDeleteOne()
@@ -322,6 +337,13 @@ namespace pico {
                 deleteTest(pico_test::smallKey0,pico_test::smallValue0);
             
         }
+        void writeThe_same_record_to_check_if_we_update_or_insert_multiple()
+        {
+            for(int  i=0;i<2;i++)
+            {
+                insert(pico_test::smallKey0,pico_test::smallValue0);
+            }
+        }
         void writeTenKEY0KEY1KEY2DeleteAllKEY2()
         {
             for(int  i=0;i<1;i++)
@@ -329,6 +351,10 @@ namespace pico {
                 insert(pico_test::smallKey0,pico_test::smallValue0);
                 insert(pico_test::smallKey1,pico_test::smallValue1);
                 insert(pico_test::smallKey2,pico_test::smallValue2);
+                insert(pico_test::smallKey2,pico_test::smallValue2);
+                insert(pico_test::smallKey2,pico_test::smallValue2);
+                insert(pico_test::smallKey0,pico_test::smallValue0);
+                insert(pico_test::smallKey1,pico_test::smallValue1);
             }
             for(int  i=0;i<1;i++)
                 deleteTest(pico_test::smallKey2,pico_test::smallKey2);

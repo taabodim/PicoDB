@@ -158,6 +158,72 @@ public:
 		return max_size;
 	}
 
+    static bool recordStartsWithBEGKEY(pico_record& currentRecord)//was debugged
+    {
+        if(currentRecord.key_[0]=='B' &&
+           currentRecord.key_[1]=='E' &&
+           currentRecord.key_[2]=='G' &&
+           currentRecord.key_[3]=='K' &&
+           currentRecord.key_[4]=='E' &&
+           currentRecord.key_[5]=='Y')
+            return true;
+        
+        return false;
+    }
+    
+    static bool recordStartsWithConKEY(pico_record& currentRecord)//debugged
+    {
+        if(currentRecord.key_[0]=='C' &&
+           currentRecord.key_[1]=='O' &&
+           currentRecord.key_[2]=='N' &&
+           currentRecord.key_[3]=='K' &&
+           currentRecord.key_[4]=='E' &&
+           currentRecord.key_[5]=='Y')
+            return true;
+        
+        return false;
+    }
+    
+    static bool recordIsEmpty(pico_record& currentRecord)//debugged
+    {
+        if(currentRecord.key_[0]=='\0' &&
+           currentRecord.key_[1]=='\0' &&
+           currentRecord.key_[2]=='\0' &&
+           currentRecord.key_[3]=='\0' &&
+           currentRecord.key_[4]=='\0' &&
+           currentRecord.key_[5]=='\0')
+            return true;
+        
+        return false;
+    }
+    
+    static void replicateTheFirstRecordKeyToOtherRecords(pico_record& firstRecord,pico_record&  currentRecord)
+    {
+        //except the first six key that should be CONKEY
+        currentRecord.key_[0]='C';
+        currentRecord.key_[1]='O';
+        currentRecord.key_[2]='N';
+        currentRecord.key_[3]='K';
+        currentRecord.key_[4]='E';
+        currentRecord.key_[5]='Y';
+        
+        for(int i=6;i<pico_record::max_key_size;i++)
+        {
+            currentRecord.key_[i]= firstRecord.key_[i];
+        }
+    }
+    static void addKeyMarkerToFirstRecord(pico_record& firstRecord) //this argument has to be passed by ref
+    {
+        string keyMarker("BEGKEY"); //its the key that marks the key of the first record
+        const char* keyArray = keyMarker.c_str();
+        int i=0;
+        while (*keyArray != 0) {
+            firstRecord.key_[i]=*keyArray;
+            ++i;
+            ++keyArray;
+        }//the key marker is put to first 6 letters of the first record
+    }
+
 	const static int max_start_of_record = 16;
 	const static int max_end_of_record = 16;
 	const static int max_value_size = 128;

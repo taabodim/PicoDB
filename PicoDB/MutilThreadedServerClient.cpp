@@ -20,16 +20,16 @@
 #include <unordered_map>
 #include <thread>
 #include <boost/thread.hpp>
-#include <boost/filesystem/fstream.hpp>
+
 #include <memory>
 #include <utility>
 #include <array>
 #include <pico/pico_test.h>
+#include <file_test.h>
 
 //#include <boost/archive/text_oarchive.hpp> //these libs are made for 32 bit but my laptop is 64 bit , solve it later
 //#include <boost/archive/text_iarchive.hpp>
-#include <fstream>
-#include <iostream>
+
 #include <sstream>
 #include <boost/asio.hpp>
 #include <functional>
@@ -40,8 +40,8 @@
 #include "ThreadWorker.h"
 #include "pico/pico_server.h"
 #include <iostream>
-#include <fstream>
-#include <boost/filesystem.hpp>
+
+
 #include <pico/pico_buffer.h>
 #include <pico/pico_record.h>
 #include <pico/pico_collection.h>
@@ -52,13 +52,13 @@
 #include <logger.h>
 #include <chat_server.h>
 #include <pico/pico_client.h>
-using namespace boost::filesystem;
+
 using namespace pico;
 using namespace std;
 
 boost::mutex myMutex;
 
-const int sizeOfArray = 20;
+
 typedef std::vector<std::shared_ptr<Currency>> vectorSharedCurPtr;
 
 namespace std {
@@ -76,20 +76,9 @@ void runProducerThread();
 void runConsumerThread();
 
 void dateExample();
-void writeToFileExample() {
-	boost::filesystem::path p("text.txt");
-	boost::filesystem::ofstream ofs(p);
-	ofs << "hello mahmoud taabodi" << std::endl;
 
-}
-void getInfoOnDirectory() {
-	boost::filesystem::path p("/");
 
-}
-void getSizeOfFile() {
 
-	std::cout << "gmon.out  size is " << " " << file_size("gmon.out") << '\n';
-}
 void serilizeClassAndLoadItViaBoost() {
 //	std::ofstream file("archive.txt");
 //	boost::archive::text_oarchive oa(file);
@@ -353,25 +342,7 @@ void testThreadPool() {
 
 }
 
-void writeBinaryExample() {
-//	 streampos size;
-//	  char * memblock;
-//
-//	  ifstream file ("example.bin", ios::in|ios::binary|ios::ate);
-//	  if (file.is_open())
-//	  {
-//	    size = file.tellg();
-//	    memblock = new char [size];
-//	    file.seekg (0, ios::beg);
-//	    file.read (memblock, size);
-//	    file.close();
-//
-//	    cout << "the entire file content is in memory";
-//
-//	    delete[] memblock;
-//	  }
-//	  else cout << "Unable to open file";
-}
+
 
 void create100RecordsInCollection(){
   
@@ -539,53 +510,6 @@ void clientServerExample() {
 		std::cerr << "Exception: unknown thrown" << "\n";
 	}
 }
-
-void readingAndWritingRecordData() {
-
-	string key1 = "keyfromkey1";
-	string value1 = "valuefromvalue1";
-	string key2 = "key2";
-	string value2 = "value2";
-	pico_record x1(key1, value1);
-
-	pico_record x2(key2, value2);
-	pico_collection optionCollection("options-collection");
-
-	for (int i = 0; i < 10; i++) {
-		optionCollection.insert(x1);
-	}
-	cout << " number of records are : " << optionCollection.getNumberOfMessages()
-			<< " \n";
-	cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
-	cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
-	optionCollection.update(x1, x2);
-	//optionCollection.deleteRecord(x1);
-
-	std::cout << "end of function readingAndWritingRecordData() "<< std::endl;
-
-}
-
-void fileExamples() {
-	string p = "gmon.out";
-	if (exists(p))    // does p actually exist?
-			{
-		if (is_regular_file(p))        // is p a regular file?
-			cout << p << " size is " << file_size(p) << '\n';
-
-		else if (is_directory(p))      // is p a directory?
-			cout << p << "is a directory\n";
-
-		else
-			cout << p
-					<< "exists, but is neither a regular file nor a directory\n";
-	} else
-		cout << p << "does not exist\n";
-
-}
-void binaryFileExample() {
-	writeBinaryExample();
-}
-
 
 void dateExample() {
 	boost::gregorian::date d(2010, 1, 30);
@@ -903,6 +827,17 @@ void runChatServer()
     }
     
 }
+void file_example()
+{
+    file_test fileTest;
+    fileTest.write10Records();
+    fileTest.updateSomeRecords();
+    fileTest.writeInSpecificOffsets();
+    fileTest.deleteSomeFile();
+    fileTest.deleteSomeRecords();
+
+}
+
 int main(int argc, char** argv) {
 	try {
         
@@ -913,6 +848,8 @@ int main(int argc, char** argv) {
         //		readingAndWritingRecordData();
         //		jsonCPPexample() ;
         //		readingAndWritingComplexData();
+       // file_example();
+        
 	} catch (const std::exception& e) {
 		cout << " exception : " << e.what() << endl;
 	} catch (...) {

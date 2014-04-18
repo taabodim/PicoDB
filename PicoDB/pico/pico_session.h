@@ -128,9 +128,9 @@ namespace pico {
             }
             cout << " number of records are : "
             << optionCollection.getNumberOfMessages() << " \n";
-            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
-            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
-            optionCollection.update(x1, x2);
+//            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
+//            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
+//            optionCollection.update(x1, x2);
             //optionCollection.deleteRecord(x1);
             
             std::cout << "end of function readingAndWritingRecordData() "
