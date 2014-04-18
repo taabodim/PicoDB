@@ -324,13 +324,13 @@ namespace pico {
         }
         void writeTenKEY0KEY1KEY2DeleteAllKEY2()
         {
-            for(int  i=0;i<10;i++)
+            for(int  i=0;i<1;i++)
             {
                 insert(pico_test::smallKey0,pico_test::smallValue0);
                 insert(pico_test::smallKey1,pico_test::smallValue1);
                 insert(pico_test::smallKey2,pico_test::smallValue2);
             }
-            for(int  i=0;i<10;i++)
+            for(int  i=0;i<1;i++)
                 deleteTest(pico_test::smallKey2,pico_test::smallKey2);
 //
         }

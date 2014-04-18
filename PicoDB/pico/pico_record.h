@@ -104,19 +104,19 @@ public:
 
 		return *this;
 	}
-	bool operator==(pico_record  buffer) {
-		for (int i = 0; i < max_key_size; i++) {
-			key_[i] = buffer.key_[i];
-		}
-		return true;
+	bool operator==(pico_record&  buffer) {
+        if(buffer.getKeyAsString().compare(this->getKeyAsString())==0)
+            return true;
+        return false;
+        
 	}
 	void clear() {
 
 		for (int i = 0; i < max_key_size; i++) {
-			key_[i] = 0;
+			this->key_[i] = 0;
 		}
 		for (int i = 0; i < max_value_size; i++) {
-			value_[i] = 0;
+			this->value_[i] = 0;
 		}
 	}
 	char* getValue() {
@@ -126,18 +126,12 @@ public:
 		return key_;
 	}
 	std::string getKeyAsString() {
-        std::cout<<("pico_record getKeyAsString : key_ : ");
-        std::cout<<(key_);
-		std::string key(key_);
-       
-		return key;
+        std::string key(key_);
+       return key;
 	}
 	std::string getValueAsString() {
-        std::cout<<("pico_record getValueAsString : value_ : ");
-        std::cout<<(value_);
-		std::string val(value_);
-       
-		return val;
+       std::string val(value_);
+       return val;
 	}
 	std::string toString() const {
 		string str;

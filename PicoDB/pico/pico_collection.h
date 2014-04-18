@@ -267,7 +267,7 @@ public:
 			if (!recordIsEmpty(record_read_from_file) && record_read_from_file == record) {
 				//add the offset to the list of offset
 				list_of_offsets.push_back(offset);
-				cout << " records match" << std::endl;
+				cout << " read_all_offsets_that_match_this_record :  records match" << std::endl;
 
 			}
 
@@ -311,8 +311,9 @@ public:
   
 	void deleteOneRecord(offsetType offsetOfToBeDeletedRecord) {
         
-		pico_record empty_record;
-//        std::shared_ptr<pico_record_node> node = index_of_collection.createANodeBasedOnOffset(offset);
+		string empty("emptyString");
+        pico_record empty_record(empty,empty);
+        //        std::shared_ptr<pico_record_node> node = index_of_collection.createANodeBasedOnOffset(offset);
 //		index_of_collection.deleteNode(node);
 		overwrite(empty_record,offsetOfToBeDeletedRecord);
 
@@ -322,11 +323,14 @@ public:
         
 		size_t record_offset = offsetOfFirstRecordOfMessage;
         std::ofstream overwriter;
-        overwriter.open(filename,std::fstream::out | std::fstream::binary);
+        overwriter.open(filename, ios::out| ios::app | std::fstream::binary);
         cout << "overwriting one record to collection at this offset record_offset : "<<record_offset<<" \n";
-		overwriter.seekp(record_offset,ios_base::beg);
+		overwriter.seekp(record_offset);
+        size_t tellP = overwriter.tellp();
+        cout << "overwriting going to writer at this tellp "<<tellP<<" \n";
+		
 		record.offset_of_record = record_offset;
-		overwriter.write((char*) record.getkey(), record.max_key_size);
+  		overwriter.write((char*) record.getkey(), record.max_key_size);
 		overwriter.write((char*) record.getValue(), record.max_value_size);
         
 		overwriter.flush();
