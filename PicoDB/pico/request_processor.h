@@ -78,10 +78,12 @@ namespace pico {
             pico_collection optionCollection(picoMsg.collection);
             
             pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+           
+            offsetType whereToWriteThisRecord =-1;
             if (optionCollection.ifRecordExists(firstrecord))
             {
-            //if record is found, we update the whole message for it
-                optionCollection.deleteRecord(firstrecord);//this function should be called not the one that passes PicoMsg
+                 whereToWriteThisRecord =  optionCollection.get_offset_of_this_record(firstrecord);
+
             }
            
                 
@@ -93,8 +95,19 @@ namespace pico {
                    record = firstrecord;
                
                 std::cout<<"request_processor : record that is going to be saved is this : "<<record.toString()<<std::endl;
+               if(whereToWriteThisRecord==-1)
+               {
+                   //this is the case that the record is unique
                 optionCollection.append(record); //append the
-               
+               }
+               else
+               {
+               //this is the case that we have the offset of the first record of this message
+               //that should be replaced...
+                   optionCollection.overwrite(record,whereToWriteThisRecord);
+                   whereToWriteThisRecord+= pico_record::max_size;
+                   
+               }
                 i++;
            } while(!picoMsg.recorded_message.msg_in_buffers->empty());
             string result("one message was added to database in ");

@@ -27,6 +27,9 @@
 #include <pico/pico_test.h>
 #include <file_test.h>
 
+#include <ctime>
+#include <ratio>
+#include <chrono>
 //#include <boost/archive/text_oarchive.hpp> //these libs are made for 32 bit but my laptop is 64 bit , solve it later
 //#include <boost/archive/text_iarchive.hpp>
 
@@ -510,7 +513,25 @@ void clientServerExample() {
 		std::cerr << "Exception: unknown thrown" << "\n";
 	}
 }
+void performanceExample()
+{
 
+    using namespace std::chrono;
+    
+    steady_clock::time_point t1 = steady_clock::now();
+    
+    std::cout << "printing out 1000 stars...\n";
+    for (int i=0; i<1000; ++i) std::cout << "*";
+    std::cout << std::endl;
+    
+    steady_clock::time_point t2 = steady_clock::now();
+    
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    
+    std::cout << "It took me " << time_span.count() << " seconds.";
+    std::cout << std::endl;
+    
+}
 void dateExample() {
 	boost::gregorian::date d(2010, 1, 30);
 	std::cout << "year is " << d.year() << std::endl;

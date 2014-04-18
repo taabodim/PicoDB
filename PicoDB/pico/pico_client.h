@@ -326,9 +326,25 @@ namespace pico {
         }
         void currentTestCase()
         {
-            writeThe_same_record_to_check_if_we_update_or_insert_multiple();
+            write1000bigData();
+
         }
+        void write1000bigData()
+        {
+            using namespace std::chrono;
+            steady_clock::time_point t1 = steady_clock::now();
+            
+            for(int  i=0;i<1000;i++)
+                insert(pico_test::smallKey0,pico_test::smallValue0);
+            
+            steady_clock::time_point t2 = steady_clock::now();
+            
+            duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+            
+            std::cout << "It took me " << time_span.count() << " seconds.";
+            std::cout << std::endl;
         
+        }
         void writeOneDeleteOne()
         {
             for(int  i=0;i<1;i++)
