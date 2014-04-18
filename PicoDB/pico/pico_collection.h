@@ -48,8 +48,8 @@ public:
 
        // test_reading_from_collection();
         
-		list<pico_record> all_pico_messages = read_all_firstRecords_offsets();//write a function to get all the begining records for putting them in the tree
-		index_of_collection.build_tree(all_pico_messages);
+		//list<pico_record> all_pico_messages = read_all_firstRecords_offsets();//write a function to get all the begining records for putting them in the tree
+		//index_of_collection.build_tree(all_pico_messages);
 
 	}
    	offsetType getEndOfFileOffset() {//was debugged

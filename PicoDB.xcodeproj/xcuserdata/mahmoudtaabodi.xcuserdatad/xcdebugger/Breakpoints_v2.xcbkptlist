@@ -309,36 +309,6 @@
             endingLineNumber = "278"
             landmarkName = "update(pico_record&amp; old_record, pico_record&amp; new_record)"
             landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::pico_collection::~pico_collection()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/pico_collection.h"
-                  timestampString = "419472801.028425"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "317"
-                  endingLineNumber = "317"
-                  offsetFromSymbolStart = "16">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::pico_collection::~pico_collection()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/pico_collection.h"
-                  timestampString = "419472801.028779"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "318"
-                  endingLineNumber = "318"
-                  offsetFromSymbolStart = "15">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -488,113 +458,29 @@
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "pico::request_processor::request_processor()"
+                  symbolName = "pico::request_processor::deleteRecords(pico::pico_message)"
                   moduleName = "PicoDB"
                   urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "419472801.032562"
+                  timestampString = "419474951.657821"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "117"
-                  endingLineNumber = "117"
-                  offsetFromSymbolStart = "16">
+                  startingLineNumber = "97"
+                  endingLineNumber = "97"
+                  offsetFromSymbolStart = "128">
                </Location>
                <Location
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "pico::request_processor::request_processor()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/c++/v1/string"
-                  timestampString = "419472801.033061"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "1856"
-                  endingLineNumber = "1856"
-                  offsetFromSymbolStart = "95">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::request_processor::request_processor()"
+                  symbolName = "pico::request_processor::deleteRecords(pico::pico_message)"
                   moduleName = "PicoDB"
                   urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "419472801.03335"
+                  timestampString = "419474951.658305"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "115"
-                  endingLineNumber = "115"
+                  startingLineNumber = "97"
+                  endingLineNumber = "97"
                   offsetFromSymbolStart = "160">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::request_processor::request_processor()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "419472801.033659"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "115"
-                  endingLineNumber = "115"
-                  offsetFromSymbolStart = "262">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::request_processor::request_processor()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "419472801.033946"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "115"
-                  endingLineNumber = "115"
-                  offsetFromSymbolStart = "367">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::request_processor::request_processor()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "419472801.034205"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "115"
-                  endingLineNumber = "115"
-                  offsetFromSymbolStart = "546">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::request_processor::request_processor()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "419472801.034468"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "115"
-                  endingLineNumber = "115"
-                  offsetFromSymbolStart = "725">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::request_processor::request_processor()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "419472801.034778"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "115"
-                  endingLineNumber = "115"
-                  offsetFromSymbolStart = "877">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -724,6 +610,22 @@
             startingLineNumber = "370"
             endingLineNumber = "370"
             landmarkName = "recordStartsWithBEGKEY(pico_record&amp; currentRecord)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PicoDB/pico/pico_collection.h"
+            timestampString = "419474711.445139"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "172"
+            endingLineNumber = "172"
+            landmarkName = "retrieve(offsetType offset)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
