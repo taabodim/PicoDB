@@ -330,9 +330,9 @@ namespace pico {
                 insert(pico_test::smallKey1,pico_test::smallValue1);
                 insert(pico_test::smallKey2,pico_test::smallValue2);
             }
-//            for(int  i=0;i<10;i++)
-//                deleteTest(pico_test::smallKey2,pico_test::smallKey2);
-//            
+            for(int  i=0;i<10;i++)
+                deleteTest(pico_test::smallKey2,pico_test::smallKey2);
+//
         }
         
         

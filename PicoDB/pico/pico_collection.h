@@ -52,33 +52,7 @@ public:
 		index_of_collection.build_tree(all_pico_messages);
 
 	}
-    void test_reading_from_collection()
-    {
-        std::ifstream is (filename, std::ifstream::binary);
-        if (is) {
-            // get length of file:
-            is.seekg (0, is.end);
-            size_t length = is.tellg();
-            is.seekg (0, is.beg);
-            
-            char * buffer = new char [length];
-            
-            std::cout << "Reading " << length << " characters... ";
-            // read data as a block:
-            is.read (buffer,length);
-            
-            if (is)
-                std::cout << "all characters read successfully.";
-            else
-                std::cout << "error: only " << is.gcount() << " could be read";
-            is.close();
-            
-            // ...buffer contains the entire file...
-            
-            delete[] buffer;
-        }
-    }
-	offsetType getEndOfFileOffset() {//was debugged
+   	offsetType getEndOfFileOffset() {//was debugged
        
         std::fstream file;
 		file.open(filename, std::fstream::in | std::fstream::binary);
@@ -122,10 +96,7 @@ public:
 	string getName() {
 		return filename;
 	}
-//	offsetType getEndOfFileOffsett() {
-// 		infile.seekg(0, std::ifstream::end);
-//		return infile.tellg();
-//	}
+
 	pico_record get(int index) {
    		pico_record record;
 		offsetType offset = index * record.max_size;
@@ -378,7 +349,7 @@ public:
         std::ofstream outfile;
        
         cout << "appending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
-        
+        outfile.open(filename,std::fstream::app | std::fstream::binary);
         outfile.seekp(record_offset,ios_base::beg);
         outfile.write((char*) record.getkey(), record.max_key_size);
 		outfile.write((char*) record.getValue(), record.max_value_size);
