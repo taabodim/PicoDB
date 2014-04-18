@@ -21,8 +21,9 @@ namespace pico {
         offsetType key_of_pico_record; //this key is calculated based on the hash of each pico record
         offsetType pico_record_offset; //this is the place of record in the file
         //logger mylogger;
-        std::shared_ptr<pico_record_node> left; //left node in the tree
-        std::shared_ptr<pico_record_node> right; //right node in the tree
+        pico_record_node* left; //left node in the tree
+        pico_record_node* right; //right node in the tree
+        
         void printNode()
         {
             if(left==nullptr)
@@ -44,16 +45,16 @@ namespace pico {
     class pico_binary_index_tree { //this tree saves all the
     public:
         //logger mylogger;
-        std::shared_ptr<pico_record_node> root;
+        pico_record_node* root;
         
         pico_binary_index_tree() {
-            root = std::shared_ptr<pico_record_node>( new pico_record_node);
+            root =  new pico_record_node();
         }
         ~pico_binary_index_tree() {
             destroy_tree();
             
         }
-        void destroy_tree(std::shared_ptr<pico_record_node> leaf) {
+        void destroy_tree(pico_record_node* leaf) {
             if(leaf!=nullptr)
             {
                 
@@ -63,11 +64,70 @@ namespace pico {
                 
             }
         }
-        void deleteNode(std::shared_ptr<pico_record_node> node) {
+        void deleteNode(pico_record_node* node) {
             
         }
-        std::shared_ptr<pico_record_node> remove(std::shared_ptr<pico_record_node> nodeToBeDeleted) {
-//           std::shared_ptr<pico_record_node> nodeInTreeToBeDeleted= search_in_tree(nodeToBeDeleted);
+        
+        
+//        bool BinarySearchTree::remove(int value) {
+//            if (root == NULL)
+//                return false;
+//            else {
+//                if (root->getValue() == value) {
+//                    BSTNode auxRoot(0);
+//                    auxRoot.setLeftChild(root);
+//                    BSTNode* removedNode = root->remove(value, &auxRoot);
+//                    root = auxRoot.getLeft();
+//                    if (removedNode != NULL) {
+//                        delete removedNode;
+//                        return true;
+//                    } else
+//                        return false;
+//                } else {
+//                    BSTNode* removedNode = root->remove(value, NULL);
+//                    if (removedNode != NULL) {
+//                        delete removedNode;
+//                        return true;
+//                    } else
+//                        return false;
+//                }
+//            }
+//        }
+//        
+//        BSTNode* BSTNode::remove(int value, BSTNode *parent) {
+//            if (value < this->value) {
+//                if (left != NULL)
+//                    return left->remove(value, this);
+//                else
+//                    return NULL;
+//            } else if (value > this->value) {
+//                if (right != NULL)
+//                    return right->remove(value, this);
+//                else
+//                    return NULL;
+//            } else {
+//                if (left != NULL && right != NULL) {
+//                    this->value = right->minValue();
+//                    return right->remove(this->value, this);
+//                } else if (parent->left == this) {
+//                    parent->left = (left != NULL) ? left : right;
+//                    return this;
+//                } else if (parent->right == this) {
+//                    parent->right = (left != NULL) ? left : right;
+//                    return this;
+//                }
+//            }
+//        }
+//        
+//        int BSTNode::minValue() {
+//            if (left == NULL)
+//                return value;
+//            else
+//                return left->minValue();
+//        }
+        
+        pico_record_node* remove(pico_record_node* nodeToBeDeleted) {
+//           pico_record_node* nodeInTreeToBeDeleted= search_in_tree(nodeToBeDeleted);
 //            if (nodeInTreeToBeDeleted==nullptr) {
 //                std::cerr << "ERROR: Node does not exists\n";
 //                return nullptr;
@@ -87,7 +147,7 @@ namespace pico {
 //                nodeInTreeToBeDeleted = nullptr;
 //            }
 //            
-//            std::shared_ptr<pico_record_node> retval;
+//            pico_record_node* retval;
 //            if (key==nodeToBeDeleted->key_of_pico_record) {
 //                
 //                if (nodeToBeDeleted->left->key_of_pico_record==-1)  {
@@ -99,7 +159,7 @@ namespace pico {
 //                    node=nullptr;
 //                    
 //                } else {
-//                    std::shared_ptr<pico_record_node> successor = getSuccessor(node->left);
+//                    pico_record_node* successor = getSuccessor(node->left);
 //                    node->key_of_pico_record = successor->key_of_pico_record;
 //                    node->left = remove(node->left, successor->key_of_pico_record);
 //                }
@@ -112,18 +172,18 @@ namespace pico {
             return nullptr;
         }
         
-        std::shared_ptr<pico_record_node> getSuccessor(std::shared_ptr<pico_record_node> node) {
+        pico_record_node* getSuccessor(pico_record_node* node) {
             while (node->right->key_of_pico_record!=-1)
                 node = node->right;
             return node;
         }
         
-        void insert(offsetType offset,std::string key, std::shared_ptr<pico_record_node> leaf) {
+        void insert(offsetType offset,std::string key, pico_record_node* leaf) {
             
-            std::shared_ptr<pico_record_node>  node = createANodeBasedOnOffsetAndKeyOfRecord(offset,key);
+            pico_record_node*  node = createANodeBasedOnOffsetAndKeyOfRecord(offset,key);
             insert(node, leaf);
         }
-        void insert(std::shared_ptr<pico_record_node> nodeToBeInserted, std::shared_ptr<pico_record_node> leaf) {
+        void insert(pico_record_node* nodeToBeInserted, pico_record_node* leaf) {
             offsetType key = nodeToBeInserted->key_of_pico_record;
             offsetType offset= nodeToBeInserted->pico_record_offset;
            // std::cout<<("pico_index : insert : nodeToBeInserted->key_of_pico_record =key = "<<nodeToBeInserted->key_of_pico_record<<endl;
@@ -139,7 +199,7 @@ namespace pico {
                 else {
                     std::cout<<("pico_index : insert : key is smaller adding a left node to this node");
                     
-                    leaf->left = std::shared_ptr<pico_record_node>(new pico_record_node());
+                    leaf->left = new pico_record_node();
                     leaf->left->key_of_pico_record = key;
                     leaf->left->pico_record_offset = offset;
                     leaf->left->left = nullptr; //Sets the left child of the child std::string to nullptr
@@ -155,7 +215,7 @@ namespace pico {
                 else {
 //                    std::cout<<("pico_index : insert : key is larger adding a right node to this node");
                     
-                    leaf->right = std::shared_ptr<pico_record_node>(new pico_record_node());
+                    leaf->right = new pico_record_node();
                     leaf->right->key_of_pico_record = key;
                     leaf->right->pico_record_offset = offset;
                     leaf->right->left = nullptr; //Sets the left child of the child std::string to nullptr
@@ -163,7 +223,7 @@ namespace pico {
                 }
             }
         }
-        std::shared_ptr<pico_record_node> search(offsetType key, std::shared_ptr<pico_record_node> leaf) {
+        pico_record_node* search(offsetType key, pico_record_node* leaf) {
             if (leaf != nullptr) {
                 if (key == leaf->key_of_pico_record)
                     return leaf;
@@ -175,22 +235,22 @@ namespace pico {
                 return nullptr;
         }
         
-        void insert(std::shared_ptr<pico_record_node> node) {
+        void insert(pico_record_node* node) {
             insert(node,root);
         }
-        std::shared_ptr<pico_record_node> search(offsetType key) {
+        pico_record_node* search(offsetType key) {
             return search(key, root);
         }
         void destroy_tree() {
             destroy_tree(root);
         }
         
-        void insert(std::string key, std::shared_ptr<pico_record_node> leaf) {
+        void insert(std::string key, pico_record_node* leaf) {
             
         }
-        std::shared_ptr<pico_record_node> createANodeBasedOnOffsetAndKeyOfRecord(offsetType offset,std::string key)
+        pico_record_node* createANodeBasedOnOffsetAndKeyOfRecord(offsetType offset,std::string key)
         {
-            std::shared_ptr<pico_record_node>  node (new pico_record_node());
+            pico_record_node*  node (new pico_record_node());
             std::hash<std::string> hash_fn;
             std::size_t key_hash = hash_fn(key);
             
@@ -204,10 +264,10 @@ namespace pico {
         void printTheTree()
         {
 //            std::cout<<("this is the tree ");
-            list<std::shared_ptr<pico_record_node>> level;
+            list<pico_record_node*> level;
             level.push_front(root);
             while(!level.empty()){
-                std::shared_ptr<pico_record_node> node = level.front();
+                pico_record_node* node = level.front();
                 level.pop_front();
                   node->printNode();
                 if(node->left!= nullptr)
@@ -230,7 +290,7 @@ namespace pico {
             //based on the pico records that it gets reads from a collection
             std::cout<<("adding record to tree ");
             
-            std::shared_ptr<pico_record_node>  node = createANodeBasedOnOffsetAndKeyOfRecord(it.offset_of_record,it.getKeyAsString());
+            pico_record_node*  node = createANodeBasedOnOffsetAndKeyOfRecord(it.offset_of_record,it.getKeyAsString());
             insert(node);
             
         }
@@ -241,7 +301,7 @@ namespace pico {
             for (list<pico_record>::iterator it=all_pico_records.begin(); it != all_pico_records.end(); ++it) {
                 
              //   std::cout<<("build_tree : offset is "<<it->offset_of_record<<endl;
-                std::shared_ptr<pico_record_node>  node = createANodeBasedOnOffsetAndKeyOfRecord(it->offset_of_record,it->getKeyAsString());
+                pico_record_node*  node = createANodeBasedOnOffsetAndKeyOfRecord(it->offset_of_record,it->getKeyAsString());
                 insert(node);
                 
             }

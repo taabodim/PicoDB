@@ -176,17 +176,7 @@ public:
         infileLocal.close();
 		return record_read_from_file;
         
-        
-//        cout << " pico_collection  : retrieve : offset is  " << offset<< std::endl;
-//		pico_record record_read_from_file;
-//        
-//        file.seekg(offset);
-//        file.read((char*) record_read_from_file.key_,
-//                         pico_record::max_key_size);
-//        file.read((char*) record_read_from_file.value_,
-//                         pico_record::max_value_size);
-//        cout << " read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString()<< std::endl;
-       
+
 		return record_read_from_file;
 	}
 //    list<pico_record> read_all_records() { //this function was debugged!
