@@ -32,6 +32,7 @@
 #include <logger.h>
 #include <pico/pico_session.h> //for the checking if appended function
 #include <pico/pico_test.h>
+
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -326,22 +327,23 @@ namespace pico {
         }
         void currentTestCase()
         {
-            write1000bigData();
+            write1000smallRandomData();
 
         }
-        void write1000bigData()
+        void write1000smallRandomData()
         {
             using namespace std::chrono;
             steady_clock::time_point t1 = steady_clock::now();
             
             for(int  i=0;i<1000;i++)
-                insert(pico_test::smallKey0,pico_test::smallValue0);
+                insert(random_string(20),random_string(20));
             
             steady_clock::time_point t2 = steady_clock::now();
             
             duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
             
-            std::cout << "It took me " << time_span.count() << " seconds.";
+            std::cout << "****************************************\n";
+            std::cout << "\nIt took me " << time_span.count() << " seconds.";
             std::cout << std::endl;
         
         }
