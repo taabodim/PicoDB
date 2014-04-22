@@ -66,6 +66,10 @@
 		A556EB8019015C84005F4031 /* file_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_test.h; sourceTree = "<group>"; };
 		A556EB8119016396005F4031 /* BoosFileExample.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoosFileExample.h; sourceTree = "<group>"; };
 		A556EB82190164E4005F4031 /* BoosFileExample2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoosFileExample2.h; sourceTree = "<group>"; };
+		A578407A1905F2D100F4914D /* pico_sharder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_sharder.h; sourceTree = "<group>"; };
+		A578407B1905F2ED00F4914D /* pico_replicator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_replicator.h; sourceTree = "<group>"; };
+		A578407C1905F30E00F4914D /* pico_heart_beat_sender.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_heart_beat_sender.h; sourceTree = "<group>"; };
+		A578407D1905F33900F4914D /* pico_configs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_configs.h; sourceTree = "<group>"; };
 		A57BE9F218EFC45000915B0E /* writer_buffer_container.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = writer_buffer_container.h; sourceTree = "<group>"; };
 		A589B0AE18E645480031AD25 /* pico_concurrent_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_concurrent_list.h; sourceTree = "<group>"; };
 		A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_buffered_message.h; sourceTree = "<group>"; };
@@ -155,6 +159,10 @@
 				A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */,
 				A57BE9F218EFC45000915B0E /* writer_buffer_container.h */,
 				A5DBC9F919007ADE00BBD159 /* pico_test.h */,
+				A578407A1905F2D100F4914D /* pico_sharder.h */,
+				A578407B1905F2ED00F4914D /* pico_replicator.h */,
+				A578407C1905F30E00F4914D /* pico_heart_beat_sender.h */,
+				A578407D1905F33900F4914D /* pico_configs.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";
