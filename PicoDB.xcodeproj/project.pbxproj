@@ -50,19 +50,20 @@
 		A511D66C18E3628700628059 /* TODO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TODO.h; sourceTree = "<group>"; };
 		A511D66D18E3628700628059 /* PicoDB.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; path = PicoDB.1; sourceTree = "<group>"; };
 		A511D66E18E3628700628059 /* PicoDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PicoDB.h; sourceTree = "<group>"; };
-		A511D67018E3628700628059 /* Runnable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Runnable.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		A511D67018E3628700628059 /* Runnable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Runnable.h; path = ../Runnable.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		A511D67118E3628700628059 /* SimpleRunnable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleRunnable.h; sourceTree = "<group>"; };
 		A511D67218E3628700628059 /* stock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stock.h; sourceTree = "<group>"; };
 		A511D67618E3628700628059 /* json-forwards.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "json-forwards.h"; sourceTree = "<group>"; };
 		A511D67718E3628700628059 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
 		A511D67818E3628700628059 /* jsoncpp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsoncpp.cpp; sourceTree = "<group>"; };
-		A511D67918E3628700628059 /* ThreadWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadWorker.h; sourceTree = "<group>"; };
+		A511D67918E3628700628059 /* ThreadWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadWorker.h; path = ../ThreadWorker.h; sourceTree = "<group>"; };
 		A511D67F18E3839700628059 /* Readme.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
 		A511D68018E3843E00628059 /* gcc-atomic.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "gcc-atomic.hpp"; path = "../../Downloads/boost_1_55_0/gcc-atomic.hpp"; sourceTree = "<group>"; };
 		A511D68118E45E6600628059 /* Examples.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Examples.h; sourceTree = "<group>"; };
 		A53700F718F3166600C1F898 /* chat_server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_server.h; sourceTree = "<group>"; };
 		A537010D18F3193400C1F898 /* chat_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_message.h; sourceTree = "<group>"; };
 		A537010E18F4987500C1F898 /* countdown_latch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = countdown_latch.h; sourceTree = "<group>"; };
+		A556BD6A1906A69F000D3AFA /* ThreadPool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThreadPool.h; sourceTree = "<group>"; };
 		A556EB8019015C84005F4031 /* file_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_test.h; sourceTree = "<group>"; };
 		A556EB8119016396005F4031 /* BoosFileExample.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoosFileExample.h; sourceTree = "<group>"; };
 		A556EB82190164E4005F4031 /* BoosFileExample2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoosFileExample2.h; sourceTree = "<group>"; };
@@ -121,11 +122,9 @@
 				A511D65B18E3628700628059 /* pico */,
 				A511D66D18E3628700628059 /* PicoDB.1 */,
 				A511D66E18E3628700628059 /* PicoDB.h */,
-				A511D67018E3628700628059 /* Runnable.h */,
 				A511D67118E3628700628059 /* SimpleRunnable.h */,
 				A511D67218E3628700628059 /* stock.h */,
 				A511D67318E3628700628059 /* third_party */,
-				A511D67918E3628700628059 /* ThreadWorker.h */,
 				A511D64D18E35D6C00628059 /* PicoDB.1 */,
 				A511D68118E45E6600628059 /* Examples.h */,
 				A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */,
@@ -157,12 +156,15 @@
 				A511D66C18E3628700628059 /* TODO.h */,
 				A589B0AE18E645480031AD25 /* pico_concurrent_list.h */,
 				A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */,
+				A511D67918E3628700628059 /* ThreadWorker.h */,
 				A57BE9F218EFC45000915B0E /* writer_buffer_container.h */,
 				A5DBC9F919007ADE00BBD159 /* pico_test.h */,
 				A578407A1905F2D100F4914D /* pico_sharder.h */,
 				A578407B1905F2ED00F4914D /* pico_replicator.h */,
 				A578407C1905F30E00F4914D /* pico_heart_beat_sender.h */,
+				A511D67018E3628700628059 /* Runnable.h */,
 				A578407D1905F33900F4914D /* pico_configs.h */,
+				A556BD6A1906A69F000D3AFA /* ThreadPool.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";

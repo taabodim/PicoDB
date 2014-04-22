@@ -13,13 +13,13 @@
 #include "Runnable.h"
 #include "SimpleRunnable.h"
 
-namespace threadPool {
+namespace pico {
 
 
 class ThreadWorker {
 
 private:
-	typedef Runnable<SimpleRunnable> taskType;
+	
 	int numberOfJobsDoneByTheWorker;
 	bool stopFlag_;
 	std::list<taskType> queueOfTasks;
@@ -42,10 +42,10 @@ public:
 					std::cout << "queueOfTasks size is : "
 							<< queueOfTasks.size() << std::endl;
 
-					taskType& task = queueOfTasks.front();
+					taskType task = queueOfTasks.front();
 					queueOfTasks.pop_front();
 
-					task.run();
+					task->run();
 					std::cout << "task was finished by thread worker.."
 							<< std::endl;
 				}
@@ -72,8 +72,9 @@ public:
 	ThreadWorker() {
 		stopFlag_ = false;
 		free = false;
-		WorkerQueueLimit = 5;
+		WorkerQueueLimit = 10;
 	}
+    
 	bool isAvailable() {
 		return free;
 	}
@@ -88,7 +89,7 @@ public:
 
 
 	}
-	void assignJobToWorker(taskType& task) {
+	void assignJobToWorker(taskType task) {
 
 		queueOfTasks.push_front(task);
 		threadWorkerQueueIsEmpty.notify_all();
@@ -97,8 +98,9 @@ public:
 	virtual ~ThreadWorker() {
 		stopFlag_ = true;
 	}
+    
 };
-
+ typedef std::shared_ptr<ThreadWorker> workerType;
 
 } /* namespace threadPool */
 

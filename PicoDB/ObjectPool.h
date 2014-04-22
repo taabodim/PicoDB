@@ -134,11 +134,11 @@ private:
 class MongoThread {
 
 private:
-	shared_ptr<ObjectPool> mongoPool;
+    std::shared_ptr<ObjectPool> mongoPool;
 
 public:
 
-	MongoThread(shared_ptr<ObjectPool> pool) {
+	MongoThread(std::shared_ptr<ObjectPool> pool) {
 		mongoPool = pool;
 	}
 	void run() {

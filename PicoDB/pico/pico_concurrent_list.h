@@ -23,10 +23,10 @@ namespace pico{
     
   
     
-    template<>
-    struct is_unique_ptr<bufferTypeUnqiuePtr>{
-        static const bool value=true;
-    };
+//    template<>
+//    struct is_unique_ptr<bufferTypeUnqiuePtr>{
+//        static const bool value=true;
+//    };
     
    
     

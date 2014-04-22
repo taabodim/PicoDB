@@ -206,12 +206,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419711677.543055"
+            timestampString = "419873632.905754"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "311"
-            endingLineNumber = "311"
-            landmarkName = "get_offset_of_this_record(pico_record&amp; this_record)"
+            startingLineNumber = "322"
+            endingLineNumber = "322"
+            landmarkName = "deleteRecord(pico_record&amp; firstRecordOfMessageToBeDeleted)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -222,12 +222,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419709402.770141"
+            timestampString = "419873632.905754"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "132"
-            endingLineNumber = "132"
-            landmarkName = "deleteOneMessage(offsetType offsetOfFirstRecordOfMessage)"
+            startingLineNumber = "143"
+            endingLineNumber = "143"
+            landmarkName = "deleteRecord(pico_record&amp; firstRecordOfMessageToBeDeleted)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -254,11 +254,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419709402.770141"
+            timestampString = "419873632.905754"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "110"
-            endingLineNumber = "110"
+            startingLineNumber = "352"
+            endingLineNumber = "352"
             landmarkName = "deleteRecord(pico_record&amp; firstRecordOfMessageToBeDeleted)"
             landmarkType = "5">
          </BreakpointContent>
@@ -270,29 +270,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419711677.543055"
+            timestampString = "419873632.905754"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "341"
-            endingLineNumber = "341"
-            landmarkName = "overwrite(pico_record&amp; record,offsetType record_offset)"
+            startingLineNumber = "159"
+            endingLineNumber = "159"
+            landmarkName = "deleteRecord(pico_record&amp; firstRecordOfMessageToBeDeleted)"
             landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419709402.770141"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "148"
-            endingLineNumber = "148"
-            landmarkName = "class pico_collection"
-            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -302,12 +286,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419709402.770141"
+            timestampString = "419873632.905754"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "279"
-            endingLineNumber = "279"
-            landmarkName = "read_all_offsets_that_match_this_record(pico_record&amp; record)"
+            startingLineNumber = "290"
+            endingLineNumber = "290"
+            landmarkName = "deleteRecord(pico_record&amp; firstRecordOfMessageToBeDeleted)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -318,11 +302,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
-            timestampString = "419711677.543055"
+            timestampString = "419873632.905754"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "393"
-            endingLineNumber = "393">
+            startingLineNumber = "404"
+            endingLineNumber = "404"
+            landmarkName = "deleteRecord(pico_record&amp; firstRecordOfMessageToBeDeleted)"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

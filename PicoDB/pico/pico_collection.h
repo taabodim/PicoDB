@@ -94,6 +94,10 @@ public:
 //
 //		return record;
 //	}
+    void queue_record_for_deletion(pico_record& firstRecordOfMessageToBeDeleted)
+    {
+    
+    }
 	void deleteRecord(pico_record& firstRecordOfMessageToBeDeleted) {
         //this function gets called by request processor, it finds the first record of the message
         //that has the same key and delete all the records that follows that first record until the next
@@ -102,17 +106,31 @@ public:
 		
 		//delete this record all over the file , logically we should only have one record with the same key
         //when we are inserting to the file, we check if the record exists , we update it( the update is just deleting and inserting again)
-		list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(firstRecordOfMessageToBeDeleted);
-		while (!list_of_offset.empty()) {
+	
+        index.remove(*index.convert_pico_record_to_index_node(firstRecordOfMessageToBeDeleted));
+        queue_record_for_deletion(firstRecordOfMessageToBeDeleted);
+        
+      
 
+	}
+    void deletion_function(pico_record firstRecordOfMessageToBeDeleted)//this function is the main function that deletion thread calls to delete the record
+    {
+    
+        list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(firstRecordOfMessageToBeDeleted);
+		while (!list_of_offset.empty()) {
+            
 			long offsetOfFirstRecordOfMessage = list_of_offset.front();
             std::cout << "  offset in the list is  " << offsetOfFirstRecordOfMessage << endl;
 			list_of_offset.pop_front();
             
 			deleteOneMessage(offsetOfFirstRecordOfMessage);
+            //this should be done in a seperate thread
+            //to boost performance, and deleteRecord function should delete the node in index and queue the record
+            //for delete
+            
 		}
-
-	}
+    
+    }
     void deleteOneMessage(offsetType offsetOfFirstRecordOfMessage)
     //this function deletes all the records of a message starting from the first one
     //until the next "first record" is found

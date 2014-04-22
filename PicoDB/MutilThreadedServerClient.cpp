@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <thread>
 #include <boost/thread.hpp>
-
+#include <pico/ThreadPool.h>
 #include <memory>
 #include <utility>
 #include <array>
@@ -303,28 +303,35 @@ void templateSpecializationAndTraitsExample() {
 void lockExamples() {
 //	boost::mutex wokerMutext;
 //	boost::unique_lock<boost::mutex> workerLock(wokerMutext);
-
+//
 //				boost::interprocess::scoped_lock<boost::mutex> workerLock( wokerMutext);
-//syntax exmaples
-	////			boost::thread thrd(&ThreadWorker::runIndefinitely, &workerPtr);
-	//			workerType threadWorkerPtr (new boost::thread (&ThreadWorker::runIndefinitely, &workerPtr));
-	//			workerType threadWorkerPtr (new boost::thread (&ThreadWorker::runIndefinitely, &workerPtr));
+////syntax exmaples
+//			boost::thread thrd(&ThreadWorker::runIndefinitely, &workerPtr);
+//			workerType threadWorkerPtr (new boost::thread (&ThreadWorker::runIndefinitely, &workerPtr));
+//			workerType threadWorkerPtr (new boost::thread (&ThreadWorker::runIndefinitely, &workerPtr));
 
 }
 
 void runThreadPool() {
 
-//	threadPool::ThreadPool pool(1);
-//	threadPool::ThreadPool::taskType r1(123);
+	ThreadPool pool(3);
+//	std::shared_ptr<SimpleRunnable> r1 (new SimpleRunnable(124));
+//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
+//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
+//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
+    auto r1 =  std::make_shared<SimpleRunnable> (124);
+    auto r2 =  std::make_shared<SimpleRunnable> ( 125);
+    auto r3 =  std::make_shared<SimpleRunnable> (  126);
+    auto r4 =  std::make_shared<SimpleRunnable> (  127);
+    auto r5 =  std::make_shared<SimpleRunnable> (128);
+    auto r6 =  std::make_shared<SimpleRunnable> (129);
+    
+   
 
-//	, r2<SimpleRunnable>(124), r3<
-//			SimpleRunnable>(125), r4<SimpleRunnable>(126), r5<SimpleRunnable>(
-//			127), r6<SimpleRunnable>(128);
-//
-//	pool.submitTask(r1);
-////	.submitTask(r2).submitTask(r3).submitTask(r4).submitTask(
-////			r5).submitTask(r6);
-//	pool.start();
+	pool.submitTask(r1)
+	.submitTask(r2).submitTask(r3).submitTask(r4).submitTask(
+			r5).submitTask(r6);
+	pool.start();
 
 	std::cout << "end of runThreadPool()" << std::endl;
 

@@ -5,12 +5,16 @@
  *      Author: mahmoudtaabodi
  */
 #pragma once
+#include <Runnable.h>
+namespace pico {
 
-namespace threadPool {
-
-class SimpleRunnable {
+class SimpleRunnable : public Runnable{
 
 public:
+    SimpleRunnable(int taskId) : Runnable(taskId)
+    {
+       
+    }
 	void run() {
 		for (int i = 1; i < 10; i++) {
 			std::cout << "Simple Runnable is running ... by a thread  with id : "
