@@ -101,6 +101,10 @@ namespace pico{
             
         	underlying_list.push_front(t);
         }
+        int size()
+        {
+            return underlying_list.size();
+        }
         void clear()
         {
             

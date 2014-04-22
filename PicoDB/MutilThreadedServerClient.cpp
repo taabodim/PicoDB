@@ -43,7 +43,7 @@
 #include "ThreadWorker.h"
 #include "pico/pico_server.h"
 #include <iostream>
-
+#include <SimpleRunnable.h>
 
 #include <pico/pico_buffer.h>
 #include <pico/pico_record.h>
@@ -312,30 +312,7 @@ void lockExamples() {
 
 }
 
-void runThreadPool() {
 
-	ThreadPool pool(3);
-//	std::shared_ptr<SimpleRunnable> r1 (new SimpleRunnable(124));
-//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
-//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
-//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
-    auto r1 =  std::make_shared<SimpleRunnable> (124);
-    auto r2 =  std::make_shared<SimpleRunnable> ( 125);
-    auto r3 =  std::make_shared<SimpleRunnable> (  126);
-    auto r4 =  std::make_shared<SimpleRunnable> (  127);
-    auto r5 =  std::make_shared<SimpleRunnable> (128);
-    auto r6 =  std::make_shared<SimpleRunnable> (129);
-    
-   
-
-	pool.submitTask(r1)
-	.submitTask(r2).submitTask(r3).submitTask(r4).submitTask(
-			r5).submitTask(r6);
-	pool.start();
-
-	std::cout << "end of runThreadPool()" << std::endl;
-
-}
 std::string make_daytime_string() {
 	using namespace std;
 	// For time_t, time and ctime;
@@ -343,15 +320,7 @@ std::string make_daytime_string() {
 	return ctime(&now);
 }
 
-void testThreadPool() {
 
-	std::cout << "Running ten thread" << endl;
-	boost::thread threadPoolHandle(runThreadPool);
-
-	threadPoolHandle.join();
-	std::cout << "Thread pool is done." << std::endl;
-
-}
 
 
 
@@ -481,6 +450,7 @@ void forwarding_example()
 std::string DBClient::logFileName ("client");
 std::string pico_session::logFileName ("session");
 std::string request_processor::logFileName ("session");
+std::string SimpleRunnable::logFileName ("gicapods.out");
 
 string pico_test::smallKey0 {"smallKey0"};
 string pico_test::smallKey1  ("smallKey1");
@@ -875,7 +845,8 @@ int main(int argc, char** argv) {
 	try {
         
 		std::set_unexpected(myunexpected);
-        test_pico_index();
+//        test_pico_index();
+        testThreadPool();
       //  clientServerExample();
        // runChatServer();
         //		readingAndWritingRecordData();

@@ -6,22 +6,34 @@
  */
 #pragma once
 #include <Runnable.h>
+#include <logger.h>
+#include <pico/pico_utils.h>
+
 namespace pico {
 
 class SimpleRunnable : public Runnable{
 
 public:
-    SimpleRunnable(int taskId) : Runnable(taskId)
+    static string logFileName;
+    logger mylogger;
+    
+    SimpleRunnable(int taskId) : Runnable(taskId),mylogger(logFileName)
     {
        
     }
 	void run() {
+        std::string str;
+        str.append("Simple Runnable is running ... by a thread  with id : ");
+        str.append(convertToString<boost::thread::id>(boost::this_thread::get_id()));
+        
 		for (int i = 1; i < 10; i++) {
-			std::cout << "Simple Runnable is running ... by a thread  with id : "
-					<< boost::this_thread::get_id() << std::endl;
-			boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+            
+			mylogger.log(str);
+			boost::this_thread::sleep(boost::posix_time::milliseconds(100));
 		}
 	}
+    
+    virtual ~SimpleRunnable(){}
 
 };
 }
