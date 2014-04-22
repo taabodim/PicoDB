@@ -8,6 +8,7 @@
 #ifndef PICO_UTILS_H_
 #define PICO_UTILS_H_
 #include <boost/lexical_cast.hpp>
+#include <chrono>
 using namespace std;
 
 namespace pico{
@@ -34,21 +35,52 @@ namespace pico{
         return str;
     }
     
-    std::string random_number(std::size_t N=5)
+    std::string random_string( string firstPart,
+                              size_t length )
     {
-        
-        char ar[N];
-        std::generate_n(ar, N, std::rand); // Using the C function rand()
-        
-        std::cout << "ar: ";
-        std::copy(ar, ar+N, std::ostream_iterator<int>(std::cout, " "));
-        std::cout << "\n";
-        std::string retStr(ar);
-        std::cout << "retStr : "<<retStr<<std::endl;
-        return retStr;
+        auto randchar = []() -> char
+        {
+            const char charset[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+            const size_t max_index = (sizeof(charset) - 1);
+            return charset[ rand() % max_index ];
+        };
+        std::string str(length,0);
+        std::generate_n( str.begin(), length, randchar );
+        str.append(firstPart);
+        return str;
     }
-    
-    std::string convertToString(int i)
+    template<typename T>
+    T random_number(std::size_t N=5)
+    {
+        auto randchar = []() -> char
+        {
+            using namespace std::chrono;
+            
+            steady_clock::time_point t1 = steady_clock::now();
+            
+            
+            const char charset[] =
+            "0123456789";
+            const size_t max_index = (sizeof(charset) - 1);
+            
+            steady_clock::time_point t2 = steady_clock::now();
+            
+            nanoseconds now = duration_cast<nanoseconds>(t2-t1);
+            
+            return charset[ (rand() ^ now.count() ^ now.count()  ) % max_index ];
+        };
+        std::string retStr(N,0);
+        std::generate_n( retStr.begin(), N, randchar );
+        
+        T num  = boost::lexical_cast<T>(retStr);
+        std::cout << "retStr : "<<retStr<<std::endl;
+        return num;
+    }
+    template<typename T>
+    std::string convertToString(T i)
     {
         std::string str = boost::lexical_cast<std::string>(i);
         return str;

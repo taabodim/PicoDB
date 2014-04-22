@@ -55,6 +55,7 @@
 #include <logger.h>
 #include <chat_server.h>
 #include <pico/pico_client.h>
+#include <pico/pico_index.h>
 
 using namespace pico;
 using namespace std;
@@ -366,7 +367,7 @@ void create100RecordsInCollection(){
 //	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
 //	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
     
-    optionCollection.index_of_collection.printTheTree();
+    optionCollection.index.print_tree();
 	
 //    optionCollection.update(x1, x2);
 //	
@@ -858,13 +859,17 @@ void file_example()
     fileTest.deleteSomeRecords();
 
 }
-
+void test_pico_index()
+{
+    pico_binary_index_tree index;
+    index.test_tree();
+}
 int main(int argc, char** argv) {
 	try {
         
 		std::set_unexpected(myunexpected);
-       // test_pico_binary_index_tree();
-        clientServerExample();
+        test_pico_index();
+      //  clientServerExample();
        // runChatServer();
         //		readingAndWritingRecordData();
         //		jsonCPPexample() ;
