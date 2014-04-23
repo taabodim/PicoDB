@@ -104,12 +104,12 @@ namespace pico {
 //        auto pool = std::make_shared<ThreadPool>(2);
 //        pool(6);
 //
-        ThreadPool* pool(new ThreadPool(3));
+        ThreadPool* pool(new ThreadPool(2));
         
         
 //        pool.start();
         
-        for(int i=0;i<100;i++)
+        for(int i=0;i<3;i++)
         {
         auto r1 =  std::make_shared<SimpleRunnable> (124);
             

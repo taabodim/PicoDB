@@ -40,7 +40,7 @@ namespace pico {
             stopFlag_ = false;
             free = true;
             WorkerQueueLimit = 10;
-            threadHandle.detach();
+           // threadHandle.detach(); dont do this, they should be joinable and thread pool should wait for them
        
         }
         

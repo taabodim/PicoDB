@@ -26,14 +26,14 @@ public:
         str.append("Simple Runnable is running ... by a thread  with id : ");
         str.append(convertToString<boost::thread::id>(boost::this_thread::get_id()));
         
-		for (int i = 1; i < 10000; i++) {
+		for (int i = 1; i < 100; i++) {
             
             numberOfoutputs++;
             long  x = numberOfoutputs.load(std::memory_order_relaxed);
             str.append(" this is the num : ");
             str.append(convertToString<long>(x));
 			mylogger.log(str);
-			boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+			boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 		}
 	}
     
