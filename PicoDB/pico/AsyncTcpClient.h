@@ -139,7 +139,7 @@ private:
 			stop();
 		}
 	}
-
+//test
 	void handle_connect(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
 		if (stopped_)
