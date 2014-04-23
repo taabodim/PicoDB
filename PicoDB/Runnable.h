@@ -62,6 +62,10 @@ namespace pico {
         bool taskDone;
        
     public:
+        Runnable() {
+            taskId = -2;
+            taskDone = false;
+        }
         Runnable(int id) {
             taskId = id;
         }

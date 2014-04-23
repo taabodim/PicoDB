@@ -135,14 +135,14 @@ namespace pico {
             if(retResult==true)
                 numberOfNodesInTree--;
             return retResult;
-                }
+        }
         //
-//        
-//        pico_record_node* getSuccessor(pico_record_node* node) {
-//            while (node->right->key!=-1)
-//                node = node->right;
-//            return node;
-//        }
+        //
+        //        pico_record_node* getSuccessor(pico_record_node* node) {
+        //            while (node->right->key!=-1)
+        //                node = node->right;
+        //            return node;
+        //        }
         
         void insert(pico_record& record, pico_record_node* leaf) {
             
@@ -208,7 +208,7 @@ namespace pico {
         void destroy_tree() {
             destroy_tree(root);
         }
-       
+        
         pico_record_node* convert_pico_record_to_index_node(pico_record& record)
         {
             pico_record_node*  node (new pico_record_node());
@@ -216,7 +216,7 @@ namespace pico {
             std::size_t key_hash = hash_fn(record.getKeyAsString()); //record key will be used to make the node key
             
             node->key=key_hash;
-           // node->key = offset;//for testing the tree, just use the offset for now
+            // node->key = offset;//for testing the tree, just use the offset for now
             
             node->offset =  record.offset_of_record; //this is the record offset that will be saved in the index
             node->left=nullptr;
@@ -314,7 +314,7 @@ namespace pico {
             //remove(allNodesInsertedInTree[1]->key);
             //std::cout<<"this is the tree after deletion of a node \n";
             std::cout<<"this is wehere the second record  is"<<search(*allRecordsInsertedInTree[1]);
-           // print_tree();
+            // print_tree();
             
         }
         

@@ -82,8 +82,9 @@ namespace pico {
             offsetType whereToWriteThisRecord =-1;
             if (optionCollection.ifRecordExists(firstrecord))
             {
-                 whereToWriteThisRecord =  optionCollection.get_offset_of_this_record(firstrecord);
-
+                 optionCollection.index.search(firstrecord);
+                 whereToWriteThisRecord =firstrecord.offset_of_record;
+                
             }
            
                 
@@ -171,14 +172,14 @@ namespace pico {
             return result;
             
         }
-        string findRecords(const std::string collection, pico_record record) {
-            pico_collection optionCollection(collection);
-            list<pico_record> all_records = optionCollection.find(record);
-            //TODO convert all_records to json string and return it to the client
-            //		return convertToJsonString(all_records);
-            string msg("records were found");
-            return msg;
-        }
+//        string findRecords(const std::string collection, pico_record record) {
+//            pico_collection optionCollection(collection);
+//            list<pico_record> all_records = optionCollection.find(record);
+//            //TODO convert all_records to json string and return it to the client
+//            //		return convertToJsonString(all_records);
+//            string msg("records were found");
+//            return msg;
+//        }
         std::string getSuccessMessage() {
             string msg;
             msg.append("{ key : ");

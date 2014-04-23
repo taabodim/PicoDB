@@ -16,7 +16,7 @@ namespace pico {
     class pico_record {
     public:
         
-        offsetType offset_of_record;
+        offsetType offset_of_record; //this is the offset in the file and the index 
         offsetType previousRecordOffset;
         //logger mylogger;
         // Construct from a std::string.

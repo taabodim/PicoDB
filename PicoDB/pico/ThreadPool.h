@@ -89,7 +89,12 @@ namespace pico {
         {
             stop=true;
             
-            poolShutDown.notify_all();
+            for(int i=0;i<numOfThreadWorkers;i++)
+            {
+                workers[i]->stopFlag_=true ;
+                workers[i]->workerQueueIsEmpty.notify_all();//notify the threads in case they are waiting for more jobs
+            }
+           // poolShutDown.notify_all();
         }
         virtual ~ThreadPool()
         {
