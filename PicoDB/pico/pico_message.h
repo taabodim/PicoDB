@@ -135,6 +135,7 @@ namespace pico {
             this->oldvalue = msg.oldvalue;
             this->json_form_of_message = msg.json_form_of_message;
             this->buffered_message = msg.buffered_message; //a container for all the buffers that make up this pico_message
+            
             this->json_key_value_pair = createTheKeyValuePair();
             this->set_hash_code();
             this->convert_to_buffered_message();

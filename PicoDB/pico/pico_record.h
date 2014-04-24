@@ -81,16 +81,23 @@ namespace pico {
             std::copy(std::begin(buffer.value_), std::end(buffer.value_),
                       std::begin(this->value_));
             
+            this->offset_of_record = buffer.offset_of_record;
+            
         }
         
         
         pico_record operator=(pico_record&  buffer) {
+            
+            
+            
             std::cout << "pico_record copy assigned\n";
             std::copy(std::begin(buffer.key_), std::end(buffer.key_),
                       std::begin(this->key_));
             
             std::copy(std::begin(buffer.value_), std::end(buffer.value_),
                       std::begin(this->value_));
+            
+             this->offset_of_record = buffer.offset_of_record;
             
             return *this;
         }
@@ -102,11 +109,14 @@ namespace pico {
             std::copy(std::begin(buffer.value_), std::end(buffer.value_),
                       std::begin(this->value_));
             
+             this->offset_of_record = buffer.offset_of_record;
+            
             return *this;
         }
         bool operator==(pico_record&  buffer) {
             if(buffer.getKeyAsString().compare(this->getKeyAsString())==0)
                 return true;
+            
             return false;
             
         }

@@ -11,53 +11,72 @@
 #include <pico/pico_collection.h>
 #include <pico/pico_utils.h>
 #include <logger.h>
+#include <memory>
 using namespace std;
 namespace pico {
-    
+    class pico_record_node;
+    typedef pico_record_node* nodeType;
+
     //requirements of std::string
-    class pico_record_node {
+    class pico_record_node
+    //: public std::enable_shared_from_this<pico_record_node>{ //this causes problem when we are not using a normal pointer
+    {
         public :
-        
-        offsetType key; //this key is calculated based on the hash of the first  pico record of a pico message
+//        typedef std::shared_ptr<pico_record_node> nodeType;
+               offsetType key; //this key is calculated based on the hash of the first  pico record of a pico message
         offsetType offset; //this is the offset  of the first record of a pico message  in the file
         //logger mylogger;
-        pico_record_node* left; //left node in the tree
-        pico_record_node* right; //right node in the tree
+        nodeType left; //left node in the tree
+        nodeType right; //right node in the tree
         
+        pico_record_node()
+        {
+            this->key=-1;
+            this->offset=-1;
+            this->left=nullptr;
+            this->right=nullptr;
+            
+        }
         offsetType minKey() {
-            if (left == NULL)
+            if (left == nullptr)
                 return key;
             else
                 return left->minKey();
         }
-        pico_record_node* deleteNode(offsetType key,pico_record_node *parent) {
+        
+        //share_from_this throws bad weak ptr because there is no std::shared_ptr already to create
+        //another shared ptr, probably because delete thread is out of scope , so I am going to use a normal pointer
+       // pico_record_node*
+      //  nodeType
+        pico_record_node* deleteNode(offsetType key,nodeType parent) {
             if (key < this->key) {
-                if (this->left != NULL)
+                if (this->left != nullptr)
                     return left->deleteNode(key, this);
                 else
-                    return NULL;
+                    return nullptr;
             } else if (key > this->key) {
-                if (this->right != NULL)
+                if (this->right != nullptr)
                     return right->deleteNode(key, this);
                 else
-                    return NULL;
+                    return nullptr;
             }else {
-                if (left != NULL && right != NULL) {
+                if (left != nullptr && right != nullptr) {
                     this->key = right->minKey();
                     return right->deleteNode(this->key, this);
                 } else if (parent->left == this) {
                     
-                    parent->left = (left != NULL) ? left : right ;
-                    return this;
+                    parent->left = (left != nullptr) ? left : right ;
+                    return this; //
                 } else if (parent->right == this) {
                     
-                    parent->right = (left != NULL) ? left : right ;
-                    return this;;
+                    parent->right = (left != nullptr) ? left : right ;
+                   // nodeType shareThis(this);
+                    return this;
                 }
             }
             
             
-            return NULL;
+            return nullptr;
         }
         
         //        void printNode()
@@ -83,23 +102,27 @@ namespace pico {
     class pico_binary_index_tree { //this tree saves all the
     public:
         
-        pico_record_node* root;
+        nodeType root;
         long numberOfNodesInTree;
-        pico_binary_index_tree() {
+        pico_binary_index_tree()
+        //:root (new pico_record_node()){
+        {
+    
             root =  new pico_record_node();
         }
         ~pico_binary_index_tree() {
             destroy_tree();
             
         }
-        void destroy_tree(pico_record_node* leaf) {
+        void destroy_tree(nodeType leaf) {
             if(leaf!=nullptr)
             {
                 
                 if(leaf->left!=nullptr) destroy_tree(leaf->left);
                 if(leaf->right!=nullptr) destroy_tree(leaf->right);
                 delete leaf;
-                
+               // leaf->reset();//to not point to the object anymore
+                //leaf=nullptr;
             }
             
         }
@@ -112,20 +135,25 @@ namespace pico {
                 retResult= false;
             else {
                 if (root->key == key) {
-                    pico_record_node* auxRoot = new pico_record_node();
+                    nodeType auxRoot ( new pico_record_node());
                     auxRoot->key=0;
                     auxRoot->left=root;
                     pico_record_node* removedNode = root->deleteNode(key, auxRoot);
                     root = auxRoot->left;
-                    if (removedNode != NULL) {
-                        delete removedNode;
+                    if (removedNode != nullptr) {
+                       // delete removedNode;
+                        removedNode =nullptr;
+                        //removedNode.reset();
                         retResult= true;
                     } else
                         retResult=false;
                 } else {
-                    pico_record_node* removedNode = root->deleteNode(key, NULL);
-                    if (removedNode != NULL) {
-                        delete removedNode;
+                     pico_record_node* removedNode = root->deleteNode(key, nullptr);
+                    if (removedNode != nullptr) {
+                        //delete removedNode;
+                        
+                       //  removedNode.reset();
+                        removedNode=nullptr;
                         retResult=true;
                     } else
                         retResult= false;
@@ -138,18 +166,18 @@ namespace pico {
         }
         //
         //
-        //        pico_record_node* getSuccessor(pico_record_node* node) {
+        //        nodeType getSuccessor(nodeType node) {
         //            while (node->right->key!=-1)
         //                node = node->right;
         //            return node;
         //        }
         
-        void insert(pico_record& record, pico_record_node* leaf) {
+        void insert(pico_record& record, nodeType leaf) {
             
-            pico_record_node*  node = convert_pico_record_to_index_node(record);
+            nodeType  node = convert_pico_record_to_index_node(record);
             insert(node, leaf);
         }
-        void insert(pico_record_node* nodeToBeInserted, pico_record_node* leaf) {
+        void insert(nodeType nodeToBeInserted, nodeType leaf) {
             offsetType key = nodeToBeInserted->key;
             offsetType offset= nodeToBeInserted->offset;
             std::cout<<"pico_index : insert : nodeToBeInserted->key =key = "<<nodeToBeInserted->key<<endl;
@@ -185,9 +213,10 @@ namespace pico {
                 }
             }
         }
-        pico_record_node* search(pico_record_node* node, pico_record_node* leaf) {
+        nodeType search(nodeType node, nodeType leaf) {
             offsetType key = node->key;
-            if (leaf != nullptr) {
+            if (leaf != nullptr && leaf !=NULL) {
+                std::cout<<" pico_index : leaf->key is "<<leaf->key<<"\n";
                 if (key == leaf->key)
                     return leaf;
                 if (key < leaf->key)
@@ -198,20 +227,27 @@ namespace pico {
                 return nullptr;
         }
         
-        void insert(pico_record_node* node) {
+        void insert(nodeType node) {
             insert(node,root);
         }
-        pico_record_node* search(pico_record& record) {
-            
-            return search(convert_pico_record_to_index_node(record), root);
+        nodeType search(pico_record& record) {
+            nodeType node =search(convert_pico_record_to_index_node(record), root);
+            if(node==nullptr)
+            {
+                record.offset_of_record=-1;
+            }
+            else {
+                record.offset_of_record=node->offset;
+            }
+            return node;
         }
         void destroy_tree() {
             destroy_tree(root);
         }
         
-        pico_record_node* convert_pico_record_to_index_node(pico_record& record)
+        nodeType convert_pico_record_to_index_node(pico_record& record)
         {
-            pico_record_node*  node (new pico_record_node());
+            nodeType  node (new pico_record_node());
             std::hash<std::string> hash_fn;
             std::size_t key_hash = hash_fn(record.getKeyAsString()); //record key will be used to make the node key
             
@@ -227,10 +263,10 @@ namespace pico {
         //        void print_tree()
         //        {
         //            std::cout<<"this is the tree \n";
-        //            list<pico_record_node*> level;
+        //            list<nodeType> level;
         //            level.push_front(root);
         //            while(!level.empty()){
-        //                pico_record_node* node = level.front();
+        //                nodeType node = level.front();
         //                level.pop_front();
         //
         ////                if(node->left!= nullptr && node->right!= nullptr)
@@ -261,9 +297,9 @@ namespace pico {
         {
             print_tree(root);
         }
-        void print_tree(pico_record_node* topNode)//preorderPrint
+        void print_tree(nodeType topNode)//preorderPrint
         {
-            if(topNode!=NULL)
+            if(topNode!=nullptr)
             {std::cout<<topNode->key<<" ";
                 print_tree(topNode->left);
                 print_tree(topNode->right);
@@ -273,7 +309,7 @@ namespace pico {
             //based on the pico records that it gets reads from a collection
             std::cout<<("adding record to tree ");
             
-            pico_record_node*  node = convert_pico_record_to_index_node(it);
+            nodeType  node = convert_pico_record_to_index_node(it);
             insert(node);
             numberOfNodesInTree++;
             
@@ -285,7 +321,7 @@ namespace pico {
             for (list<pico_record>::iterator it=all_pico_records.begin(); it != all_pico_records.end(); ++it) {
                 
                 //   std::cout<<("build_tree : offset is "<<it->offset_of_record<<endl;
-                pico_record_node*  node = convert_pico_record_to_index_node(*it);
+                nodeType  node = convert_pico_record_to_index_node(*it);
                 insert(node);
                 numberOfNodesInTree++;
             }
@@ -295,7 +331,7 @@ namespace pico {
         void test_tree()
         {
             const int num=20;
-            pico_record_node* allNodesInsertedInTree[num];
+            nodeType allNodesInsertedInTree[num];
             pico_record* allRecordsInsertedInTree[num];
             
             string key("mahmoudkey");

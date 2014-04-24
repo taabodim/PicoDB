@@ -120,11 +120,14 @@ namespace pico {
         string deleteRecords(pico_message picoMsg) {
             
             pico_collection optionCollection(picoMsg.collection);
-            
+
+            //i am using collection pointer because, it should be passed to the
+            //deleter thread , so it should be in heap
+            std::shared_ptr<pico_collection> collectionPtr (new pico_collection(picoMsg.collection));
             pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
             std::cout<<"request_processor : record that is going to be deleted from this : "<<firstrecord.toString()<<std::endl;
-            optionCollection.deleteRecord(firstrecord);
-            
+//            optionCollection.deleteRecord(firstrecord,collectionPtr);
+            collectionPtr->deleteRecord(firstrecord);
             string result("one message was deleted from database in unknown(todo)");
             result.append(" seperate records");
             return result;

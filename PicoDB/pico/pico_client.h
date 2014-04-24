@@ -327,8 +327,8 @@ namespace pico {
         }
         void currentTestCase()
         {
-            write1000smallRandomData();
-
+           // write1000smallRandomData();
+            writeOneDeleteOne();
         }
         void write1000smallRandomData()
         {
