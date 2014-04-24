@@ -89,7 +89,12 @@ namespace pico {
         {
             stop=true;
             
-            poolShutDown.notify_all();
+            for(int i=0;i<numOfThreadWorkers;i++)
+            {
+                workers[i]->stopFlag_=true ;
+                workers[i]->workerQueueIsEmpty.notify_all();//notify the threads in case they are waiting for more jobs
+            }
+           // poolShutDown.notify_all();
         }
         virtual ~ThreadPool()
         {
@@ -104,12 +109,12 @@ namespace pico {
 //        auto pool = std::make_shared<ThreadPool>(2);
 //        pool(6);
 //
-        ThreadPool* pool(new ThreadPool(3));
+        ThreadPool* pool(new ThreadPool(2));
         
         
 //        pool.start();
         
-        for(int i=0;i<100;i++)
+        for(int i=0;i<3;i++)
         {
         auto r1 =  std::make_shared<SimpleRunnable> (124);
             

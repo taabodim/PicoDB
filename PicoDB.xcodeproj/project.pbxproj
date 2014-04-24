@@ -63,6 +63,7 @@
 		A53700F718F3166600C1F898 /* chat_server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_server.h; sourceTree = "<group>"; };
 		A537010D18F3193400C1F898 /* chat_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_message.h; sourceTree = "<group>"; };
 		A537010E18F4987500C1F898 /* countdown_latch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = countdown_latch.h; sourceTree = "<group>"; };
+		A54270EB19083EBE0019DBF9 /* DeleteTaskRunnable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeleteTaskRunnable.h; sourceTree = "<group>"; };
 		A556BD6A1906A69F000D3AFA /* ThreadPool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThreadPool.h; sourceTree = "<group>"; };
 		A556EB8019015C84005F4031 /* file_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_test.h; sourceTree = "<group>"; };
 		A556EB8119016396005F4031 /* BoosFileExample.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoosFileExample.h; sourceTree = "<group>"; };
@@ -165,6 +166,7 @@
 				A511D67018E3628700628059 /* Runnable.h */,
 				A578407D1905F33900F4914D /* pico_configs.h */,
 				A556BD6A1906A69F000D3AFA /* ThreadPool.h */,
+				A54270EB19083EBE0019DBF9 /* DeleteTaskRunnable.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";

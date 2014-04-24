@@ -15,6 +15,7 @@ class collection_manager{
 public:
 	void insert_record_in_collection(pico_record& record,pico_collection& col)
 	{
+        //test
 		if(col.isOpen())
 		{
 

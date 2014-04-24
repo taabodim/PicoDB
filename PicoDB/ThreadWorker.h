@@ -12,6 +12,7 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include "Runnable.h"
 #include "SimpleRunnable.h"
+#include <pico/pico_concurrent_list.h>
 
 namespace pico {
     
@@ -20,17 +21,18 @@ namespace pico {
     private:
         
         int numberOfJobsDoneByTheWorker;
-        bool stopFlag_;
+       
         std::shared_ptr<pico_concurrent_list<taskType>> queueOfTasks;//this queue must be common among the thread pool and all thread workers ,thus it should be in heap
         std::size_t WorkerQueueLimit;
         bool free;
         
         boost::mutex workerMutex;
-        boost::condition_variable workerQueueIsEmpty;
         boost::unique_lock<boost::mutex> workerLock;
         boost::function<void()> bound_func;
     public:
-        
+        bool stopFlag_; //this should be public
+        boost::condition_variable workerQueueIsEmpty;//this should be public
+
         boost::thread threadHandle;
         
         ThreadWorker(std::shared_ptr<pico_concurrent_list<taskType>> queueOfTasksArg) :workerLock(workerMutex),bound_func(boost::bind(&ThreadWorker::runIndefinitely, this)),threadHandle(bound_func){
@@ -40,7 +42,7 @@ namespace pico {
             stopFlag_ = false;
             free = true;
             WorkerQueueLimit = 10;
-            threadHandle.detach();
+           // threadHandle.detach(); dont do this, they should be joinable and thread pool should wait for them
        
         }
         

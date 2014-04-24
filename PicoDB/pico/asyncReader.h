@@ -27,7 +27,7 @@ public:
 	virtual ~asyncReader() {
 		std::cout<<("asyncReader is being destructed....\n");
 	}
-
+//
 //	msgPtr getReadBuffer() {
 //		msgPtr bufferPtr(new pico_buffered_message());
 //		readerBufferList.push(bufferPtr);

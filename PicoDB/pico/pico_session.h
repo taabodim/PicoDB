@@ -7,7 +7,7 @@
 
 #ifndef CLIENTHANDLER_H_
 #define CLIENTHANDLER_H_
-#include "pico/pico_server.h"
+
 #include "pico/pico_record.h"
 #include "pico/pico_collection.h"
 #include "pico/writer_buffer_container.h"

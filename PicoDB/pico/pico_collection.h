@@ -14,17 +14,30 @@
 #include <pico/pico_buffer.h>
 #include <pico/pico_index.h>
 #include <logger.h>
+#include <pico/pico_concurrent_list.h>
+#include <ThreadPool.h>
+#include <DeleteTaskRunnable.h>
+
 //this is a wrapper around the file that represents the collection
 namespace pico {
     
 class pico_collection {
     //add this to some logic that doesnt call other functions who have this
     //boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex)
+    
+    //this is a unique_ptr because as its static i want to have only one for all the collections
+    //thus i want to compare it against NULL
+    static std::unique_ptr<ThreadPool> delete_thread_pool;
+    
 public:
     //logger mylogger;
     boost::mutex collectionMutex;
 	pico_binary_index_tree index;
+    
 	pico_collection() = delete;
+    
+    
+    
 	pico_collection(std::string name) {
 
         string path("/Users/mahmoudtaabodi/Documents/");
@@ -46,10 +59,11 @@ public:
 
        // test_reading_from_collection();
         
-		list<pico_record> all_pico_messages = read_all_messages_records();//write a function to get all the begining records for putting them in the tree
+		list<pico_record> all_pico_messages = read_all_messages_records();//write a function to get all the begining records for putting them in the tree (done)
 		index.build_tree(all_pico_messages);
-
+   
 	}
+   
    
 //    list<offsetType> get_All_Offsets_InAFile()
 //    {
@@ -96,7 +110,8 @@ public:
 //	}
     void queue_record_for_deletion(pico_record& firstRecordOfMessageToBeDeleted)
     {
-    
+        auto deleteTask = std::make_shared<DeleteTaskRunnable> (this,firstRecordOfMessageToBeDeleted);
+        delete_thread_pool->submitTask(deleteTask);
     }
 	void deleteRecord(pico_record& firstRecordOfMessageToBeDeleted) {
         //this function gets called by request processor, it finds the first record of the message
@@ -106,9 +121,10 @@ public:
 		
 		//delete this record all over the file , logically we should only have one record with the same key
         //when we are inserting to the file, we check if the record exists , we update it( the update is just deleting and inserting again)
-	
-        index.remove(*index.convert_pico_record_to_index_node(firstRecordOfMessageToBeDeleted));
-        queue_record_for_deletion(firstRecordOfMessageToBeDeleted);
+         read_offset_of_this_record(firstRecordOfMessageToBeDeleted); //offset of record is found using index.search
+         pico_record_node node  =  *index.convert_pico_record_to_index_node(firstRecordOfMessageToBeDeleted);
+         index.remove(node);
+         queue_record_for_deletion(firstRecordOfMessageToBeDeleted);
         
       
 
@@ -116,19 +132,14 @@ public:
     void deletion_function(pico_record firstRecordOfMessageToBeDeleted)//this function is the main function that deletion thread calls to delete the record
     {
     
-        list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(firstRecordOfMessageToBeDeleted);
-		while (!list_of_offset.empty()) {
-            
-			long offsetOfFirstRecordOfMessage = list_of_offset.front();
-            std::cout << "  offset in the list is  " << offsetOfFirstRecordOfMessage << endl;
-			list_of_offset.pop_front();
-            
-			deleteOneMessage(offsetOfFirstRecordOfMessage);
-            //this should be done in a seperate thread
+        read_offset_of_this_record(firstRecordOfMessageToBeDeleted);
+        deleteOneMessage(firstRecordOfMessageToBeDeleted.offset_of_record);
+        
+        //this should be done in a seperate thread
             //to boost performance, and deleteRecord function should delete the node in index and queue the record
             //for delete
             
-		}
+		
     
     }
     void deleteOneMessage(offsetType offsetOfFirstRecordOfMessage)
@@ -163,21 +174,21 @@ public:
     
     }
   
-        list<pico_record> find(pico_record& firstRecordOfMessageToBeFound) {
-        
-		list<pico_record> all_records;
-		list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(firstRecordOfMessageToBeFound);
-		
-        while (!list_of_offset.empty()) {
-
-			offsetType offset = list_of_offset.front();
-			cout << "  offset in the list is  " << offset << endl;
-			list_of_offset.pop_front();
-			pico_record record = retrieve(offset);
-			all_records.push_back(record);
-		}
-		return all_records;
-	}
+//        list<pico_record> find(pico_record& firstRecordOfMessageToBeFound) {
+//        
+//		list<pico_record> all_records;
+//		list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(firstRecordOfMessageToBeFound);
+//		
+//        while (!list_of_offset.empty()) {
+//
+//			offsetType offset = list_of_offset.front();
+//			cout << "  offset in the list is  " << offset << endl;
+//			list_of_offset.pop_front();
+//			pico_record record = retrieve(offset);
+//			all_records.push_back(record);
+//		}
+//		return all_records;
+//	}
 	pico_record retrieve(offsetType offset) {//was debugged
         //it seems if if I use the global infile
         //and when I use it in other functions, it stops working here , it wont read the data here , so I am using the infileLocal ,
@@ -271,46 +282,53 @@ public:
     
 
     
-    offsetType read_offset_of_this_record(pico_record& record)
+    void read_offset_of_this_record(pico_record& record)
     {
-        return index.search(record)->offset;
-        
+        record.offset_of_record = index.search(record)->offset;
     }
     
     
     //deprecate this function and replace it with one that finds the record in the index
-	list<offsetType> read_all_offsets_that_match_this_record(pico_record& record) {//debugged
-        //this function should use the index , and not iterate through the file
-        
-        //this function finds all the records that are the same as this record
-		list<offsetType> list_of_offsets;
-		offsetType endOfFile_Offset = getEndOfFileOffset();
-		cout << " offset of end of file is " << endOfFile_Offset << std::endl;
-
-		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-				pico_record::getRecordSize()) {
-            pico_record record_read_from_file = retrieve(offset);
-
-
-			if (!pico_record::recordIsEmpty(record_read_from_file) && record_read_from_file == record) {
-				//add the offset to the list of offset
-				list_of_offsets.push_back(offset);
-				cout << " read_all_offsets_that_match_this_record :  records match" << std::endl;
-                //as all the first records are unique in the collection we can break out of the loop
-                break;
-			}
-            
-            
-
-		}
-		return list_of_offsets;
-	}
+//	list<offsetType> read_all_offsets_that_match_this_record(pico_record& record) {//debugged
+//        //this function should use the index , and not iterate through the file
+//        
+//        //this function finds all the records that are the same as this record
+//		list<offsetType> list_of_offsets;
+//		offsetType endOfFile_Offset = getEndOfFileOffset();
+//		cout << " offset of end of file is " << endOfFile_Offset << std::endl;
+//
+//		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
+//				pico_record::getRecordSize()) {
+//            pico_record record_read_from_file = retrieve(offset);
+//
+//
+//			if (!pico_record::recordIsEmpty(record_read_from_file) && record_read_from_file == record) {
+//				//add the offset to the list of offset
+//				list_of_offsets.push_back(offset);
+//				cout << " read_all_offsets_that_match_this_record :  records match" << std::endl;
+//                //as all the first records are unique in the collection we can break out of the loop
+//                break;
+//			}
+//            
+//            
+//
+//		}
+//		return list_of_offsets;
+//	}
 
     bool ifRecordExists(pico_record& record){
-    //this function checks if a record exists or not
-        list<offsetType> allRecords = read_all_offsets_that_match_this_record(record);
-        if(allRecords.size()>0) return true;
-        return false;
+        //this function checks if a record exists or not
+        
+        if(index.search(record)==nullptr)
+            return false;
+        
+        return true;
+
+        
+        //this is the old version of funciton
+//        list<offsetType> allRecords = read_all_offsets_that_match_this_record(record);
+//        if(allRecords.size()>0) return true;
+//        return false;
     }
 	void deleteOneRecord(offsetType offsetOfToBeDeletedRecord) {
         
@@ -320,7 +338,7 @@ public:
         //        std::shared_ptr<pico_record_node> node = index.createANodeBasedOnOffset(offset);
 //		index.deleteNode(node);
 		overwrite(empty_record,offsetOfToBeDeletedRecord);
-        index.remove(*index.convert_pico_record_to_index_node(current_record));//passing the key of the record that was deleted
+       // index.remove(*index.convert_pico_record_to_index_node(current_record));//passing the key of the record that was deleted
         //to calculate the right 
         
 
@@ -332,23 +350,27 @@ public:
         //iterating through all the records in the file should be avoided
         // at all the times. and index should be found...
     
-        offsetType endOfFile_Offset = getEndOfFileOffset();//this function is expensive,
-        //we should have a class variable to store endOfFilleOffset
+        return  index.search(this_record)->offset;
         
-        cout << " get_offset_of_this_record : offset of end of file is " << endOfFile_Offset << std::endl;
         
-		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-             pico_record::getRecordSize()) {
-            pico_record record_read_from_file = retrieve(offset);
-            
-            
-			if (!pico_record::recordIsEmpty(record_read_from_file) && record_read_from_file == this_record) {
-				cout << " get_offset_of_this_record :  records match" << std::endl;
-                return offset;
-				
-			}
-        }
-        return -1;
+        //old version of the function
+//        offsetType endOfFile_Offset = getEndOfFileOffset();//this function is expensive,
+//        //we should have a class variable to store endOfFilleOffset
+//        
+//        cout << " get_offset_of_this_record : offset of end of file is " << endOfFile_Offset << std::endl;
+//        
+//		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
+//             pico_record::getRecordSize()) {
+//            pico_record record_read_from_file = retrieve(offset);
+//            
+//            
+//			if (!pico_record::recordIsEmpty(record_read_from_file) && record_read_from_file == this_record) {
+//				cout << " get_offset_of_this_record :  records match" << std::endl;
+//                return offset;
+//				
+//			}
+//        }
+//        return -1;
         
     }
     void overwrite(pico_record& record,offsetType record_offset) { //this overwrites a file
@@ -408,5 +430,21 @@ private:
    
 	std::string filename;
 };
+    
+    void DeleteTaskRunnable::run() {
+        std::string str;
+        str.append("DeleteTask Runnable is running ... by a thread  with id : ");
+        str.append(convertToString<boost::thread::id>(boost::this_thread::get_id()));
+        
+        
+        collection->deletion_function(record);
+        numberOfoutputs++;
+        long  x = numberOfoutputs.load(std::memory_order_relaxed);
+        str.append(" this is the num of deleted messages from collection : ");
+        str.append(convertToString<long>(x));
+        mylogger.log(str);
+        
+    }
+
 }
 #endif /* COLLECTION_H_ */
