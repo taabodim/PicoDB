@@ -9,11 +9,14 @@
 #define REQUESTPROCESSOR_H_
 #include <pico/pico_message.h>
 #include <pico/pico_utils.h>
+#include <pico/collection_manager.h>
 #include <logger.h>
 using namespace std;
 namespace pico {
     class request_processor {
     private:
+        collection_manager collectionManager;
+        
         std::string insertCommand;
         std::string deleteCommand;
         std::string updateCommand;
@@ -24,6 +27,13 @@ namespace pico {
         
     public:
         static string logFileName;
+        
+        request_processor() :
+        insertCommand("insert"), deleteCommand("delete"), updateCommand(
+                                                                        "update"), findCommand("find"), addUserToDBCommand(
+                                                                                                                           "adduser"), deleteUserToDBCommand("deleteuser"),mylogger(logFileName) {
+            
+        }
         
         pico_message processRequest(const string messageFromClient) {
             
@@ -38,21 +48,21 @@ namespace pico {
             logMsg.append(picoMessage.toString());
             mylogger.log(logMsg);
             
-            cout << "session: processing request from client request: "
-            << messageFromClient << std::endl;
+           // cout << "session: processing request from client request: "
+           // << messageFromClient //<< std::endl;
             
             string str("message want processed");
             
             if (picoMessage.command.compare(insertCommand) == 0) {
-                cout << "inserting one record per client request";
+               // cout << "inserting one record per client request";
                 str = insertOneMessage(picoMessage);
             }
             else if (picoMessage.command.compare(deleteCommand) == 0) {
-                cout << "deleting one record per client request";
+              //  cout << "deleting one record per client request";
                 string str = deleteRecords(picoMessage);
                 
             } else if (picoMessage.command.compare(updateCommand) == 0) {
-                cout << "updating one record per client request";
+                //cout << "updating one record per client request";
                 string str = updateRecords(picoMessage);
             } else if (picoMessage.command.compare(findCommand) == 0) {
                 cout << "finding records per client request";
@@ -75,14 +85,13 @@ namespace pico {
         {
             
             int i=0;
-            pico_collection optionCollection(picoMsg.collection);
-            
+            std::shared_ptr<pico_collection> optionCollection = collectionManager.getTheCollection(picoMsg.collection);
             pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
            
             offsetType whereToWriteThisRecord =-1;
-            if (optionCollection.ifRecordExists(firstrecord))
+            if (collectionManager.getTheCollection(picoMsg.collection)->ifRecordExists(firstrecord))
             {
-                 optionCollection.index.search(firstrecord);
+                 optionCollection->index.search(firstrecord);
                  whereToWriteThisRecord =firstrecord.offset_of_record;
                 
             }
@@ -95,17 +104,17 @@ namespace pico {
                else
                    record = firstrecord;
                
-                std::cout<<"request_processor : record that is going to be saved is this : "<<record.toString()<<std::endl;
+                //std::cout<<"request_processor : record that is going to be saved is this : "<<record.toString()<<std::endl;
                if(whereToWriteThisRecord==-1)
                {
                    //this is the case that the record is unique
-                optionCollection.append(record); //append the
+                optionCollection->append(record); //append the
                }
                else
                {
                //this is the case that we have the offset of the first record of this message
                //that should be replaced...
-                   optionCollection.overwrite(record,whereToWriteThisRecord);
+                   optionCollection->overwrite(record,whereToWriteThisRecord);
                    whereToWriteThisRecord+= pico_record::max_size;
                    
                }
@@ -118,14 +127,14 @@ namespace pico {
         }
         
         string deleteRecords(pico_message picoMsg) {
-            
-            pico_collection optionCollection(picoMsg.collection);
+             std::shared_ptr<pico_collection> collectionPtr = collectionManager.getTheCollection(picoMsg.collection);
+           
 
             //i am using collection pointer because, it should be passed to the
             //deleter thread , so it should be in heap
-            std::shared_ptr<pico_collection> collectionPtr (new pico_collection(picoMsg.collection));
+           
             pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
-            std::cout<<"request_processor : record that is going to be deleted from this : "<<firstrecord.toString()<<std::endl;
+            //std::cout<<"request_processor : record that is going to be deleted from this : "<<firstrecord.toString()<<std::endl;
 //            optionCollection.deleteRecord(firstrecord,collectionPtr);
             collectionPtr->deleteRecord(firstrecord);
             string result("one message was deleted from database in unknown(todo)");
@@ -190,12 +199,8 @@ namespace pico {
             
             return msg;
         }
-        request_processor() :
-        insertCommand("insert"), deleteCommand("delete"), updateCommand(
-                                                                        "update"), findCommand("find"), addUserToDBCommand(
-                                                                                                                           "adduser"), deleteUserToDBCommand("deleteuser"),mylogger(logFileName) {
-            
-        }
+        
+       
         ~request_processor() {
         }
     };

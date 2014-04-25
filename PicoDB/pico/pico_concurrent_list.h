@@ -41,7 +41,7 @@ namespace pico{
         
         pico_concurrent_list()
         {
-            //    std::cout<<("pico_concurrent_list being constructed");
+            //    //std::cout<<("pico_concurrent_list being constructed");
         }
        
         queueType pop()
@@ -53,12 +53,12 @@ namespace pico{
             msg = underlying_list.back();
             underlying_list.pop_back();
             
-      //      std::cout<<"pico_concurrent_list : poping from end of the list this item ..\n";
-//          std::cout<<msg.toString()<<endl;
+      //      //std::cout<<"pico_concurrent_list : poping from end of the list this item ..\n";
+//          //std::cout<<msg.toString()<<endl;
             
             return msg;
            }else{
-               std::cout<<"pico_concurrent_list : returning empty message!!!"<<std::endl;
+               //std::cout<<"pico_concurrent_list : returning empty message!!!"<<std::endl;
                return msg;//empty message
            }
         }
@@ -69,7 +69,7 @@ namespace pico{
         void push(queueType msg)
         {
             boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);//throws bad access
-            //std::cout<<("pushing pico msg to the front");
+            ////std::cout<<("pushing pico msg to the front");
             underlying_list.push_front(msg);
             
         }
@@ -92,7 +92,7 @@ namespace pico{
                 }
                 i++;
             }
-            //            std::cout<<("index "+index+ " was not found in the list..concurrent list has only "+i+" elements \n");
+            //            //std::cout<<("index "+index+ " was not found in the list..concurrent list has only "+i+" elements \n");
             return empty;
         }
         
@@ -132,15 +132,15 @@ namespace pico{
             {
                 queueType t = underlying_list.front();
                 underlying_list.pop_front();
-                std::cout<<"pico_concurrent_list : this is the string thats going to be appneded"<<t.toString()<<endl;
+                //std::cout<<"pico_concurrent_list : this is the string thats going to be appneded"<<t.toString()<<endl;
                 str.append(t.toString());
             }
-//            std::cout<<"this is the string representation of the pico_buffered_message"<<str<<endl;
+//            //std::cout<<"this is the string representation of the pico_buffered_message"<<str<<endl;
             return str;
         }
         virtual ~pico_concurrent_list()
         {
-            // std::cout<<("pico_concurrent_list being destructed..\n");
+            // //std::cout<<("pico_concurrent_list being destructed..\n");
         }
     };
 }

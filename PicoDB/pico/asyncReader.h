@@ -22,10 +22,10 @@ class asyncReader {
 public:
        //logger mylogger;
 	asyncReader() {
-		std::cout<<"asyncReader is being constructed....\n";
+		//std::cout<<"asyncReader is being constructed....\n";
 	}
 	virtual ~asyncReader() {
-		std::cout<<("asyncReader is being destructed....\n");
+		//std::cout<<("asyncReader is being destructed....\n");
 	}
 //
 //	msgPtr getReadBuffer() {

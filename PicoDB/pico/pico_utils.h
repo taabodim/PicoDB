@@ -76,7 +76,7 @@ namespace pico{
         std::generate_n( retStr.begin(), N, randchar );
         
         T num  = boost::lexical_cast<T>(retStr);
-        std::cout << "retStr : "<<retStr<<std::endl;
+        //std::cout << "retStr : "<<retStr<<std::endl;
         return num;
     }
     template<typename T>
@@ -84,6 +84,35 @@ namespace pico{
     {
         std::string str = boost::lexical_cast<std::string>(i);
         return str;
+    }
+    
+    bool openFileIfItDoesntExist(const std::string& name) {
+        std::fstream f;
+        f.open(name, std::fstream::in); //this will open file if it doesnt exist
+        if (f.good()) {
+            f.close();
+            //std::cout<<"file does exist...\n";
+            return true;
+        } else {
+            //std::cout<<"file does NOT exist,creating one now...\n";
+            FILE * pFile;
+            pFile = fopen (name.c_str(),"w");
+            fclose (pFile);
+            
+            f.close();
+            return false;
+        }
+    }
+    
+    offsetType getEndOfFileOffset(std::fstream& file) {//was debugged
+        
+        file.seekg(0, std::ifstream::end);
+       // //std::cout<<(" getEndOfFileOffset : filename is ");
+       // //std::cout<<filename<<std::endl;
+        //std::cout<<" getEndOfFileOffset : file.tellg() :  "<<file.tellg()<<std::endl;
+        
+        return file.tellg();
+        
     }
 }
 

@@ -36,7 +36,7 @@ public:
 //    //logger mylogger;
     
 	Currency() {//default constructor
-        std::cout<<( "default constructor called" );
+        //std::cout<<( "default constructor called" );
         name = "defaultName";
         price = "defaultPrice";
         symbol = "defaultSymbol";
@@ -48,7 +48,7 @@ public:
     
 	Currency(const Currency&& other)//move constructor
     {
-        std::cout<<("move constructor called" );
+        //std::cout<<("move constructor called" );
         name = other.name;
         price = other.price;
         symbol = other.symbol;
@@ -60,7 +60,7 @@ public:
 
 	std::string operator()() //overloading () operator
 	{
-    	std::cout<<(" operator() called" );
+    	//std::cout<<(" operator() called" );
         return this->toString();
     }
 //    bool operator<(const Currency&  other) const;
@@ -94,7 +94,7 @@ public:
     }
     
     Currency(const Currency& other) {
-        std::cout<<("copy constructor called" );
+        //std::cout<<("copy constructor called" );
         name = other.name;
         price = other.price;
         symbol = other.symbol;
@@ -106,7 +106,7 @@ public:
     
     
     Currency& operator=(const Currency& other) {
-        std::cout<<("copy assignment called" );
+        //std::cout<<("copy assignment called" );
         name = other.name;
         price = other.price;
         symbol = other.symbol;
@@ -122,7 +122,7 @@ public:
         return *this;
     }
     ~Currency() {
-        std::cout<<( "destructor for currency called");
+        //std::cout<<( "destructor for currency called");
     }
     const std::string toString() const {
         

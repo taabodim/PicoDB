@@ -53,7 +53,7 @@ namespace pico {
             free = fr;
         }
         void start() {
-            std::cout<<"thread worker starting..";
+            //std::cout<<"thread worker starting..";
             
         }
         void assignJobToWorker(taskType task) {
@@ -70,32 +70,32 @@ namespace pico {
                 try {
                     
                     while (!queueOfTasks->empty()) {
-                        //   std::cout << "queueOfTasks size is : "
-                        //   << queueOfTasks->size() << std::endl;
+                        //   //std::cout << "queueOfTasks size is : "
+                        //   << queueOfTasks->size() //<< std::endl;
                         setIsAvailable(false);
                         taskType task = queueOfTasks->pop();
                         if(task!=NULL)
                             task->run();
                         
-                        // std::cout << "task was finished by thread worker.."
-                        //   << std::endl;
+                        // //std::cout << "task was finished by thread worker.."
+                        //   //<< std::endl;
                     }
                     setIsAvailable(true);
-                    // std::cout << "queueOfTasks is empty,worker is waiting for more tasks.\n ";
+                    // //std::cout << "queueOfTasks is empty,worker is waiting for more tasks.\n ";
                     workerQueueIsEmpty.wait(workerLock);
                     
                 } catch (std::exception& e) {
                     
-                    std::cout << "thread worker threw  exception..." << e.what()
-                    << std::endl;
+                    //std::cout << "thread worker threw  exception..." << e.what()
+                    ////<< std::endl;
                     
                 } catch (...) {
-                    std::cout << "thread worker threw unknown exception..."
-                    << std::endl;
+                    //std::cout << "thread worker threw unknown exception..."
+                    ////<< std::endl;
                     
                 }
                 
-                //            std::cout << "thread worker is waiting for task" << std::endl;
+                //            //std::cout << "thread worker is waiting for task" //<< std::endl;
                 
             }
             

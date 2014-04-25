@@ -90,7 +90,7 @@ namespace pico {
             
             
             
-            std::cout << "pico_record copy assigned\n";
+            //std::cout << "pico_record copy assigned\n";
             std::copy(std::begin(buffer.key_), std::end(buffer.key_),
                       std::begin(this->key_));
             
@@ -102,7 +102,7 @@ namespace pico {
             return *this;
         }
         pico_record operator=(pico_record&&   buffer) { //move assignment
-            std::cout << "pico_record move assigned\n";
+            //std::cout << "pico_record move assigned\n";
             std::copy(std::begin(buffer.key_), std::end(buffer.key_),
                       std::begin(this->key_));
             

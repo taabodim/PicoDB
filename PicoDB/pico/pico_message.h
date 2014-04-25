@@ -37,7 +37,7 @@ namespace pico {
         pico_message() {
         }
         pico_message(const pico_message& msg) {
-            //            std::cout<<"pico_message copy constructor being called.\n";
+            //            //std::cout<<"pico_message copy constructor being called.\n";
             this->user = msg.user;
             this->db = msg.db;
             this->command = msg.command;
@@ -60,8 +60,8 @@ namespace pico {
             bool parsingSuccessful = reader.parse(message_from_client, root);
             if (!parsingSuccessful) {
                 // report to the user the failure and their locations in the document.
-                std::cout << "Failed to parse message :"<<message_from_client<<"\n"
-                << reader.getFormattedErrorMessages();
+                //std::cout << "Failed to parse message :"<<message_from_client<<"\n"
+                //<< reader.getFormattedErrorMessages();
                 
                 throw new pico_exception("failed to parse message from client");
             }
@@ -124,7 +124,7 @@ namespace pico {
             return msg;
         }
         pico_message operator=(pico_message& msg) {
-            std::cout << ("pico_message copy operator being called.\n");
+            //std::cout << ("pico_message copy operator being called.\n");
             this->user = msg.user;
             this->db = msg.db;
             this->command = msg.command;
@@ -207,7 +207,7 @@ namespace pico {
             size_t hash_code = (h1 ^ (h2 << 1) ^ h3 ^ h4 ^ h5 ^ h6 ^ h7);
             this->uniqueMessageId = boost::lexical_cast < string > (hash_code);
             
-            cout << "unique message id is " << this->uniqueMessageId << endl;
+           // cout << "unique message id is " << this->uniqueMessageId << endl;
         }
         
         std::string toString() const {
@@ -231,9 +231,9 @@ namespace pico {
         //        }
         void convert_to_list_of_records() {
             
-            std::cout
-            << "pico_message : convert_to_list_of_records : messageSize is "
-            << messageSize << endl;
+            //std::cout
+          //  << "pico_message : convert_to_list_of_records : messageSize is "
+          //  << messageSize << endl;
             
             
             long numberOfRecords = 0;
@@ -287,8 +287,8 @@ namespace pico {
         }
         void convert_to_buffered_message() {
             
-            std::cout << "pico_message : converToBuffers : messageSize is "
-            << messageSize << endl;
+//            //std::cout << "pico_message : converToBuffers : messageSize is "
+          //  << messageSize << endl;
             bool appendAllExceptLastOne = false;
             
             if (messageSize > pico_buffer::max_size - 6) {
@@ -298,16 +298,16 @@ namespace pico {
             long numberOfBuffer = 0;
             
             const char* temp_buffer_message = json_form_of_message.c_str();
-            //std::cout<<("pico_message : message is too big ,data.getString() is ");
-            //  std::cout<<(json_form_of_message);
-            //std::cout<<("pico_message : message is too big , breaking down the huge string to a list of buffers ...... ");
-            // std::cout<<"*temp_buffer_message  is "<<*temp_buffer_message <<endl;
+            ////std::cout<<("pico_message : message is too big ,data.getString() is ");
+            //  //std::cout<<(json_form_of_message);
+            ////std::cout<<("pico_message : message is too big , breaking down the huge string to a list of buffers ...... ");
+            // //std::cout<<"*temp_buffer_message  is "<<*temp_buffer_message <<endl;
             while (*temp_buffer_message != 0) {
                 bufferType currentBuffer;
                 currentBuffer.parentMessageId = uniqueMessageId;
                 
-                std::cout << "\npico_message : uniqureMessageId  "
-                << uniqueMessageId << endl;
+                //std::cout << "\npico_message : uniqureMessageId  "
+               // << uniqueMessageId << endl;
                 
                 for (int i = 0; i < pico_buffer::max_size - 6; i++) {
                     currentBuffer.parentSequenceNumber = numberOfBuffer;
@@ -319,11 +319,12 @@ namespace pico {
                     ++temp_buffer_message;
                 }
                 
-                //                std::cout<<("pico_message : buffer pushed back to all_buffers ");
+                //                //std::cout<<("pico_message : buffer pushed back to all_buffers ");
                 addTheEndingTagsToAllBuffers(currentBuffer); //add append at the last characters of all, except the last one which completes the message
-                std::cout
-                << "pico_message : currentBuffer after append except the last one is "
-                << currentBuffer.toString();
+                //throws buffer overflow
+//                //std::cout
+//                << "pico_message : currentBuffer after append except the last one is "
+//                << currentBuffer.toString();
                 
                 buffered_message.append(currentBuffer);
                 
@@ -368,13 +369,13 @@ namespace pico {
         char* convertMessageToArrayBuffer() {
             
             char* raw_msg = new char[sizeof(json_form_of_message)];
-            std::cout << ("pico_message : convertMessageToArrayBuffer  ");
+            //std::cout << ("pico_message : convertMessageToArrayBuffer  ");
             const char* charOfMessage = json_form_of_message.c_str();
             for (long i = 0; i < sizeof(json_form_of_message); i++) {
                 raw_msg[i] = *charOfMessage;
                 ++charOfMessage;
             }
-            //         std::cout<<("pico_message : convertMessageToArrayBuffer temp_data.getString() is  "<<(*temp_data.getString())<<endl;
+            //         //std::cout<<("pico_message : convertMessageToArrayBuffer temp_data.getString() is  "<<(*temp_data.getString())<<endl;
             
             return raw_msg;
         }
@@ -385,24 +386,24 @@ namespace pico {
                 //get rid of all buffers that are not for this messageId
                 for (list<pico_buffer>::iterator it; it != all_buffers.end();
                      ++it) {
-                    //                std::cout<<("get_pico_message : parentSequenceNumber :  "<<it->parentSequenceNumber<<endl;
-                    //                std::cout<<("get_pico_message : seq_number :  "<<seq_number<<endl;
+                    //                //std::cout<<("get_pico_message : parentSequenceNumber :  "<<it->parentSequenceNumber<<endl;
+                    //                //std::cout<<("get_pico_message : seq_number :  "<<seq_number<<endl;
                     //
                     if (it->parentSequenceNumber == seq_number) {
                         all_raw_msg.append((it->toString()));
                         seq_number++;
                     }
                 }
-                std::cout << ("pico_message : all_raw_msg is ");
+                //std::cout << ("pico_message : all_raw_msg is ");
                 
-                std::cout << (all_raw_msg);
+                //std::cout << (all_raw_msg);
             }
             pico_message pico_msg(all_raw_msg);
             return pico_msg;
             
         }
         void clear() {
-            std::cout << ("pico_message : clearing the message ");
+            //std::cout << ("pico_message : clearing the message ");
             uniqueMessageId = "";
             user = "";
             db = "";
@@ -417,7 +418,7 @@ namespace pico {
             
         }
         ~pico_message() {
-            //  std::cout<<("pico_message being destroyed now.\n");
+            //  //std::cout<<("pico_message being destroyed now.\n");
         }
         
     };

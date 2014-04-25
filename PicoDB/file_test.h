@@ -22,7 +22,7 @@ public:
     void writeToFileExample() {
         boost::filesystem::path p("text.txt");
         boost::filesystem::ofstream ofs(p);
-        ofs << "hello mahmoud taabodi" << std::endl;
+        ofs << "hello mahmoud taabodi" << endl;
         
     }
     
@@ -33,7 +33,7 @@ public:
     
     void getSizeOfFile() {
         
-        std::cout << "gmon.out  size is " << " " << file_size("gmon.out") << '\n';
+        //std::cout << "gmon.out  size is " << " " << file_size("gmon.out") << '\n';
     }
     
     

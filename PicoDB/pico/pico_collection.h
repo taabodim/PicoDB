@@ -17,6 +17,7 @@
 #include <pico/pico_concurrent_list.h>
 #include <ThreadPool.h>
 #include <DeleteTaskRunnable.h>
+#include <pico/pico_utils.h>
 
 //this is a wrapper around the file that represents the collection
 namespace pico {
@@ -46,14 +47,14 @@ namespace pico {
             path.append(ext);
             name = path;
             filename = name;
-            // std::cout<<("pico_collection : name of the file is "<<filename<<std::endl;
+            // //std::cout<<("pico_collection : name of the file is "<<filename<<std::endl;
             //		infile.open(name, std::fstream::in | std::fstream::binary);
             //		outfile.open(name,
             //				std::fstream::out | std::fstream::app | std::fstream::binary);
             
             openFileIfItDoesntExist(filename);
             
-            std::cout<<"pico_collection : file being opened now.\n";
+            //std::cout<<"pico_collection : file being opened now.\n";
             file.open(filename,	std::fstream::in |	std::fstream::out | std::fstream::binary);
             //use the fstream for both reading and writing and appending , there should be
             //only one stream open to the file, it makes the life easier and less buggier.
@@ -72,34 +73,17 @@ namespace pico {
         //    list<offsetType> get_All_Offsets_InAFile()
         //    {
         //        list<offsetType> alloffsets;
-        //        offsetType lastOffset =getEndOfFileOffset();
-        //        std::cout<<" pico_collection : lastOffset is  "<<lastOffset<<endl;
+        //        offsetType lastOffset =getEndOfFileOffset(file);
+        //        //std::cout<<" pico_collection : lastOffset is  "<<lastOffset<<endl;
         //        for(int i=0;i<lastOffset; i=i+ pico_record::max_size)
         //        {
-        //             std::cout<<" pico_collection : one Offset is  "<<i<<endl;
+        //             //std::cout<<" pico_collection : one Offset is  "<<i<<endl;
         //            alloffsets.push_back(i);
         //        }
         //        return alloffsets;
         //    }
         
-        bool openFileIfItDoesntExist(const std::string& name) {
-            std::fstream f;
-            f.open(name, std::fstream::in); //this will open file if it doesnt exist
-            if (f.good()) {
-                f.close();
-                std::cout<<"file does exist...\n";
-                return true;
-            } else {
-                std::cout<<"file does NOT exist,creating one now...\n";
-                FILE * pFile;
-                pFile = fopen (filename.c_str(),"w");
-                fclose (pFile);
-                
-                f.close();
-                return false;
-            }
-        }
-        
+               
         size_t getNumberOfMessages() {
             //    	list<offsetType> all_Messages_offsets = read_all_Messages_offsets();
             //		return all_Messages_offsets.size();
@@ -162,6 +146,7 @@ namespace pico {
             all_offsets_for_this_message.push_back(offsetOfFirstRecordOfMessage);
             
             offsetType nextOffset=offsetOfFirstRecordOfMessage;
+            offsetType endOffset = getEndOfFileOffset(file);
             do
             {
                 
@@ -174,7 +159,7 @@ namespace pico {
                 else{
                     break;
                 }
-            } while(nextOffset<=getEndOfFileOffset());
+            } while(nextOffset<=endOffset);
             
             
             while(!all_offsets_for_this_message.empty())
@@ -206,7 +191,7 @@ namespace pico {
             //and when I use it in other functions, it stops working here , it wont read the data here , so I am using the infileLocal ,
             std::ifstream infileLocal;
             infileLocal.open(filename, std::fstream::in | std::fstream::binary);
-            cout << " pico_collection  : retrieve : offset is  " << offset<< std::endl;
+//            cout << " pico_collection  : retrieve : offset is  " << offset//<< std::endl;
             pico_record record_read_from_file;
             
             infileLocal.seekg(offset);
@@ -216,21 +201,19 @@ namespace pico {
                              pico_record::max_value_size);
             
             record_read_from_file.offset_of_record = offset;
-            cout << " read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString()<< std::endl;
+//            cout << " read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString()//<< std::endl;
             infileLocal.close();
             return record_read_from_file;
-            
-            
-            return record_read_from_file;
+          
         }
         //    list<pico_record> read_all_records() { //this function was debugged!
         //
         //		list<pico_record> list_of_records;
-        //		offsetType endOfFile_Offset = getEndOfFileOffset();
-        //		cout << "read_all_records : offset of end of file is " << endOfFile_Offset << std::endl;
+        //		offsetType endOfFile_Offset = getEndOfFileOffset(file);
+        //		cout << "read_all_records : offset of end of file is " << endOfFile_Offset //<< std::endl;
         //		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
         //             pico_record::getRecordSize()) {
-        //            cout << " read_all_records : reading one record from offset "<<offset  << std::endl;
+        //            cout << " read_all_records : reading one record from offset "<<offset  //<< std::endl;
         //
         //			pico_record record_read_from_file = retrieve(offset);
         //				if (!record_read_from_file.getKeyAsString().empty()) {
@@ -238,7 +221,7 @@ namespace pico {
         //				list_of_records.push_back(record_read_from_file);
         //			}
         //            else{
-        //                std::cout<<("warning : read_all_records : key is empty!");
+        //                //std::cout<<("warning : read_all_records : key is empty!");
         //            }
         //
         //		}
@@ -249,12 +232,12 @@ namespace pico {
         list<offsetType> read_all_Messages_offsets() {
             //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY
             list<offsetType> list_of_offsets;
-            offsetType endOfFile_Offset = getEndOfFileOffset();
-            cout << " offset of end of file is " << endOfFile_Offset << std::endl;
+            offsetType endOfFile_Offset = getEndOfFileOffset(file);
+           // cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
             
             for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
                  pico_record::max_size) {
-                cout << " read_all_records_offsets : reading one record from offset "<<offset  << std::endl;
+              //  cout << " read_all_records_offsets : reading one record from offset "<<offset  //<< std::endl;
                 
                 pico_record record_read_from_file = retrieve(offset);
                 
@@ -265,7 +248,7 @@ namespace pico {
                 }
                 //
                 //            else{
-                //                std::cout<<("warning : read_all_records_offsets : key is empty!");
+                //                //std::cout<<("warning : read_all_records_offsets : key is empty!");
                 //            }
                 //
             }
@@ -275,12 +258,13 @@ namespace pico {
         list<pico_record> read_all_messages_records() {
             //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY and return them as pico_records not offsets
             list<pico_record> list_;
-            offsetType endOfFile_Offset = getEndOfFileOffset();
-            cout << " offset of end of file is " << endOfFile_Offset << std::endl;
+            offsetType endOfFile_Offset = getEndOfFileOffset(file);
+           // cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
             
             for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
                  pico_record::max_size) {
-                cout << " read_all_records_offsets : reading one record from offset "<<offset  << std::endl;
+            
+                //cout << " read_all_records_offsets : reading one record from offset "<<offset  //<< std::endl;
                 
                 pico_record record_read_from_file = retrieve(offset);
                 
@@ -315,8 +299,8 @@ namespace pico {
         //
         //        //this function finds all the records that are the same as this record
         //		list<offsetType> list_of_offsets;
-        //		offsetType endOfFile_Offset = getEndOfFileOffset();
-        //		cout << " offset of end of file is " << endOfFile_Offset << std::endl;
+        //		offsetType endOfFile_Offset = getEndOfFileOffset(file);
+        //		cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
         //
         //		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
         //				pico_record::getRecordSize()) {
@@ -326,7 +310,7 @@ namespace pico {
         //			if (!pico_record::recordIsEmpty(record_read_from_file) && record_read_from_file == record) {
         //				//add the offset to the list of offset
         //				list_of_offsets.push_back(offset);
-        //				cout << " read_all_offsets_that_match_this_record :  records match" << std::endl;
+        //				cout << " read_all_offsets_that_match_this_record :  records match" //<< std::endl;
         //                //as all the first records are unique in the collection we can break out of the loop
         //                break;
         //			}
@@ -378,10 +362,10 @@ namespace pico {
             
             
             //old version of the function
-            //        offsetType endOfFile_Offset = getEndOfFileOffset();//this function is expensive,
+            //        offsetType endOfFile_Offset = getEndOfFileOffset(file);//this function is expensive,
             //        //we should have a class variable to store endOfFilleOffset
             //
-            //        cout << " get_offset_of_this_record : offset of end of file is " << endOfFile_Offset << std::endl;
+            //        cout << " get_offset_of_this_record : offset of end of file is " << endOfFile_Offset //<< std::endl;
             //
             //		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
             //             pico_record::getRecordSize()) {
@@ -389,7 +373,7 @@ namespace pico {
             //
             //
             //			if (!pico_record::recordIsEmpty(record_read_from_file) && record_read_from_file == this_record) {
-            //				cout << " get_offset_of_this_record :  records match" << std::endl;
+            //				cout << " get_offset_of_this_record :  records match" //<< std::endl;
             //                return offset;
             //
             //			}
@@ -399,7 +383,7 @@ namespace pico {
         }
         void overwrite(pico_record record,offsetType record_offset) { //this overwrites a file
             
-            cout << "overwriting  one record to collection at this offset record_offset : "<<record_offset<<" \n";
+           // cout << "overwriting  one record to collection at this offset record_offset : "<<record_offset<<" \n";
             file.seekp(record_offset);
             file.write((char*) record.getkey(), record.max_key_size);
             file.write((char*) record.getValue(), record.max_value_size);
@@ -409,14 +393,14 @@ namespace pico {
             append(record);
         }
         void append(pico_record& record) { //this appends to the end of file
-            offsetType record_offset = getEndOfFileOffset();
+            offsetType record_offset = getEndOfFileOffset(file);
             record.offset_of_record = record_offset;
             append_a_record(record,record_offset);
             
         }
         void append_a_record(pico_record& record,offsetType record_offset)
         {
-            cout << "appending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
+            //cout << "appending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
             if(record_offset==-1) record_offset=0;
             file.seekp(record_offset,ios_base::beg);
             file.write((char*) record.getkey(), record.max_key_size);
@@ -425,19 +409,6 @@ namespace pico {
             index.add_to_tree(record);
             
         }
-        
-        offsetType getEndOfFileOffset() {//was debugged
-            
-            file.seekg(0, std::ifstream::end);
-            std::cout<<(" getEndOfFileOffset : filename is ");
-            std::cout<<filename<<std::endl;
-            std::cout<<" getEndOfFileOffset : file.tellg() :  "<<file.tellg()<<std::endl;
-            
-            return file.tellg();
-            
-        }
-        
-        
         
         ~pico_collection() {
             //		outfile.flush();

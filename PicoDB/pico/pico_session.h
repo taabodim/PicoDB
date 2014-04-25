@@ -48,7 +48,7 @@ namespace pico {
             //we read until the whole message is read
             //then we write until the whole message is written
             auto self(shared_from_this());
-            cout << "session is trying to read messages" << endl;
+          //  cout << "session is trying to read messages" << endl;
             bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
             boost::asio::async_read(*socket_,
                                     boost::asio::buffer(currentBuffer->getData(),
@@ -69,9 +69,9 @@ namespace pico {
             while(!message.buffered_message.msg_in_buffers->empty())
             {
                 
-                std::cout<<"pico_session : popping current Buffer ";
+                //std::cout<<"pico_session : popping current Buffer ";
                 bufferType buf = message.buffered_message.msg_in_buffers->pop();
-                //                    std::cout<<"pico_client : popping current Buffer this is current buffer ";
+                //                    //std::cout<<"pico_client : popping current Buffer this is current buffer ";
                 
                 std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
                 bufferQueue_.push(curBufPtr);
@@ -85,13 +85,13 @@ namespace pico {
             
             if(bufferQueue_.empty())
             {
-                cout<<"session : bufferQueue is empty..waiting ..."<<endl;
+             //   cout<<"session : bufferQueue is empty..waiting ..."<<endl;
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
             }
             
             
             bufferTypePtr currentBuffer = bufferQueue_.pop();
-            cout << " session is writing one buffer to client : " <<currentBuffer->toString()<< std::endl;
+           // cout << " session is writing one buffer to client : " <<currentBuffer->toString()//<< std::endl;
             char* data = currentBuffer->getData();
             std::size_t dataSize = currentBuffer->getSize();
             auto self(shared_from_this());
@@ -100,11 +100,11 @@ namespace pico {
                                      [this,self,currentBuffer](const boost::system::error_code& error,
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
-                                         std::cout << "Session Sent :  "<<std::endl;
-                                         std::cout<<t<<" bytes from Client "<<std::endl;
-                                         //                                         if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
-                                         //                                         std::cout<<" data sent to client is "<<str<<endl;
-                                         std::cout<<("-------------------------");
+                                         //std::cout << "Session Sent :  "<<std::endl;
+                                         //std::cout<<t<<" bytes from Client "<<std::endl;
+                                         //                                         if(error) //std::cout<<" error msg : "<<error.message()<<std::endl;
+                                         //                                         //std::cout<<" data sent to client is "<<str<<endl;
+                                         //std::cout<<("-------------------------");
                                          
                                          readOneBuffer();
                                      });
@@ -133,8 +133,8 @@ namespace pico {
 //            optionCollection.update(x1, x2);
             //optionCollection.deleteRecord(x1);
             
-            std::cout << "end of function readingAndWritingRecordData() "
-            << std::endl;
+            //std::cout << "end of function readingAndWritingRecordData() "
+            //<< std::endl;
             
         }
         void processDataFromClient(std::string messageFromClient) {
@@ -165,7 +165,7 @@ namespace pico {
             else
                 if(find_last_of_string(currentBuffer))
             {
-                std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+                //std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
                 pico_message::removeTheEndingTags(currentBuffer);
                 string strWithoutJunk =currentBuffer->toString();
                 append_to_last_message(strWithoutJunk);
@@ -229,12 +229,12 @@ namespace pico {
        
         void print(const boost::system::error_code& error,std::size_t t,string& str)
         {
-            if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
-            std::cout << "Server received "<<std::endl;
-            std::cout<<t<<" bytes read from Client "<<std::endl;
-            std::cout<<(" data read from client is ")<<endl;
-            std::cout<<(str)<<endl;
-            std::cout<<("-------------------------")<<endl;
+          //  if(error) //std::cout<<" error msg : "<<error.message()<<std::endl;
+            //std::cout << "Server received "<<std::endl;
+            //std::cout<<t<<" bytes read from Client "<<std::endl;
+            //std::cout<<(" data read from client is ")<<endl;
+            //std::cout<<(str)<<endl;
+            //std::cout<<("-------------------------")<<endl;
             
         }
         void append_to_last_message(string str) {
@@ -269,8 +269,8 @@ namespace pico {
         //                cout << "server recienved insert message from client" << endl;
         //                //insertData to client
         //
-        //                std::cout << "server reading message : " << msgFromClient
-        //                << std::endl;
+        //                //std::cout << "server reading message : " << msgFromClient
+        //                //<< std::endl;
         //                write_messages_sync();
         //                boost::this_thread::sleep(boost::posix_time::seconds(4));
         //            }
@@ -284,8 +284,8 @@ namespace pico {
         //            //		char* data = buffer.getData();
         //            //		std::size_t dataSize = buffer.getSize();
         //            //
-        //            //		std::cout << "data to send is : " << data << std::endl;
-        //            //		std::cout << "dataSize to send is : " << dataSize << std::endl;
+        //            //		//std::cout << "data to send is : " << data //<< std::endl;
+        //            //		//std::cout << "dataSize to send is : " << dataSize //<< std::endl;
         //            //
         //            //		boost::array<char, 128> buf;
         //            //		boost::system::error_code error;
@@ -314,11 +314,11 @@ namespace pico {
         //						std::size_t t) {
         //
         //					string str = currentBuffer->getString();
-        //					std::cout << "Server sent "<<std::endl;
-        //					std::cout<<(t<<" bytes sent to client "<<std::endl;
-        //					if(error) std::cout<<(" error msg : "<<error.message()<<std::endl;
-        //					std::cout<<( " data sent to client is "<<str<<std::endl;
-        //					std::cout << "-------------------------"<<std::endl;
+        //					//std::cout << "Server sent "<<std::endl;
+        //					//std::cout<<(t<<" bytes sent to client "<<std::endl;
+        //					if(error) //std::cout<<(" error msg : "<<error.message()<<std::endl;
+        //					//std::cout<<( " data sent to client is "<<str<<std::endl;
+        //					//std::cout << "-------------------------"<<std::endl;
         //					read_messages();
         //				});
         

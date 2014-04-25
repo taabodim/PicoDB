@@ -19,7 +19,7 @@ namespace pico{
         bool parsingSuccessful = reader.parse(str, root);
 		if (!parsingSuccessful) {
 			// report to the user the failure and their locations in the document.
-			std::cout << "Failed to parse configuration\n"
+			//std::cout << "Failed to parse configuration\n"
             << reader.getFormattedErrorMessages();
 			return NULL;
 		}
@@ -34,7 +34,7 @@ namespace pico{
         bool parsingSuccessful = reader.parse(config_doc, root);
         if (!parsingSuccessful) {
             // report to the user the failure and their locations in the document.
-            std::cout << "Failed to parse configuration\n"
+            //std::cout << "Failed to parse configuration\n"
             << reader.getFormattedErrorMessages();
             return;
         }
@@ -46,10 +46,10 @@ namespace pico{
         // there is no such member.
         const Json::Value plugins = root["plug-ins"];
         for (int index = 0; index < plugins.size(); ++index) // Iterates over the sequence elements.
-            std::cout<<("plugin index is "<<(plugins[index].asString())<<std::endl;
+            //std::cout<<("plugin index is "<<(plugins[index].asString())<<std::endl;
                         
-                        std::cout<<((root["indent"].get("length", 3).asInt());
-                                    std::cout<<((root["indent"].get("use_space", true).asBool());
+                        //std::cout<<((root["indent"].get("length", 3).asInt());
+                                    //std::cout<<((root["indent"].get("use_space", true).asBool());
                                                 
                                                 // At application shutdown to make the new configuration document:
                                                 // Since Json::Value has implicit constructor for all value types, it is not
@@ -68,7 +68,7 @@ namespace pico{
                                                 //	std::cin >> root["subtree"];
                                                 
                                                 // And you can write to a stream, using the StyledWriter automatically.
-                                                std::cout << "root is this now "<<root<<endl;
+                                                //std::cout << "root is this now "<<root<<endl;
         
         }
         

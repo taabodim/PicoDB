@@ -119,21 +119,21 @@ namespace pico {
         auto r1 =  std::make_shared<SimpleRunnable> (124);
             
             pool->submitTask(r1);
-            std::cout << " i is "<<i<<endl;
+            //std::cout << " i is "<<i<<endl;
         }
         pool->shutDownAfterWorkers();
-        std::cout << "end of runThreadPool()" << std::endl;
+        //std::cout << "end of runThreadPool()" //<< std::endl;
         
     }
     
     void testThreadPool() {
         
-        std::cout << "Running ten thread" << endl;
+        //std::cout << "Running ten thread" << endl;
         std::thread t(runThreadPool);
-        std::cout << "before joining the thread" << endl;
+        //std::cout << "before joining the thread" << endl;
         t.join();
         
-        std::cout << "Thread pool is done." << std::endl;
+        //std::cout << "Thread pool is done." //<< std::endl;
         
     }
     

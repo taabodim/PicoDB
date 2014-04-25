@@ -46,7 +46,7 @@ public:
         
         outfile.open(path,
                      std::fstream::out | std::fstream::app | std::fstream::binary);
-        std::cout<<"logger instance created...\n";
+       // std::cout<<"logger instance created...\n";
     }
    
     logger()=delete;

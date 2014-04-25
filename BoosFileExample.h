@@ -117,7 +117,7 @@ namespace
         if ( pos != string::npos ) temp.erase( 0, pos+1 );
         if ( temp[0] == '.' ) temp.erase( 0, temp.find_first_not_of( "./" ) );
         else temp.erase( 0, locate_root.string().size()+1 );
-        //std::cout << "\"" << s << "\", \"" << temp << "\"" << std::endl;
+        ////std::cout << "\"" << s << "\", \"" << temp << "\"" //<< std::endl;
         return temp;
     }
     
@@ -343,7 +343,7 @@ namespace
             fs::ofstream file( pth );
             if ( !file )
             {
-                std::cout << "*****Warning - can't open output file: "
+                //std::cout << "*****Warning - can't open output file: "
                 << pth.string() << "\n";
             }
             else xml::write( *m_root, file );
@@ -495,7 +495,7 @@ int cpp_main( int argc, char ** argv )
     std::ios::sync_with_stdio(false);
     
     if ( argc <= 1 )
-        std::cout << "Usage: bjam [bjam-args] | process_jam_log [--echo] [--create-directories] [--v2] [locate-root]\n"
+        //std::cout << "Usage: bjam [bjam-args] | process_jam_log [--echo] [--create-directories] [--v2] [locate-root]\n"
         "locate-root         - the same as the bjam ALL_LOCATE_TARGET\n"
         "                      parameter, if any. Default is boost-root.\n"
         "create-directories  - if the directory for xml file doesn't exists - creates it.\n"
@@ -511,7 +511,7 @@ int cpp_main( int argc, char ** argv )
     
     if ( boost_root.empty() )
     {
-        std::cout << "must be run from within the boost-root directory tree\n";
+        //std::cout << "must be run from within the boost-root directory tree\n";
         return 1;
     }
     
@@ -546,7 +546,7 @@ int cpp_main( int argc, char ** argv )
         locate_root = boost_root;
     }
     
-    std::cout << "boost_root: " << boost_root.string() << '\n'
+    //std::cout << "boost_root: " << boost_root.string() << '\n'
     << "locate_root: " << locate_root.string() << '\n';
     
     message_manager mgr;
@@ -573,7 +573,7 @@ int cpp_main( int argc, char ** argv )
     
     while ( std::getline( *input, line ) )
     {
-        if ( echo ) std::cout << line << "\n";
+        if ( echo ) //std::cout << line << "\n";
         
         // create map of test-name to test-info
         if ( line.find( "boost-test(" ) == 0 )
@@ -597,11 +597,11 @@ int cpp_main( int argc, char ** argv )
                 if ( test_name.find( "/" ) == string::npos )
                     test_name = "/" + test_name;
                 test2info.insert( std::make_pair( test_name, info ) );
-                //      std::cout << test_name << ", " << info.type << ", " << info.file_path << "\n";
+                //      //std::cout << test_name << ", " << info.type << ", " << info.file_path << "\n";
             }
             else
             {
-                std::cout << "*****Warning - missing test path: " << line << "\n"
+                //std::cout << "*****Warning - missing test path: " << line << "\n"
                 << "  (Usually occurs when bjam doesn't know how to make a target)\n";
             }
             continue;

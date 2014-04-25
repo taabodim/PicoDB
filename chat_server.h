@@ -188,7 +188,7 @@ public:
     
     void start_accept()
     {
-          std::cout<<"start_accept being called."<<std::endl;
+          //std::cout<<"start_accept being called."<<std::endl;
         chat_session_ptr new_session(new chat_session(io_service_, room_));
         acceptor_.async_accept(new_session->socket(),
                                boost::bind(&chat_server::handle_accept, this, new_session,
@@ -198,7 +198,7 @@ public:
     void handle_accept(chat_session_ptr session,
                        const boost::system::error_code& error)
     {
-        std::cout<<"handle accept being called."<<std::endl;
+        //std::cout<<"handle accept being called."<<std::endl;
         if (!error)
         {
             session->start();

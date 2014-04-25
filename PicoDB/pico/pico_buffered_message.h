@@ -25,16 +25,16 @@ namespace pico
         //logger mylogger;
         pico_buffered_message():msg_in_buffers(new pico_concurrent_list<type>())
         {
-            //    std::cout<<("empty pico_buffered_message being constructed.....\n");
+            //    //std::cout<<("empty pico_buffered_message being constructed.....\n");
             
         }
         pico_buffered_message(std::shared_ptr<pico_concurrent_list<type>> list):msg_in_buffers(new pico_concurrent_list<type>()){
-            //     std::cout<<("pico_buffered_message being constructed....\n");
+            //     //std::cout<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
             
         }
         pico_buffered_message(const pico_buffered_message& copy){
-            //std::cout<<("pico_buffered_message copy constructed....\n");
+            ////std::cout<<("pico_buffered_message copy constructed....\n");
             msg_in_buffers = copy.msg_in_buffers;
             
         }
@@ -44,7 +44,7 @@ namespace pico
         }
         virtual ~pico_buffered_message()
         {
-            // std::cout<<("pico_buffered_message being desstructed....\n");
+            // //std::cout<<("pico_buffered_message being desstructed....\n");
             
         }
         void append(type buf)

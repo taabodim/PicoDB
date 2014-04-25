@@ -111,7 +111,7 @@ namespace
         fs::ifstream notes_map_file( notes_map_path );
         if ( !notes_map_file )
         {
-            std::cerr << "Could not open --notes-map input file: " << notes_map_path.string() << std::endl;
+            std::cerr << "Could not open --notes-map input file: " << notes_map_path.string() //<< std::endl;
             std::exit( 1 );
         }
         string line;
@@ -122,7 +122,7 @@ namespace
             string key(line.substr( 0, pos ) );
             string bookmark( line.substr( pos+1 ) );
             
-            //      std::cout << "inserting \"" << key << "\",\"" << bookmark << "\"\n";
+            //      //std::cout << "inserting \"" << key << "\",\"" << bookmark << "\"\n";
             notes.insert( notes_map::value_type( key, bookmark ) );
         }
     }
@@ -135,7 +135,7 @@ namespace
         fs::ifstream notes_file( notes_path );
         if ( !notes_file )
         {
-            std::cerr << "Could not open --notes input file: " << notes_path.string() << std::endl;
+            std::cerr << "Could not open --notes input file: " << notes_path.string() //<< std::endl;
             std::exit( 1 );
         }
         string line;
@@ -305,7 +305,7 @@ namespace
                 if ( child.empty() ) child = *itr;
                 else
                 {
-                    std::cout << "Warning: only first of two target possibilities will be reported for: \n "
+                    //std::cout << "Warning: only first of two target possibilities will be reported for: \n "
                     << root.string() << ": " << child.leaf()
                     << " and " << (*itr).leaf() << "\n";
                 }
@@ -880,14 +880,14 @@ int cpp_main( int argc, char * argv[] ) // note name!
     jamfile.open( jamfile_path );
     if ( !jamfile )
     {
-        std::cerr << "Could not open Jamfile: " << jamfile_path.native_file_string() << std::endl;
+        std::cerr << "Could not open Jamfile: " << jamfile_path.native_file_string() //<< std::endl;
         return 1;
     }
     
     report.open( fs::path( argv[2], fs::native ) );
     if ( !report )
     {
-        std::cerr << "Could not open report output file: " << argv[2] << std::endl;
+        std::cerr << "Could not open report output file: " << argv[2] //<< std::endl;
         return 1;
     }
     
@@ -898,7 +898,7 @@ int cpp_main( int argc, char * argv[] ) // note name!
         links_file.open( links_path );
         if ( !links_file )
         {
-            std::cerr << "Could not open links output file: " << argv[3] << std::endl;
+            std::cerr << "Could not open links output file: " << argv[3] //<< std::endl;
             return 1;
         }
     }
@@ -933,7 +933,7 @@ int cpp_main( int argc, char * argv[] ) // note name!
         fs::ifstream comment_file( comment_path );
         if ( !comment_file )
         {
-            std::cerr << "Could not open \"--comment\" input file: " << comment_path.string() << std::endl;
+            std::cerr << "Could not open \"--comment\" input file: " << comment_path.string() //<< std::endl;
             return 1;
         }
         char c;

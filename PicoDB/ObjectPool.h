@@ -40,17 +40,17 @@ private :
 	string version;
 public:
 	MongoConnection() {
-		std::cout << "mongo object created by default constructor."
-				<< std::endl;
+		//std::cout << "mongo object created by default constructor."
+				//<< std::endl;
 	}
 	void connect() {
-		std::cout << "mongo connecting.." << std::endl;
+		//std::cout << "mongo connecting.." //<< std::endl;
 	}
 	void disconnect() {
-		std::cout << "mongo disconnecting.." << std::endl;
+		//std::cout << "mongo disconnecting.." //<< std::endl;
 	}
 	~MongoConnection() {
-		std::cout << "mongo object deleted by  destructor." << std::endl;
+		//std::cout << "mongo object deleted by  destructor." //<< std::endl;
 	}
 };
 class ObjectFactory {
@@ -65,17 +65,17 @@ class MongoConnectionObjectFactory: public ObjectFactory {
 
 public:
 	MongoConnectionObjectFactory() {
-		std::cout
-				<< "MongoConnectionObjectFactory object created by default constructor."
-				<< std::endl;
+		//std::cout
+			//	<< "MongoConnectionObjectFactory object created by default constructor."
+				//<< std::endl;
 	}
 	objectTypePtr createObject() {
 		return new MongoConnection();
 	}
 	 ~MongoConnectionObjectFactory() {
-		std::cout
-				<< "MongoConnectionObjectFactory object deleted by  deconstructor."
-				<< std::endl;
+		//std::cout
+			//	<< "MongoConnectionObjectFactory object deleted by  deconstructor."
+				//<< std::endl;
 	}
 };
 
@@ -92,7 +92,7 @@ public:
 			PoolableObject* item = objFactoryPtr->createObject();
 			_bag.push_back(item);
 		}
-		std::cout << "pool initialized ...." << endl;
+		//std::cout << "pool initialized ...." << endl;
 	}
 	void insert(PoolableObject* item) {
 		_bag.push_back(item);
@@ -105,7 +105,7 @@ public:
 			boost::interprocess::scoped_lock<boost::mutex> lock(PoolMutex);
 			if (obj->isAvailable()) {
 				obj->setAvailable(false);
-				std::cout << "retrieveing object from pool..." << endl;
+				//std::cout << "retrieveing object from pool..." << endl;
 				return obj;
 			}
 
@@ -114,7 +114,7 @@ public:
 	}
 
 	void returnObjectBackTooPool(objectTypePtr obj) {
-		std::cout << "returning object back to the  pool..." << endl;
+		//std::cout << "returning object back to the  pool..." << endl;
 		boost::interprocess::scoped_lock<boost::mutex> lock(PoolMutex);
 		obj->setAvailable(true);
 	}
@@ -124,7 +124,7 @@ public:
 	}
 
 	virtual ~ObjectPool() {
-		std::cout << "ObjectPool object deleted by  destructor." << std::endl;
+		//std::cout << "ObjectPool object deleted by  destructor." //<< std::endl;
 	}
 private:
 	objPoolType _bag;
@@ -164,7 +164,7 @@ public:
 		}
 	}
 	virtual ~MongoThread(){
-		std::cout << "MongoThread object deleted by destructor." << std::endl;
+		//std::cout << "MongoThread object deleted by destructor." //<< std::endl;
 	}
 };
 

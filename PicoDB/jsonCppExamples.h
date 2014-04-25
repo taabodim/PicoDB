@@ -21,8 +21,8 @@ void jsonCPPexample() {
 	bool parsingSuccessful = reader.parse(config_doc, root);
 	if (!parsingSuccessful) {
 		// report to the user the failure and their locations in the document.
-		std::cout << "Failed to parse configuration\n"
-				<< reader.getFormattedErrorMessages();
+		//std::cout << "Failed to parse configuration\n"
+				//<< reader.getFormattedErrorMessages();
 		return;
 	}
 
@@ -55,7 +55,7 @@ void jsonCPPexample() {
 //	std::cin >> root["subtree"];
 
 // And you can write to a stream, using the StyledWriter automatically.
-	std::cout << "root is this now "<<root<<endl;
+	//std::cout << "root is this now "<<root<<endl;
 
 }
 

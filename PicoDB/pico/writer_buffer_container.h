@@ -15,16 +15,16 @@ namespace pico {
         std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_buffer>>> writerMessageList;
         writer_buffer_container():   writerMessageList ( new pico_concurrent_list<std::shared_ptr<pico_buffer>>())
         {
-            std::cout<<("empty writer_buffer_container being constructed....");
+            //std::cout<<("empty writer_buffer_container being constructed....");
            }
         writer_buffer_container(std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_buffer>>> list)
         
         {
-            std::cout<<("writer_buffer_container being constructed....");
+            //std::cout<<("writer_buffer_container being constructed....");
              writerMessageList = list;
         }
         ~writer_buffer_container(){
-            std::cout<<("writer_buffer_container being destructed....");
+            //std::cout<<("writer_buffer_container being destructed....");
         }
         void addToAllBuffers(std::shared_ptr<pico_buffer> msg)
         {

@@ -100,8 +100,8 @@ public:
 	void start(tcp::resolver::iterator endpoint_iter) {
 		// Start the connect actor.
 
-		std::cout << " start(tcp::resolver::iterator endpoint_iter) "
-				<< std::endl;
+		//std::cout << " start(tcp::resolver::iterator endpoint_iter) "
+				//<< std::endl;
 		start_connect(endpoint_iter);
 
 		// Start the deadline actor. You will note that we're not setting any
@@ -122,10 +122,10 @@ public:
 
 private:
 	void start_connect(tcp::resolver::iterator endpoint_iter) {
-		std::cout << " start_connect(tcp::resolver::iterator endpoint_iter) "
-				<< std::endl;
+		//std::cout << " start_connect(tcp::resolver::iterator endpoint_iter) "
+				//<< std::endl;
 		if (endpoint_iter != tcp::resolver::iterator()) {
-			std::cout << "Trying " << endpoint_iter->endpoint() << "...\n";
+			//std::cout << "Trying " << endpoint_iter->endpoint() << "...\n";
 
 			// Set a deadline for the connect operation.
 			deadline_.expires_from_now(boost::posix_time::seconds(60));
@@ -149,7 +149,7 @@ private:
 		// of the asynchronous operation. If the socket is closed at this time then
 		// the timeout handler must have run first.
 		if (!socket_.is_open()) {
-			std::cout << "Connect timed out\n";
+			//std::cout << "Connect timed out\n";
 
 			// Try the next available endpoint.
 			start_connect(++endpoint_iter);
@@ -157,7 +157,7 @@ private:
 
 		// Check if the connect operation failed before the deadline expired.
 		else if (ec) {
-			std::cout << "Connect error: " << ec.message() << "\n";
+			//std::cout << "Connect error: " << ec.message() << "\n";
 
 			// We need to close the socket used in the previous connection attempt
 			// before starting a new one.
@@ -169,7 +169,7 @@ private:
 
 		// Otherwise we have successfully established a connection.
 		else {
-			std::cout << "Connected to " << endpoint_iter->endpoint() << "\n";
+			//std::cout << "Connected to " << endpoint_iter->endpoint() << "\n";
 
 			// Start the input actor.
 			start_read();
@@ -200,12 +200,12 @@ private:
 
 			// Empty messages are heartbeats and so ignored.
 			if (!line.empty()) {
-				std::cout << "Received: " << line << "\n";
+				//std::cout << "Received: " << line << "\n";
 			}
 
 			start_read();
 		} else {
-			std::cout << "Error on receive: " << ec.message() << "\n";
+			//std::cout << "Error on receive: " << ec.message() << "\n";
 
 			stop();
 		}
@@ -231,7 +231,7 @@ private:
 			heartbeat_timer_.async_wait(
 					boost::bind(&client::start_write, this));
 		} else {
-			std::cout << "Error on heartbeat: " << ec.message() << "\n";
+			//std::cout << "Error on heartbeat: " << ec.message() << "\n";
 
 			stop();
 		}

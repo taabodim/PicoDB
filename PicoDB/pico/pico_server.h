@@ -42,25 +42,25 @@ public:
 	pico_server(boost::asio::io_service& io_service, const tcp::endpoint& endpoint,
 			socketType mySocket) :
 			acceptor_(io_service, endpoint), socket(mySocket) {
-		std::cout << "server initializing " << std::endl;
+		//std::cout << "server initializing " //<< std::endl;
 
         acceptConnection();
 	}
 
 	void acceptConnection() {
-      //  std::cout << "server before waiting for connections " << std::endl;
+      //  //std::cout << "server before waiting for connections " //<< std::endl;
         
 		acceptor_.async_accept(*socket, [this](boost::system::error_code ec)
 		{
            
 			if (!ec)
 			{
-               // std::cout<<"server accepted a conneciton"<<endl;
+               // //std::cout<<"server accepted a conneciton"<<endl;
 				initClientHandler(socket);
 			}
             else{
-              //  std::cout<<"server accepted a conneciton but there was some error\n";
-              //  std::cout<< "error code is"<<ec.value()<<" "<<ec.message()<<endl;
+              //  //std::cout<<"server accepted a conneciton but there was some error\n";
+              //  //std::cout<< "error code is"<<ec.value()<<" "<<ec.message()<<endl;
                 }
             
             //THIS LINE SHOULD BE HERE !!!!
@@ -71,7 +71,7 @@ public:
 	}
 
 	void initClientHandler(socketType socket) {
-		std::cout<<"server accepted a connection...going to start the session";
+		//std::cout<<"server accepted a connection...going to start the session";
 		std::shared_ptr<pico_session> clientPtr (new pico_session (socket));
 		//add clients to a set
 		clientPtr->start();
