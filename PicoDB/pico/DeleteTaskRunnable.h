@@ -15,7 +15,7 @@
 #include <atomic>
 namespace pico {
     class pico_collection;
-    class DeleteTaskRunnable : public Runnable{
+    class DeleteTaskRunnable : public Runnable,public pico_logger_wrapper {
         
     public:
         static string logFileName;

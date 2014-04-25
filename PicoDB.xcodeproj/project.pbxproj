@@ -75,6 +75,7 @@
 		A57BE9F218EFC45000915B0E /* writer_buffer_container.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = writer_buffer_container.h; sourceTree = "<group>"; };
 		A589B0AE18E645480031AD25 /* pico_concurrent_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_concurrent_list.h; sourceTree = "<group>"; };
 		A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_buffered_message.h; sourceTree = "<group>"; };
+		A591D0FD190AF72B00D9E066 /* pico_logger_wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_logger_wrapper.h; sourceTree = "<group>"; };
 		A598208818ECBE1F00FFB6AE /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = logger.h; path = ../logger.h; sourceTree = "<group>"; };
 		A5DBC9F919007ADE00BBD159 /* pico_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_test.h; sourceTree = "<group>"; };
 		A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PicoHedgeFund.h; sourceTree = "<group>"; };
@@ -167,6 +168,7 @@
 				A578407D1905F33900F4914D /* pico_configs.h */,
 				A556BD6A1906A69F000D3AFA /* ThreadPool.h */,
 				A54270EB19083EBE0019DBF9 /* DeleteTaskRunnable.h */,
+				A591D0FD190AF72B00D9E066 /* pico_logger_wrapper.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";

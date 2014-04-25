@@ -18,11 +18,11 @@
 #include <ThreadPool.h>
 #include <DeleteTaskRunnable.h>
 #include <pico/pico_utils.h>
-
+#include <pico_logger_wrapper.h>
 //this is a wrapper around the file that represents the collection
 namespace pico {
     
-    class pico_collection : public std::enable_shared_from_this<pico_collection> {
+    class pico_collection : public std::enable_shared_from_this<pico_collection> ,public pico_logger_wrapper {
         //add this to some logic that doesnt call other functions who have this
         //boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex)
         
@@ -31,7 +31,7 @@ namespace pico {
         static std::unique_ptr<ThreadPool> delete_thread_pool;
         
     public:
-        //logger mylogger;
+       
         boost::mutex collectionMutex;
         pico_binary_index_tree index;
         
@@ -106,6 +106,9 @@ namespace pico {
         void queue_record_for_deletion(pico_record& firstRecordOfMessageToBeDeleted)
         {
             auto deleteTask = std::make_shared<DeleteTaskRunnable> (shared_from_this(),firstRecordOfMessageToBeDeleted);
+            log("collection  from collection");
+            (*this)<<"hello"<<"I am here";
+            (*this)<<"how are you";
             delete_thread_pool->submitTask(deleteTask);
         }
         void deleteRecord(pico_record& firstRecordOfMessageToBeDeleted) {
@@ -439,7 +442,7 @@ namespace pico {
         long  x = numberOfoutputs.load(std::memory_order_relaxed);
         str.append(" this is the num of deleted messages from collection : ");
         str.append(convertToString<long>(x));
-        mylogger.log(str);
+        log(str);
         
     }
     

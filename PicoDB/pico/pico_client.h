@@ -327,25 +327,33 @@ namespace pico {
         }
         void currentTestCase()
         {
+            using namespace std::chrono;
+            steady_clock::time_point t1 = steady_clock::now();
+          
+            
+            
            // write1000smallRandomData();
 //            writeOneDeleteOne();
             write1000Keys_and_deleteTheLast500();
-        }
-        void write1000smallRandomData()
-        {
-            using namespace std::chrono;
-            steady_clock::time_point t1 = steady_clock::now();
             
-            for(int  i=0;i<1000;i++)
-                insert(random_string(20),random_string(20));
             
             steady_clock::time_point t2 = steady_clock::now();
             
             duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
             
-            //std::cout << "****************************************\n";
-            //std::cout << "\nIt took me " << time_span.count() << " seconds.";
-            //std::cout //<< std::endl;
+            std::cout << "****************************************\n";
+            std::cout << "\nIt took me " << time_span.count() << " seconds.";
+            std::cout << std::endl;
+        }
+        void write1000smallRandomData()
+        {
+         
+            
+            for(int  i=0;i<1000;i++)
+                insert(random_string(20),random_string(20));
+            
+            
+           
         
         }
         void writeOneDeleteOne()
@@ -391,21 +399,21 @@ namespace pico {
                 insert(key,pico_test::smallValue0);
             }
             
-//            for(int  i=0;i<499;i++)
-//            {
-//                std::string key(pico_test::smallKey0);
-//                key.append(convertToString(i));
-//                
-//                deleteTest(key,pico_test::smallKey2);
-//            }
-            
-            for(int  i=999;i>499;i--)
+            for(int  i=0;i<1000;i++)
             {
                 std::string key(pico_test::smallKey0);
                 key.append(convertToString(i));
                 
                 deleteTest(key,pico_test::smallKey2);
             }
+            
+//            for(int  i=999;i>499;i--)
+//            {
+//                std::string key(pico_test::smallKey0);
+//                key.append(convertToString(i));
+//                
+//                deleteTest(key,pico_test::smallKey2);
+//            }
         }
         
         

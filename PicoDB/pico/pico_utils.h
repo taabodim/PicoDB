@@ -15,7 +15,7 @@ namespace pico{
     
     typedef long offsetType;
     typedef std::string messageType;
-    
+    bool log = true;
     enum class comMsg {STOP, SEND_ME_MORE, END_OF_MESSAGE};
     enum log_level {debug,trace,all,error,warning};
     
