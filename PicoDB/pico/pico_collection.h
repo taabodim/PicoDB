@@ -30,6 +30,7 @@ namespace pico {
         //this is a unique_ptr because as its static i want to have only one for all the collections
         //thus i want to compare it against NULL
         static std::unique_ptr<ThreadPool> delete_thread_pool;
+        boost::mutex writerMutex;
         
     public:
        
@@ -387,11 +388,27 @@ namespace pico {
         }
         void overwrite(pico_record record,offsetType record_offset) { //this overwrites a file
             
-           // cout << "overwriting  one record to collection at this offset record_offset : "<<record_offset<<" \n";
+//            mylogger << "overwriting  one record to collection at this offset record_offset : "<<record_offset<<" \n";
+//            boost::interprocess::scoped_lock<boost::mutex> writerLock( writerMutex);
+            do
+           {
+               //this while loop will take care of multi threaded delete
             file.seekp(record_offset);
             file.write((char*) record.getkey(), record.max_key_size);
             file.write((char*) record.getValue(), record.max_value_size);
             file.flush();
+            pico_record  currentRecord =retrieve(record_offset);
+               if(currentRecord.getKeyAsString().compare(record
+                                                         .getKeyAsString())==0
+                  && currentRecord.getValueAsString().compare(record
+                                                            .getValueAsString())==0)
+               {
+                   break;
+               }
+               else{
+                   mylogger<<"overwrite didnt work on offset "<<record_offset<<"\n";
+               }
+            }while(true);
         }
         void insert(pico_record& record) { //this appends to the end of file
             append(record);

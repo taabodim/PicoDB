@@ -67,13 +67,7 @@ public:
         wrapper.log(str);
         return wrapper;
     }
-//
-//    template<>
-//    logger& operator << (logger& wrapper,const char[2] e)
-//    {
-//        wrapper.log("\n");
-//        return wrapper;
-//    }
+
 }
 
 #endif

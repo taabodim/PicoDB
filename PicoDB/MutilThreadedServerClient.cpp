@@ -311,6 +311,8 @@ void lockExamples() {
 //	boost::mutex wokerMutext;
 //	boost::unique_lock<boost::mutex> workerLock(wokerMutext);
 //
+    
+//    boost::mutex wokerMutext;
 //				boost::interprocess::scoped_lock<boost::mutex> workerLock( wokerMutext);
 ////syntax exmaples
 //			boost::thread thrd(&ThreadWorker::runIndefinitely, &workerPtr);
