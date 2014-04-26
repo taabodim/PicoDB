@@ -32,6 +32,8 @@
 #include <logger.h>
 #include <pico/pico_session.h> //for the checking if appended function
 #include <pico/pico_test.h>
+#include <pico/pico_logger_wrapper.h>
+
 
 using boost::asio::ip::tcp;
 using namespace std;
@@ -42,7 +44,7 @@ namespace pico {
     class DBClient;
     typedef DBClient clientType;
     typedef pico_message queueType;
-    class DBClient: public std::enable_shared_from_this<DBClient> {
+    class DBClient: public std::enable_shared_from_this<DBClient>, public pico_logger_wrapper {
     private:
         
         
@@ -50,19 +52,19 @@ namespace pico {
         pico_concurrent_list <queueType> commandQueue_;
     public:
         static string logFileName;
-        logger mylogger;
+        
         DBClient(socketType socket) :
-        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutext) ,mylogger(logFileName){
+        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutext){
             
             socket_ = socket;
-            //std::cout<<( "client initializing ");
+            mylogger<<( "client initializing ");
             
         }
         
         void start_connect(tcp::resolver::iterator endpoint_iter) {
-            //std::cout<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
+            mylogger<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
             if (endpoint_iter != tcp::resolver::iterator()) {
-                //std::cout<<  "Trying "<<endpoint_iter->endpoint() << "...\n";
+                mylogger<<  "Trying "<<endpoint_iter->endpoint() << "...\n";
                 
                 // Start the asynchronous connect operation.
                 socket_->async_connect(endpoint_iter->endpoint(),
@@ -71,7 +73,7 @@ namespace pico {
                 // There are no more endpoints to try. Shut down the client.
                 //				stop();
             }
-            //std::cout<<(  " start_connect ends" );
+            mylogger<<(  " start_connect ends" );
         }
         void handle_connect(const boost::system::error_code& ec,
                             tcp::resolver::iterator endpoint_iter) {
@@ -82,7 +84,7 @@ namespace pico {
             // of the asynchronous operation. If the socket is closed at this time then
             // the timeout handler must have run first.
             if (!socket_->is_open()) {
-                //std::cout<<(  "Connect timed out\n");
+                mylogger<<(  "Connect timed out\n");
                 
                 // Try the next available endpoint.
                 start_connect(++endpoint_iter);
@@ -91,7 +93,7 @@ namespace pico {
         
         void start(const boost::system::error_code& ec,
                    tcp::resolver::iterator endpoint_iter) {
-            //            //std::cout<<"\nclient starting the process..going to write_message to server\n";
+            //            mylogger<<"\nclient starting the process..going to write_message to server\n";
             
             try {
                 if(!ec)
@@ -100,19 +102,18 @@ namespace pico {
                     writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
                 }
                 else{
-                    //std::cout<<"client : start : error is "<<ec.value()<<" error message is "<<ec.message()<<std::endl;
-                    //std::cout <<"error name is "<< ec.category().name() //<< std::endl;
-                }
+                    mylogger<<"\nclient : start : error is "<<ec.value()<<" error message is "<<ec.message();
+                    mylogger <<"\n error name is "<< ec.category().name();}
                 
             } catch (const std::exception& e) {
-                //std::cout<<" exception : "<<e.what();
+                mylogger<<" exception : "<<e.what();
             } catch (...) {
-                //std::cout<< "<----->unknown exception thrown.<------>\n";
+                mylogger<< "<----->unknown exception thrown.<------>\n";
             }
         }
         //	void readAsync() {
         ////		while (true) {
-        //		//std::cout<<(" client is going to read asynchronously..\n";
+        //		mylogger<<(" client is going to read asynchronously..\n";
         //		read_messages();
         //
         //		//boost::this_thread::sleep(boost::posix_time::seconds(4));
@@ -132,13 +133,13 @@ namespace pico {
                 else if (error)
                     throw boost::system::system_error(error); // Some other error.
                 
-                //std::cout << "client got this " << buf.data() //<< std::endl;
+                mylogger << "\nclient got this " << buf.data();
             }
         }
         void readOneBuffer() {
             
             auto self(shared_from_this());
-            // //std::cout<<"client is trying to read one buffer\n" ;
+            // mylogger<<"client is trying to read one buffer\n" ;
             bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
             
             boost::asio::async_read(*socket_,
@@ -164,7 +165,7 @@ namespace pico {
             else
                 if(pico_session::find_last_of_string(currentBuffer))
                 {
-                    //std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+                    mylogger<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
                     pico_message::removeTheEndingTags(currentBuffer);
                     string strWithoutJunk =currentBuffer->toString();
                     append_to_last_message(strWithoutJunk);
@@ -199,7 +200,7 @@ namespace pico {
         void processDataFromOtherSide(std::string msg) {
             
             try {
-                //std::cout<<"this is the complete message from server : "<<msg<<endl;
+                mylogger<<"\nthis is the complete message from server : "<<msg;
                 //process the data from server and queue the right message or dont
                 writeOneBuffer();
                 
@@ -223,8 +224,8 @@ namespace pico {
         void print(const boost::system::error_code& error,
                    std::size_t t,string& str)
         {
-            //std::cout<<"Client Received :  "<<t<<" bytes from server "<<std::endl;
-          //  if(error) //std::cout<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------"<<std::endl;
+            mylogger<<"\nClient Received :  "<<t<<" bytes from server ";
+          //  if(error) mylogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------"<<std::endl;
         }
         void append_to_last_message(string str) {
             last_read_message.append(str);
@@ -241,7 +242,7 @@ namespace pico {
             queueMessages(msg);
             
             //            queueType msgReadFromQueue = commandQueue_.pop();
-            //            //std::cout<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
+            //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
             
         }
         
@@ -256,7 +257,7 @@ namespace pico {
             queueMessages(msg);
             
             //            queueType msgReadFromQueue = commandQueue_.pop();
-            //            //std::cout<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
+            //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
             
         }
         
@@ -271,7 +272,7 @@ namespace pico {
             queueMessages(msg);
             
             //            queueType msgReadFromQueue = commandQueue_.pop();
-            //            //std::cout<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
+            //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
             
         }
         
@@ -296,9 +297,9 @@ namespace pico {
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
                                          
-                                         //                                         //std::cout<<t<<" bytes to server "<<std::endl;
-                                       //  if(error)
-                                             //std::cout<<" error msg : "<<error.message()<<std::endl;
+                                         //                                         mylogger<<t<<" bytes to server "<<std::endl;
+                                         if(error)
+                                             mylogger<<"\n error msg : "<<error.message();
                                          
                                          string logMsg("data sent to server is ");
                                          logMsg.append(str);
@@ -315,9 +316,9 @@ namespace pico {
             while(!message.buffered_message.msg_in_buffers->empty())
             {
                 
-                //std::cout<<"pico_client : popping current Buffer ";
+                mylogger<<"pico_client : popping current Buffer ";
                 bufferType buf = message.buffered_message.msg_in_buffers->pop();
-                //                    //std::cout<<"pico_client : popping current Buffer this is current buffer ";
+                //                    mylogger<<"pico_client : popping current Buffer this is current buffer ";
                 
                 std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
                 bufferQueue_.push(curBufPtr);
@@ -392,12 +393,12 @@ namespace pico {
 
         void write1000Keys_and_deleteTheLast500()
         {
-            for(int  i=0;i<1000;i++)
-            {
-                std::string key(pico_test::smallKey0);
-                key.append(convertToString(i));
-                insert(key,pico_test::smallValue0);
-            }
+//            for(int  i=0;i<1000;i++)
+//            {
+//                std::string key(pico_test::smallKey0);
+//                key.append(convertToString(i));
+//                insert(key,pico_test::smallValue0);
+//            }
             
             for(int  i=0;i<1000;i++)
             {

@@ -10,10 +10,10 @@
 #include <pico/pico_message.h>
 #include <pico/pico_utils.h>
 #include <pico/collection_manager.h>
-#include <logger.h>
+#include <pico_logger_wrapper.h>
 using namespace std;
 namespace pico {
-    class request_processor {
+    class request_processor : public pico_logger_wrapper{
     private:
         collection_manager collectionManager;
         
@@ -23,7 +23,6 @@ namespace pico {
         std::string findCommand;
         std::string addUserToDBCommand;
         std::string deleteUserToDBCommand;
-        logger mylogger;
         
     public:
         static string logFileName;
@@ -31,22 +30,19 @@ namespace pico {
         request_processor() :
         insertCommand("insert"), deleteCommand("delete"), updateCommand(
                                                                         "update"), findCommand("find"), addUserToDBCommand(
-                                                                                                                           "adduser"), deleteUserToDBCommand("deleteuser"),mylogger(logFileName) {
+                                                                                                                           "adduser"), deleteUserToDBCommand("deleteuser") {
             
         }
         
         pico_message processRequest(const string messageFromClient) {
             
-            string logMsg("request_processor : this is the message that is going to be processed now ");
-            logMsg.append(messageFromClient);
-            mylogger.log(logMsg);
+            mylogger<<"request_processor : this is the message that is going to be processed now "<<messageFromClient;
+            
             
             pico_message picoMessage(messageFromClient);
             
-            logMsg.clear();
-            logMsg.append("request_processor : this is the message was created ");
-            logMsg.append(picoMessage.toString());
-            mylogger.log(logMsg);
+            mylogger<<"\nrequest_processor : this is the message was created "<<
+            picoMessage.toString();
             
            // cout << "session: processing request from client request: "
            // << messageFromClient //<< std::endl;
@@ -104,7 +100,7 @@ namespace pico {
                else
                    record = firstrecord;
                
-                //std::cout<<"request_processor : record that is going to be saved is this : "<<record.toString()<<std::endl;
+                mylogger<<"\nrequest_processor : record that is going to be saved is this : "<<record.toString();
                if(whereToWriteThisRecord==-1)
                {
                    //this is the case that the record is unique
@@ -134,7 +130,7 @@ namespace pico {
             //deleter thread , so it should be in heap
            
             pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
-            //std::cout<<"request_processor : record that is going to be deleted from this : "<<firstrecord.toString()<<std::endl;
+            mylogger<<"\n request_processor : record that is going to be deleted from this : "<<firstrecord.toString();
 //            optionCollection.deleteRecord(firstrecord,collectionPtr);
             collectionPtr->deleteRecord(firstrecord);
             string result("one message was deleted from database in unknown(todo)");

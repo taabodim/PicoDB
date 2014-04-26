@@ -10,7 +10,8 @@
 #include <list>
 #include <pico/pico_collection.h>
 #include <pico/pico_utils.h>
-#include <logger.h>
+
+#include <pico_logger_wrapper.h>
 #include <memory>
 using namespace std;
 namespace pico {
@@ -82,24 +83,24 @@ namespace pico {
         //        void printNode()
         //        {
         //
-        //            //std::cout<<"printing a node : \n";
+        //            mylogger<<"printing a node : \n";
         //            if(left==nullptr)
-        //                //std::cout<<"left : null ==> ";
+        //                mylogger<<"left : null ==> ";
         //            else
-        //                //std::cout<<"left : "<< left->key<<" ==> ";
+        //                mylogger<<"left : "<< left->key<<" ==> ";
         //
-        //            //std::cout<<" node : "<<key;
+        //            mylogger<<" node : "<<key;
         //
         //            if(right==nullptr)
-        //                //std::cout<<" <== right : null";
+        //                mylogger<<" <== right : null";
         //            else
-        //                //std::cout<<" <== right : "<<right->key;
+        //                mylogger<<" <== right : "<<right->key;
         //
         //        }
     };
     
     
-    class pico_binary_index_tree { //this tree saves all the
+    class pico_binary_index_tree : public pico_logger_wrapper{ //this tree saves all the
     public:
         
         nodeType root;
@@ -180,18 +181,18 @@ namespace pico {
         void insert(nodeType nodeToBeInserted, nodeType leaf) {
             offsetType key = nodeToBeInserted->key;
             offsetType offset= nodeToBeInserted->offset;
-//            //std::cout<<"pico_index : insert : nodeToBeInserted->key =key = "<<nodeToBeInserted->key<<endl;
-//            //std::cout<<"pico_index : insert : leaf->key = "<<leaf->key<<endl;
+//            mylogger<<"pico_index : insert : nodeToBeInserted->key =key = "<<nodeToBeInserted->key<<endl;
+//            mylogger<<"pico_index : insert : leaf->key = "<<leaf->key<<endl;
 //            
             if (key < leaf->key) {
                 if (leaf->left != nullptr)
                 {
-//                    //std::cout<<"pico_index : insert : key is smaller checking the left node";
+//                    mylogger<<"pico_index : insert : key is smaller checking the left node";
                     
                     insert(nodeToBeInserted, leaf->left);
                 }
                 else {
-//                    //std::cout<<("pico_index : insert : key is smaller adding a left node to this node");
+//                    mylogger<<("pico_index : insert : key is smaller adding a left node to this node");
                     
                     leaf->left = nodeToBeInserted;
                     leaf->left->left = nullptr; //Sets the left child of the child std::string to nullptr
@@ -200,12 +201,12 @@ namespace pico {
             } else if (key >= leaf->key) {
                 if (leaf->right != nullptr)
                 {
-//                    //std::cout<<("pico_index : insert : key is larger checking the right node ");
+//                    mylogger<<("pico_index : insert : key is larger checking the right node ");
                     
                     insert(nodeToBeInserted, leaf->right);
                 }
                 else {
-//                    //std::cout<<("pico_index : insert : leaf doesnt have right child node.");
+//                    mylogger<<("pico_index : insert : leaf doesnt have right child node.");
                     
                     leaf->right = nodeToBeInserted;
                     leaf->right->left = nullptr; //Sets the left child of the child std::string to nullptr
@@ -216,7 +217,7 @@ namespace pico {
         nodeType search(nodeType node, nodeType leaf) {
             offsetType key = node->key;
             if (leaf != nullptr && leaf !=NULL) {
-                //std::cout<<" pico_index : leaf->key is "<<leaf->key<<"\n";
+                mylogger<<" pico_index : leaf->key is "<<leaf->key<<"\n";
                 if (key == leaf->key)
                     return leaf;
                 if (key < leaf->key)
@@ -262,7 +263,7 @@ namespace pico {
         
         //        void print_tree()
         //        {
-        //            //std::cout<<"this is the tree \n";
+        //            mylogger<<"this is the tree \n";
         //            list<nodeType> level;
         //            level.push_front(root);
         //            while(!level.empty()){
@@ -271,20 +272,20 @@ namespace pico {
         //
         ////                if(node->left!= nullptr && node->right!= nullptr)
         ////                {//to avoid duplicate printing of a node , only if its really a parent , it will print
-        //                    //std::cout<<"\nthis is the middle node being printed ";
+        //                    mylogger<<"\nthis is the middle node being printed ";
         //                    node->printNode();
         ////                }
         //                if(node->left!= nullptr)
         //                {
-        //                    //std::cout<<"\nthis is left Node of the above parent being printed \n";
+        //                    mylogger<<"\nthis is left Node of the above parent being printed \n";
         //
         //                    node->left->printNode();
         //                    level.push_front(node->left);
         //                }
-        //                //  //std::cout<<(node->offset);
+        //                //  mylogger<<(node->offset);
         //                if(node->right!= nullptr)
         //                {
-        //                    //std::cout<<"\nthis is right Node of the above parent being printed \n";
+        //                    mylogger<<"\nthis is right Node of the above parent being printed \n";
         //
         //                    node->right->printNode();
         //                    level.push_front(node->right);
@@ -300,14 +301,14 @@ namespace pico {
         void print_tree(nodeType topNode)//preorderPrint
         {
             if(topNode!=nullptr)
-            {//std::cout<<topNode->key<<" ";
+            {mylogger<<topNode->key<<" ";
                 print_tree(topNode->left);
                 print_tree(topNode->right);
             }
         }
         void add_to_tree(pico_record& it) { //this method creates a tree structure
             //based on the pico records that it gets reads from a collection
-            //std::cout<<("adding record to tree ");
+            mylogger<<("adding record to tree ");
             
             nodeType  node = convert_pico_record_to_index_node(it);
             insert(node);
@@ -316,11 +317,11 @@ namespace pico {
         }
         void build_tree(list<pico_record> all_pico_records) { //this method creates a tree structure
             //based on the pico records that it gets reads from a collection
-            // //std::cout<<("tree is going to be build by "<<all_pico_records.size()<<" elements"<<std::endl;
+            // mylogger<<("tree is going to be build by "<<all_pico_records.size()<<" elements"<<std::endl;
             
             for (list<pico_record>::iterator it=all_pico_records.begin(); it != all_pico_records.end(); ++it) {
                 
-                //   //std::cout<<("build_tree : offset is "<<it->offset_of_record<<endl;
+                //   mylogger<<("build_tree : offset is "<<it->offset_of_record<<endl;
                 nodeType  node = convert_pico_record_to_index_node(*it);
                 insert(node);
                 numberOfNodesInTree++;
@@ -348,8 +349,8 @@ namespace pico {
             
             //  print_tree();
             //remove(allNodesInsertedInTree[1]->key);
-            ////std::cout<<"this is the tree after deletion of a node \n";
-            //std::cout<<"this is wehere the second record  is"<<search(*allRecordsInsertedInTree[1]);
+            //mylogger<<"this is the tree after deletion of a node \n";
+            mylogger<<"this is wehere the second record  is"<<search(*allRecordsInsertedInTree[1]);
             // print_tree();
             
         }

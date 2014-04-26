@@ -14,21 +14,20 @@
 #include "pico/asyncReader.h"
 #include "pico/request_processor.h"
 #include <pico/pico_utils.h>
-#include <logger.h>
+#include <pico_logger_wrapper.h>
 using boost::asio::ip::tcp;
 using namespace std;
 namespace pico {
     
-    class pico_session: public std::enable_shared_from_this<pico_session> {
+    class pico_session: public std::enable_shared_from_this<pico_session> , public pico_logger_wrapper {
         
     private:
         socketType socket_;
         typedef pico_message queueType;
     public:
         static string logFileName;
-        logger mylogger;
         pico_session(socketType r_socket) :
-        writeOneBufferLock(sessionMutex) ,allowedToWriteLock(allowedToWriteLockMutext),mylogger(logFileName){
+        writeOneBufferLock(sessionMutex) ,allowedToWriteLock(allowedToWriteLockMutext){
             socket_ = r_socket;
         }
         
@@ -69,9 +68,9 @@ namespace pico {
             while(!message.buffered_message.msg_in_buffers->empty())
             {
                 
-                //std::cout<<"pico_session : popping current Buffer ";
+                mylogger<<"pico_session : popping current Buffer ";
                 bufferType buf = message.buffered_message.msg_in_buffers->pop();
-                //                    //std::cout<<"pico_client : popping current Buffer this is current buffer ";
+                //                    mylogger<<"pico_client : popping current Buffer this is current buffer ";
                 
                 std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
                 bufferQueue_.push(curBufPtr);
@@ -100,11 +99,10 @@ namespace pico {
                                      [this,self,currentBuffer](const boost::system::error_code& error,
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
-                                         //std::cout << "Session Sent :  "<<std::endl;
-                                         //std::cout<<t<<" bytes from Client "<<std::endl;
-                                         //                                         if(error) //std::cout<<" error msg : "<<error.message()<<std::endl;
-                                         //                                         //std::cout<<" data sent to client is "<<str<<endl;
-                                         //std::cout<<("-------------------------");
+                                         mylogger << "\nSession Sent :  "<<t<<" bytes from Client ";
+                                         //                                         if(error) mylogger<<" error msg : "<<error.message()<<std::endl;
+                                         //                                         mylogger<<" data sent to client is "<<str<<endl;
+                                         mylogger<<("-------------------------");
                                          
                                          readOneBuffer();
                                      });
@@ -133,8 +131,8 @@ namespace pico {
 //            optionCollection.update(x1, x2);
             //optionCollection.deleteRecord(x1);
             
-            //std::cout << "end of function readingAndWritingRecordData() "
-            //<< std::endl;
+            mylogger << "\nend of function readingAndWritingRecordData() "
+            ;
             
         }
         void processDataFromClient(std::string messageFromClient) {
@@ -165,7 +163,7 @@ namespace pico {
             else
                 if(find_last_of_string(currentBuffer))
             {
-                //std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+                mylogger<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
                 pico_message::removeTheEndingTags(currentBuffer);
                 string strWithoutJunk =currentBuffer->toString();
                 append_to_last_message(strWithoutJunk);
@@ -229,12 +227,8 @@ namespace pico {
        
         void print(const boost::system::error_code& error,std::size_t t,string& str)
         {
-          //  if(error) //std::cout<<" error msg : "<<error.message()<<std::endl;
-            //std::cout << "Server received "<<std::endl;
-            //std::cout<<t<<" bytes read from Client "<<std::endl;
-            //std::cout<<(" data read from client is ")<<endl;
-            //std::cout<<(str)<<endl;
-            //std::cout<<("-------------------------")<<endl;
+          //  if(error) mylogger<<" error msg : "<<error.message()<<std::endl;
+            mylogger << "\nServer received "<<t<<" bytes read from Client  data read from client is "<<str;
             
         }
         void append_to_last_message(string str) {
@@ -269,7 +263,7 @@ namespace pico {
         //                cout << "server recienved insert message from client" << endl;
         //                //insertData to client
         //
-        //                //std::cout << "server reading message : " << msgFromClient
+        //                mylogger << "server reading message : " << msgFromClient
         //                //<< std::endl;
         //                write_messages_sync();
         //                boost::this_thread::sleep(boost::posix_time::seconds(4));
@@ -284,8 +278,8 @@ namespace pico {
         //            //		char* data = buffer.getData();
         //            //		std::size_t dataSize = buffer.getSize();
         //            //
-        //            //		//std::cout << "data to send is : " << data //<< std::endl;
-        //            //		//std::cout << "dataSize to send is : " << dataSize //<< std::endl;
+        //            //		mylogger << "data to send is : " << data //<< std::endl;
+        //            //		mylogger << "dataSize to send is : " << dataSize //<< std::endl;
         //            //
         //            //		boost::array<char, 128> buf;
         //            //		boost::system::error_code error;
@@ -314,11 +308,11 @@ namespace pico {
         //						std::size_t t) {
         //
         //					string str = currentBuffer->getString();
-        //					//std::cout << "Server sent "<<std::endl;
-        //					//std::cout<<(t<<" bytes sent to client "<<std::endl;
-        //					if(error) //std::cout<<(" error msg : "<<error.message()<<std::endl;
-        //					//std::cout<<( " data sent to client is "<<str<<std::endl;
-        //					//std::cout << "-------------------------"<<std::endl;
+        //					mylogger << "Server sent "<<std::endl;
+        //					mylogger<<(t<<" bytes sent to client "<<std::endl;
+        //					if(error) mylogger<<(" error msg : "<<error.message()<<std::endl;
+        //					mylogger<<( " data sent to client is "<<str<<std::endl;
+        //					mylogger << "-------------------------"<<std::endl;
         //					read_messages();
         //				});
         

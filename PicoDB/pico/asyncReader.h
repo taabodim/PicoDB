@@ -13,19 +13,20 @@
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
 #include <pico/pico_buffered_message.h>
-#include <logger.h>
+
+#include  <pico_logger_wrapper.h>
 using namespace std;
 namespace pico {
 
-class asyncReader {
+    class asyncReader : public pico_logger_wrapper{
 
 public:
-       //logger mylogger;
+    
 	asyncReader() {
-		//std::cout<<"asyncReader is being constructed....\n";
+		mylogger<<"asyncReader is being constructed....\n";
 	}
 	virtual ~asyncReader() {
-		//std::cout<<("asyncReader is being destructed....\n");
+		mylogger<<("asyncReader is being destructed....\n");
 	}
 //
 //	msgPtr getReadBuffer() {

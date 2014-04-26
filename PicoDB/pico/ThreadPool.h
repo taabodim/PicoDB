@@ -16,13 +16,14 @@
 #include <memory>
 #include <thread>         // std::thread
 #include <pico/pico_utils.h>
+#include <pico_logger_wrapper.h>
 namespace pico {
     class ThreadWorker;
     class ThreadPool;
  //   typedef std::shared_ptr<ThreadWorker> workerType;
     typedef ThreadWorker* workerType;
     
-    class ThreadPool :  public std::enable_shared_from_this<ThreadPool>
+    class ThreadPool :  public std::enable_shared_from_this<ThreadPool> , public pico_logger_wrapper
     {
         public :
         std::shared_ptr<pico_concurrent_list<taskType>>  taskQueue;
@@ -119,21 +120,21 @@ namespace pico {
         auto r1 =  std::make_shared<SimpleRunnable> (124);
             
             pool->submitTask(r1);
-            //std::cout << " i is "<<i<<endl;
+           // mylogger << " i is "<<i<<"\n";
         }
         pool->shutDownAfterWorkers();
-        //std::cout << "end of runThreadPool()" //<< std::endl;
+        //mylogger << "end of runThreadPool()" <<"\n";
         
     }
     
     void testThreadPool() {
         
-        //std::cout << "Running ten thread" << endl;
+     //   mylogger << "Running ten thread" <<"\n";
         std::thread t(runThreadPool);
-        //std::cout << "before joining the thread" << endl;
+     //   mylogger << "before joining the thread" << "\n";
         t.join();
         
-        //std::cout << "Thread pool is done." //<< std::endl;
+       // mylogger << "Thread pool is done." << "\n";
         
     }
     

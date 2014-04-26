@@ -23,6 +23,7 @@
 namespace pico {
     
     class pico_collection : public std::enable_shared_from_this<pico_collection> ,public pico_logger_wrapper {
+        
         //add this to some logic that doesnt call other functions who have this
         //boost::interprocess::scoped_lock<boost::mutex> lock(collectionMutex)
         
@@ -47,14 +48,14 @@ namespace pico {
             path.append(ext);
             name = path;
             filename = name;
-            // //std::cout<<("pico_collection : name of the file is "<<filename<<std::endl;
+            // mylogger<<("pico_collection : name of the file is "<<filename<<std::endl;
             //		infile.open(name, std::fstream::in | std::fstream::binary);
             //		outfile.open(name,
             //				std::fstream::out | std::fstream::app | std::fstream::binary);
             
             openFileIfItDoesntExist(filename);
             
-            //std::cout<<"pico_collection : file being opened now.\n";
+            mylogger<<"pico_collection : file being opened now.\n";
             file.open(filename,	std::fstream::in |	std::fstream::out | std::fstream::binary);
             //use the fstream for both reading and writing and appending , there should be
             //only one stream open to the file, it makes the life easier and less buggier.
@@ -74,10 +75,10 @@ namespace pico {
         //    {
         //        list<offsetType> alloffsets;
         //        offsetType lastOffset =getEndOfFileOffset(file);
-        //        //std::cout<<" pico_collection : lastOffset is  "<<lastOffset<<endl;
+        //        mylogger<<" pico_collection : lastOffset is  "<<lastOffset<<endl;
         //        for(int i=0;i<lastOffset; i=i+ pico_record::max_size)
         //        {
-        //             //std::cout<<" pico_collection : one Offset is  "<<i<<endl;
+        //             mylogger<<" pico_collection : one Offset is  "<<i<<endl;
         //            alloffsets.push_back(i);
         //        }
         //        return alloffsets;
@@ -106,9 +107,8 @@ namespace pico {
         void queue_record_for_deletion(pico_record& firstRecordOfMessageToBeDeleted)
         {
             auto deleteTask = std::make_shared<DeleteTaskRunnable> (shared_from_this(),firstRecordOfMessageToBeDeleted);
-            log("collection  from collection");
-            (*this)<<"hello"<<"I am here";
-            (*this)<<"how are you";
+           
+            //mylogger<<"hello"<<"I am here"<<" "<<3<<3.23<<"\n";
             delete_thread_pool->submitTask(deleteTask);
         }
         void deleteRecord(pico_record& firstRecordOfMessageToBeDeleted) {
@@ -132,6 +132,7 @@ namespace pico {
         {
             
          //   read_offset_of_this_record(firstRecordOfMessageToBeDeleted); the index has already been deleted
+            mylogger<<"this offset is going to be deleted "<<firstRecordOfMessageToBeDeleted.offset_of_record<<"\n";
             deleteOneMessage(firstRecordOfMessageToBeDeleted.offset_of_record);
             
             //this should be done in a seperate thread
@@ -194,7 +195,7 @@ namespace pico {
             //and when I use it in other functions, it stops working here , it wont read the data here , so I am using the infileLocal ,
             std::ifstream infileLocal;
             infileLocal.open(filename, std::fstream::in | std::fstream::binary);
-//            cout << " pico_collection  : retrieve : offset is  " << offset//<< std::endl;
+            mylogger << " pico_collection  : retrieve : offset is  " << offset;
             pico_record record_read_from_file;
             
             infileLocal.seekg(offset);
@@ -204,7 +205,7 @@ namespace pico {
                              pico_record::max_value_size);
             
             record_read_from_file.offset_of_record = offset;
-//            cout << " read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString()//<< std::endl;
+            mylogger << "\n read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString();
             infileLocal.close();
             return record_read_from_file;
           
@@ -224,7 +225,7 @@ namespace pico {
         //				list_of_records.push_back(record_read_from_file);
         //			}
         //            else{
-        //                //std::cout<<("warning : read_all_records : key is empty!");
+        //                mylogger<<("warning : read_all_records : key is empty!");
         //            }
         //
         //		}
@@ -251,7 +252,7 @@ namespace pico {
                 }
                 //
                 //            else{
-                //                //std::cout<<("warning : read_all_records_offsets : key is empty!");
+                //                mylogger<<("warning : read_all_records_offsets : key is empty!");
                 //            }
                 //
             }
@@ -262,12 +263,12 @@ namespace pico {
             //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY and return them as pico_records not offsets
             list<pico_record> list_;
             offsetType endOfFile_Offset = getEndOfFileOffset(file);
-           // cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
+           mylogger << "\n offset of end of file is " << endOfFile_Offset;
             
             for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
                  pico_record::max_size) {
             
-                //cout << " read_all_records_offsets : reading one record from offset "<<offset  //<< std::endl;
+                mylogger << "\n read_all_records_offsets : reading one record from offset "<<offset;
                 
                 pico_record record_read_from_file = retrieve(offset);
                 
@@ -440,9 +441,9 @@ namespace pico {
         collection->deletion_function(record);
         numberOfoutputs++;
         long  x = numberOfoutputs.load(std::memory_order_relaxed);
-        str.append(" this is the num of deleted messages from collection : ");
-        str.append(convertToString<long>(x));
-        log(str);
+//        str.append();
+//        str.append(convertToString<long>(x));
+        mylogger<<" this is the num of deleted messages from collection : "<<x;
         
     }
     

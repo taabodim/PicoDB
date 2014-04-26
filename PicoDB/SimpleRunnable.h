@@ -15,10 +15,8 @@ class SimpleRunnable : public Runnable{
 
 public:
     static string logFileName;
-    logger mylogger;
      std::atomic_long numberOfoutputs;
-    SimpleRunnable(int taskId) : Runnable(taskId),mylogger(logFileName)
-    {
+    SimpleRunnable(int taskId) : Runnable(taskId){
        
     }
 	void run() {
@@ -32,7 +30,7 @@ public:
             long  x = numberOfoutputs.load(std::memory_order_relaxed);
             str.append(" this is the num : ");
             str.append(convertToString<long>(x));
-			mylogger.log(str);
+			//mylogger.log(str);
 			boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 		}
 	}

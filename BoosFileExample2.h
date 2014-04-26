@@ -122,7 +122,7 @@ namespace
             string key(line.substr( 0, pos ) );
             string bookmark( line.substr( pos+1 ) );
             
-            //      //std::cout << "inserting \"" << key << "\",\"" << bookmark << "\"\n";
+            //      mylogger << "inserting \"" << key << "\",\"" << bookmark << "\"\n";
             notes.insert( notes_map::value_type( key, bookmark ) );
         }
     }
@@ -305,7 +305,7 @@ namespace
                 if ( child.empty() ) child = *itr;
                 else
                 {
-                    //std::cout << "Warning: only first of two target possibilities will be reported for: \n "
+                    mylogger << "Warning: only first of two target possibilities will be reported for: \n "
                     << root.string() << ": " << child.leaf()
                     << " and " << (*itr).leaf() << "\n";
                 }

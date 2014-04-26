@@ -99,12 +99,12 @@ void serilizeClassAndLoadItViaBoost() {
 	//	boost::archive::text_iarchive ia(ssFile);
 	//	Currency c2;
 	//	ia >> c2;
-	//	//std::cout << c2.name //<< std::endl;
+	//	mylogger << c2.name //<< std::endl;
 
 }
 
 void timerHandler(const boost::system::error_code &ec) {
-	//std::cout << " every 5 seconds, this is called ..." //<< std::endl;
+	//mylogger << " every 5 seconds, this is called ..." //<< std::endl;
 }
 struct MyException: public std::exception {
 	std::string s;
@@ -184,7 +184,7 @@ public:
 
 void fBindExample(int n1, int n2, int n3, const int& n4, int n5)
 {
-    //std::cout << n1 << ' ' << n2 << ' ' << n3 << ' ' << n4 << ' ' << n5 << '\n';
+   // mylogger << n1 << ' ' << n2 << ' ' << n3 << ' ' << n4 << ' ' << n5 << '\n';
 }
 
 int g(int n1)
@@ -195,14 +195,15 @@ int g(int n1)
 struct Foo {
     void print_sum(int n1, int n2)
     {
-        //std::cout << n1+n2 << '\n';
+      //  mylogger << n1+n2 << '\n';
     }
     int data = 10;
 };
 
 struct FooBind {
     FooBind(int num) : num_(num) {}
-    void print_add(int i) const { //std::cout << num_+i << '\n';
+    void print_add(int i) const {
+        //mylogger << num_+i << '\n';
     }
     int num_;
 };
@@ -227,8 +228,8 @@ int stdBindExamples()
 //    std::uniform_int_distribution<> d(0, 10);
 //    std::function<int()> rnd = std::bind(d, e);
 //    for(int n=0; n<10; ++n)
-//        //std::cout << rnd() << ' ';
-//    //std::cout << '\n';
+//        mylogger << rnd() << ' ';
+//    mylogger << '\n';
 //    
 //    // bind to a member function
 //    Foo foo;
@@ -237,7 +238,7 @@ int stdBindExamples()
 //    
 //    // bind to member data
 //    auto f4 = std::bind(&FooBind::num_, _1);
-//    //std::cout << f4(foo) << '\n';
+//    mylogger << f4(foo) << '\n';
     return 1;
 }
 
@@ -245,13 +246,13 @@ int stdBindExamples()
 
 void print_num(int i)
 {
-    //std::cout << i << '\n';
+   // mylogger << i << '\n';
 }
 
 struct PrintNum {
     void operator()(int i) const
     {
-        //std::cout << i << '\n';
+     //   mylogger << i << '\n';
     }
 };
 
@@ -290,7 +291,7 @@ int stdFunctionBindingExample()
 //class financialPackage<Stock<double>>{
 //	public :
 //	void printValue(Stock<double> f){
-//		//std::cout<<("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
+//		mylogger<<("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
 //	}
 //
 //};
@@ -355,7 +356,7 @@ void create100RecordsInCollection(){
 //	
     //optionCollection.deleteRecord(x1);
     
-	//std::cout <<std::endl<< "end of function create100RecordsInCollection() "//<< std::endl;
+	//mylogger <<std::endl<< "end of function create100RecordsInCollection() "//<< std::endl;
 
 }
 void test_pico_binary_index_tree()
@@ -379,7 +380,7 @@ void runPicoHedgeFundClient(std::shared_ptr<clientType> ptr)
 }
 void runClient() {
 	try {
-		//std::cout << "starting client" //<< std::endl;
+	//	mylogger << "starting client" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
         //localhost{"localhost"} only the local machine via a special interface only visible to programs running on the same compute
 		std::string port { "8877" };
@@ -399,7 +400,7 @@ void runClient() {
 //        hedgeThred.detach();
         
 		io_service.run();
-		//std::cout << "ptr to client going out of scope" //<< std::endl;
+	//	mylogger << "ptr to client going out of scope" //<< std::endl;
      
         
         
@@ -411,9 +412,11 @@ void runClient() {
 }
 
 struct A {
-    A(int&& n) { //std::cout << "rvalue overload, n=" << n << "\n";
+    A(int&& n) {
+        //mylogger << "rvalue overload, n=" << n << "\n";
     }
-    A(int& n)  { //std::cout << "lvalue overload, n=" << n << "\n";
+    A(int& n)  {
+        //mylogger << "lvalue overload, n=" << n << "\n";
     }
 };
 
@@ -449,7 +452,7 @@ void forwarding_example()
     int i = 1;
     auto p2 = make_unique1<A>(i); // lvalue
     
-    //std::cout << "B\n";
+ //   mylogger << "B\n";
     auto t = make_unique<B>(2, i, 3);
 }
 
@@ -485,42 +488,42 @@ void performanceExample()
     
     steady_clock::time_point t1 = steady_clock::now();
     
-    //std::cout << "printing out 1000 stars...\n";
-    for (int i=0; i<1000; ++i) //std::cout << "*";
+   // mylogger << "printing out 1000 stars...\n";
+ //   for (int i=0; i<1000; ++i) mylogger << "*";
     std::cout << std::endl;
     
     steady_clock::time_point t2 = steady_clock::now();
     
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     
-    //std::cout << "It took me " << time_span.count() << " seconds.";
-    //std::cout //<< std::endl;
+   // mylogger << "It took me " << time_span.count() << " seconds.";
+    //mylogger //<< std::endl;
     
 }
 void dateExample() {
 	boost::gregorian::date d(2010, 1, 30);
-	//std::cout << "year is " << d.year() //<< std::endl;
-	//std::cout << "month is " << d.month() //<< std::endl;
-	//std::cout << "day is " << d.day() //<< std::endl;
-	//std::cout << "day of week is " << d.day_of_week() //<< std::endl;
-	//std::cout << "end of month is " << d.end_of_month() //<< std::endl;
+	//mylogger << "year is " << d.year() //<< std::endl;
+//	mylogger << "month is " << d.month() //<< std::endl;
+//	mylogger << "day is " << d.day() //<< std::endl;
+//	mylogger << "day of week is " << d.day_of_week() //<< std::endl;
+//	mylogger << "end of month is " << d.end_of_month() //<< std::endl;
 
 	boost::gregorian::date d1(2008, 1, 31);
 	boost::gregorian::date d2(2008, 8, 31);
 	boost::gregorian::date_duration dd = d2 - d1;
-	//std::cout << "date difference is " << dd.days() //<< std::endl;
+//	mylogger << "date difference is " << dd.days() //<< std::endl;
 
 	boost::gregorian::date d3(2009, 3, 31);
 	boost::gregorian::months ms(1);
 	boost::gregorian::date d4 = d3 + ms;
-	//std::cout << "adding month to date " << d4 //<< std::endl;
+//	mylogger << "adding month to date " << d4 //<< std::endl;
 	boost::gregorian::date d5 = d3 - ms;
-	//std::cout << "substracting month from date " << d5 //<< std::endl;
+//	mylogger << "substracting month from date " << d5 //<< std::endl;
 
 	{
 		boost::gregorian::date d(2009, 1, 5);
 		boost::gregorian::day_iterator it(d);
-		//std::cout << *++it //<< std::endl;
+	//	mylogger << *++it //<< std::endl;
 		std::cout
 				<< boost::date_time::next_weekday(*it,
 						boost::gregorian::greg_weekday(
@@ -530,9 +533,9 @@ void dateExample() {
 		boost::gregorian::date d1(2009, 1, 30);
 		boost::gregorian::date d2(2009, 10, 31);
 		boost::gregorian::date_period dp(d1, d2);
-		//std::cout << "date exist in date period " << dp.contains(d1)
+	//	mylogger << "date exist in date period " << dp.contains(d1)
 				//<< std::endl;
-		//std::cout << "date exist in date period " << dp.contains(d2)
+	//	mylogger << "date exist in date period " << dp.contains(d2)
 				//<< std::endl;
 	}
 	{
@@ -541,7 +544,7 @@ void dateExample() {
 		boost::gregorian::date d2(2009, 10, 31);
 		boost::gregorian::date_period dp(d1, d2);
 		boost::gregorian::date_duration dd = dp.length();
-		//std::cout << "days in a date period " << dd.days() //<< std::endl;
+//		mylogger << "days in a date period " << dd.days() //<< std::endl;
 	}
 }
 
@@ -663,7 +666,7 @@ void chronoExamples() {
 	//	cout << "system clock is " << std::chrono::system_clock() << endl;
 	//	cout << "high_resolution_clock is " << std::chrono::high_resolution_clock()
 	//			<< endl;
-//    //std::cout<<("steady_clock  is ",std::chrono::steady_clock());
+//    mylogger<<("steady_clock  is ",std::chrono::steady_clock());
 
 }
 

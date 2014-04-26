@@ -3,9 +3,10 @@
 #include <pico/pico_buffer.h>
 #include <pico/pico_utils.h>
 #include <pico/pico_concurrent_list.h>
+#include <pico_logger_wrapper.h>
 using namespace std;
 namespace pico {
-    class writer_buffer_container
+    class writer_buffer_container : public pico_logger_wrapper
     {
     
     public:
@@ -15,12 +16,12 @@ namespace pico {
         std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_buffer>>> writerMessageList;
         writer_buffer_container():   writerMessageList ( new pico_concurrent_list<std::shared_ptr<pico_buffer>>())
         {
-            //std::cout<<("empty writer_buffer_container being constructed....");
+            mylogger<<("empty writer_buffer_container being constructed....");
            }
         writer_buffer_container(std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_buffer>>> list)
         
         {
-            //std::cout<<("writer_buffer_container being constructed....");
+            mylogger<<("writer_buffer_container being constructed....");
              writerMessageList = list;
         }
         ~writer_buffer_container(){

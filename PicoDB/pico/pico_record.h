@@ -11,9 +11,10 @@
 #include <memory>
 #include <logger.h>
 #include <pico/pico_buffer.h>
+#include <pico_logger_wrapper.h>
 using namespace std;
 namespace pico {
-    class pico_record {
+    class pico_record : public pico_logger_wrapper{
     public:
         
         offsetType offset_of_record; //this is the offset in the file and the index 
@@ -90,7 +91,7 @@ namespace pico {
             
             
             
-            //std::cout << "pico_record copy assigned\n";
+            mylogger << "pico_record copy assigned\n";
             std::copy(std::begin(buffer.key_), std::end(buffer.key_),
                       std::begin(this->key_));
             
@@ -102,7 +103,7 @@ namespace pico {
             return *this;
         }
         pico_record operator=(pico_record&&   buffer) { //move assignment
-            //std::cout << "pico_record move assigned\n";
+            mylogger << "pico_record move assigned\n";
             std::copy(std::begin(buffer.key_), std::end(buffer.key_),
                       std::begin(this->key_));
             

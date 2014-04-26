@@ -30,7 +30,7 @@ public:
         
         if(countdown==0)
         {
-            //std::cout<<"countdown is zero, notifying all the waiting threads"<<endl;
+            mylogger<<"countdown is zero, notifying all the waiting threads"<<endl;
             lock.notify_all();
         }
     }

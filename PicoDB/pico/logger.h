@@ -15,10 +15,11 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <pico_utils.h>
 using namespace std;
 namespace pico{
     
-    class logger : public std::enable_shared_from_this<logger> {
+    class logger  {
         
 public:
     std::ofstream outfile;
@@ -28,7 +29,6 @@ public:
     void log(std::string str )
     {
         boost::interprocess::scoped_lock<boost::mutex> lock(log_mutex);
-        str.append("\n");
         append(str);
         
     }
@@ -37,13 +37,6 @@ public:
         outfile.write((char*) str.c_str(), str.size());
         outfile.flush();
     }
-    
-      std::shared_ptr<logger> operator <<(const std::string& str)
-        {
-            log(str);
-            return shared_from_this();
-        }
-
     logger(std::string filename){
         
         string path("/Users/mahmoudtaabodi/Documents/");
@@ -56,10 +49,31 @@ public:
    
         logger()=delete;
     
-   
-  
     
 };
+    
+    template<typename T>
+    logger& operator << (logger& wrapper,T nonstr)
+    {
+        string str = convertToString<T>(nonstr);
+      std::cout<<str;
+        wrapper.log(str);
+        return wrapper;
+    }
+    template<>
+    logger& operator << (logger& wrapper,const std::string& str)
+    {
+        std::cout<<str;
+        wrapper.log(str);
+        return wrapper;
+    }
+//
+//    template<>
+//    logger& operator << (logger& wrapper,const char[2] e)
+//    {
+//        wrapper.log("\n");
+//        return wrapper;
+//    }
 }
 
 #endif

@@ -13,10 +13,10 @@
 #include "Runnable.h"
 #include "SimpleRunnable.h"
 #include <pico/pico_concurrent_list.h>
-
+#include <pico_logger_wrapper.h>
 namespace pico {
     
-    class ThreadWorker {
+    class ThreadWorker : public pico_logger_wrapper{
         
     private:
         
@@ -53,7 +53,7 @@ namespace pico {
             free = fr;
         }
         void start() {
-            //std::cout<<"thread worker starting..";
+            mylogger<<"thread worker starting..\n";
             
         }
         void assignJobToWorker(taskType task) {
@@ -70,32 +70,32 @@ namespace pico {
                 try {
                     
                     while (!queueOfTasks->empty()) {
-                        //   //std::cout << "queueOfTasks size is : "
+                        //   mylogger << "queueOfTasks size is : "
                         //   << queueOfTasks->size() //<< std::endl;
                         setIsAvailable(false);
                         taskType task = queueOfTasks->pop();
                         if(task!=NULL)
                             task->run();
                         
-                        // //std::cout << "task was finished by thread worker.."
-                        //   //<< std::endl;
+                         mylogger << "task was finished by thread worker.."
+                        <<"\n";
                     }
                     setIsAvailable(true);
-                    // //std::cout << "queueOfTasks is empty,worker is waiting for more tasks.\n ";
+                     mylogger << "queueOfTasks is empty,worker is waiting for more tasks.\n ";
                     workerQueueIsEmpty.wait(workerLock);
                     
                 } catch (std::exception& e) {
                     
-                    //std::cout << "thread worker threw  exception..." << e.what()
-                    ////<< std::endl;
+                    mylogger << "thread worker threw  exception..." << e.what()
+                    << "\n";
                     
                 } catch (...) {
-                    //std::cout << "thread worker threw unknown exception..."
-                    ////<< std::endl;
+                    mylogger << "thread worker threw unknown exception..."
+                    << "\n";
                     
                 }
                 
-                //            //std::cout << "thread worker is waiting for task" //<< std::endl;
+                //            mylogger << "thread worker is waiting for task" //<< std::endl;
                 
             }
             

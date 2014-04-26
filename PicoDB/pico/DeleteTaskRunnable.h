@@ -11,7 +11,7 @@
 #include <Runnable.h>
 #include <logger.h>
 #include <pico/pico_utils.h>
-
+#include <pico_logger_wrapper.h>
 #include <atomic>
 namespace pico {
     class pico_collection;
@@ -19,7 +19,7 @@ namespace pico {
         
     public:
         static string logFileName;
-        logger mylogger;
+        
 //        std::shared_ptr<pico_collection> collection;//this is the collection that delete will be called for
         //this is pointer because of cyclic header dependency, we cant have a member variable
        
@@ -28,7 +28,7 @@ namespace pico {
         std::shared_ptr<pico_collection> collection;
         pico_record  record;//this is the record that will be deleted until the next start offset
         std::atomic_long numberOfoutputs;
-        DeleteTaskRunnable(std::shared_ptr<pico_collection> collectionArg,pico_record  recordArg) :collection(collectionArg) , Runnable(),mylogger(logFileName)
+        DeleteTaskRunnable(std::shared_ptr<pico_collection> collectionArg,pico_record  recordArg) :collection(collectionArg) , Runnable()
         {
             this->collection=collectionArg;
             this->record = recordArg;

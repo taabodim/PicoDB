@@ -17,6 +17,7 @@
 //#include <boost/archive/text_oarchive.hpp>
 //#include <boost/archive/text_iarchive.hpp>
 #include <boost/lexical_cast.hpp>
+#include <pico_logger_wrapper.h>
 using namespace pico;
 
 
@@ -24,7 +25,7 @@ using namespace pico;
 
 
 using std::string;
-class Currency {
+class Currency : public pico_logger_wrapper{
 public:
 	std::string name;
 	std::string price;
@@ -33,10 +34,9 @@ public:
 	std::string type;
 	std::string utctime;
 	std::string volume;
-//    //logger mylogger;
     
 	Currency() {//default constructor
-        //std::cout<<( "default constructor called" );
+        mylogger<<( "default constructor called" );
         name = "defaultName";
         price = "defaultPrice";
         symbol = "defaultSymbol";
@@ -48,7 +48,7 @@ public:
     
 	Currency(const Currency&& other)//move constructor
     {
-        //std::cout<<("move constructor called" );
+        mylogger<<("move constructor called" );
         name = other.name;
         price = other.price;
         symbol = other.symbol;
@@ -60,7 +60,7 @@ public:
 
 	std::string operator()() //overloading () operator
 	{
-    	//std::cout<<(" operator() called" );
+    	mylogger<<(" operator() called" );
         return this->toString();
     }
 //    bool operator<(const Currency&  other) const;
@@ -94,7 +94,7 @@ public:
     }
     
     Currency(const Currency& other) {
-        //std::cout<<("copy constructor called" );
+        mylogger<<("copy constructor called" );
         name = other.name;
         price = other.price;
         symbol = other.symbol;
@@ -106,7 +106,7 @@ public:
     
     
     Currency& operator=(const Currency& other) {
-        //std::cout<<("copy assignment called" );
+        mylogger<<("copy assignment called" );
         name = other.name;
         price = other.price;
         symbol = other.symbol;
@@ -122,7 +122,7 @@ public:
         return *this;
     }
     ~Currency() {
-        //std::cout<<( "destructor for currency called");
+        mylogger<<( "destructor for currency called");
     }
     const std::string toString() const {
         

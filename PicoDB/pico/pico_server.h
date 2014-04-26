@@ -24,6 +24,8 @@
 #include <pico/pico_buffer.h>
 #include <pico/pico_session.h>
 #include <logger.h>
+#include <pico/pico_logger_wrapper.h>
+
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -32,7 +34,7 @@ typedef std::shared_ptr<tcp::socket> socketType;
 typedef tcp::acceptor acceptorType;
 
 typedef std::string messageType;
-class pico_server {
+    class pico_server : public pico_logger_wrapper {
 
 public:
 
@@ -42,25 +44,25 @@ public:
 	pico_server(boost::asio::io_service& io_service, const tcp::endpoint& endpoint,
 			socketType mySocket) :
 			acceptor_(io_service, endpoint), socket(mySocket) {
-		//std::cout << "server initializing " //<< std::endl;
-
+		mylogger << "\nserver initializing ";
+                
         acceptConnection();
 	}
 
 	void acceptConnection() {
-      //  //std::cout << "server before waiting for connections " //<< std::endl;
+       // mylogger << "\nserver before waiting for connections " ;
         
 		acceptor_.async_accept(*socket, [this](boost::system::error_code ec)
 		{
            
 			if (!ec)
 			{
-               // //std::cout<<"server accepted a conneciton"<<endl;
+               // mylogger<<"server accepted a conneciton"<<endl;
 				initClientHandler(socket);
 			}
             else{
-              //  //std::cout<<"server accepted a conneciton but there was some error\n";
-              //  //std::cout<< "error code is"<<ec.value()<<" "<<ec.message()<<endl;
+              //  mylogger<<"server accepted a conneciton but there was some error\n";
+              //  mylogger<< "error code is"<<ec.value()<<" "<<ec.message()<<endl;
                 }
             
             //THIS LINE SHOULD BE HERE !!!!
@@ -71,7 +73,7 @@ public:
 	}
 
 	void initClientHandler(socketType socket) {
-		//std::cout<<"server accepted a connection...going to start the session";
+		mylogger<<"\nserver accepted a connection...going to start the session";
 		std::shared_ptr<pico_session> clientPtr (new pico_session (socket));
 		//add clients to a set
 		clientPtr->start();

@@ -15,34 +15,18 @@
 namespace pico
 {
     class pico_logger_wrapper {
-    std::shared_ptr<logger> instance;
+    
     public:
-        pico_logger_wrapper():instance(new logger("gicapods")){
+    logger mylogger;
+        pico_logger_wrapper():mylogger("gicapods"){
         
         }
-
-        template<typename T>
-        pico_logger_wrapper& operator << (T nonstr)
-        {
-            string str = convertToString<T>(nonstr);
-            log(str);
-            return *this;
-        }
-        template<>
-        pico_logger_wrapper& operator << (const std::string& str)
-        {
-            log(str);
-            return *this;
-        }
-        
-//
         void log(const std::string& str){
-            
-            instance->log(str);
+            mylogger.log(str);
         }
     
     };
-
+ 
 }
 
 
