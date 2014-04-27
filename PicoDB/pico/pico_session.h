@@ -153,9 +153,7 @@ namespace pico {
             
             string str =currentBuffer->toString();
             
-            string logMsg("session : this is the message that server read just now ");
-            logMsg.append(str);
-            mylogger.log(logMsg);
+            mylogger<<"\nsession : this is the message that server read just now "<<str;
             
             if(sendmetherestofdata(str))
                 ignoreThisMessageAndWriterNextBuffer();
@@ -176,10 +174,7 @@ namespace pico {
                 append_to_last_message(strWithoutJunk);
                 
                 
-                string logMsg;
-                logMsg.append("this is the complete message read from session :");
-                logMsg.append(last_read_message);
-                mylogger.log(logMsg);
+                mylogger<<"\nthis is the complete message read from session : "<<last_read_message;
               
                 processDataFromClient(last_read_message);
                 last_read_message.clear();

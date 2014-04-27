@@ -20,24 +20,25 @@ using namespace std;
 namespace pico{
     
     class logger  {
-        
+        private :
+        std::ofstream outfile;
+        boost::mutex log_mutex;
+        void log(std::string str )
+        {
+            boost::interprocess::scoped_lock<boost::mutex> lock(log_mutex);
+            append(str);
+            
+        }
+        void append(std::string str)
+        {
+            outfile.write((char*) str.c_str(), str.size());
+            outfile.flush();
+        }
+     
 public:
-    std::ofstream outfile;
-    boost::mutex log_mutex;
    
 
-    void log(std::string str )
-    {
-        boost::interprocess::scoped_lock<boost::mutex> lock(log_mutex);
-        append(str);
-        
-    }
-    void append(std::string str)
-    {
-        outfile.write((char*) str.c_str(), str.size());
-        outfile.flush();
-    }
-    logger(std::string filename){
+       logger(std::string filename){
         
         string path("/Users/mahmoudtaabodi/Documents/");
 		std::string ext(".log");
@@ -56,15 +57,15 @@ public:
     logger& operator << (logger& wrapper,T nonstr)
     {
         string str = convertToString<T>(nonstr);
-      std::cout<<str;
-        wrapper.log(str);
+     // std::cout<<str;
+       // wrapper.log(str);
         return wrapper;
     }
     template<>
     logger& operator << (logger& wrapper,const std::string& str)
     {
-        std::cout<<str;
-        wrapper.log(str);
+       // std::cout<<str;
+        //wrapper.log(str);
         return wrapper;
     }
 

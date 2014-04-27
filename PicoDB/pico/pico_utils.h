@@ -109,7 +109,7 @@ namespace pico{
         file.seekg(0, std::ifstream::end);
 //        mylogger<<" getEndOfFileOffset : filename is ";
        // mylogger<<filename<<std::endl;
-        std::cout<<" \ngetEndOfFileOffset : file.tellg() :  "<<file.tellg();
+      //  std::cout<<" \ngetEndOfFileOffset : file.tellg() :  "<<file.tellg();
         
         return file.tellg();
         

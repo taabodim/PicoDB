@@ -29,6 +29,7 @@ namespace pico {
         
         //this is a unique_ptr because as its static i want to have only one for all the collections
         //thus i want to compare it against NULL
+        const static int numberOfDeletionThreads =1;
         static std::unique_ptr<ThreadPool> delete_thread_pool;
         boost::mutex writerMutex;
         

@@ -156,16 +156,15 @@ namespace pico {
         void processTheMessageJustRead(bufferTypePtr currentBuffer,std::size_t t){
             
             string str =currentBuffer->toString();
-            string logMsg("client : this is the message that client read just now ");
-            logMsg.append(str);
-            mylogger.log(logMsg);
+           
+            mylogger<<"\n client : this is the message that client read just now "<<str;
             
             if(sendmetherestofdata(str))
                 ignoreThisMessageAndWriterNextBuffer();
             else
                 if(pico_session::find_last_of_string(currentBuffer))
                 {
-                    mylogger<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
+                    mylogger<<("\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
                     pico_message::removeTheEndingTags(currentBuffer);
                     string strWithoutJunk =currentBuffer->toString();
                     append_to_last_message(strWithoutJunk);
@@ -178,10 +177,7 @@ namespace pico {
                     append_to_last_message(strWithoutJunk);
                     
                     
-                    string logMsg;
-                    logMsg.append("this is the complete message read from session :");
-                    logMsg.append(last_read_message);
-                    mylogger.log(logMsg);
+                    mylogger<<"\nthis is the complete message read from session :"<<last_read_message;
                     
                     processDataFromOtherSide(last_read_message);
                     last_read_message.clear();
@@ -281,8 +277,8 @@ namespace pico {
             
             if(bufferQueue_.empty())
             {
-                string logMsg("client : bufferQueue is empty..waiting ...");
-                mylogger.log(logMsg);
+                
+                mylogger<<"client : bufferQueue is empty..waiting ...\n";
                 
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
             }
@@ -301,9 +297,7 @@ namespace pico {
                                          if(error)
                                              mylogger<<"\n error msg : "<<error.message();
                                          
-                                         string logMsg("data sent to server is ");
-                                         logMsg.append(str);
-                                         mylogger.log(logMsg);
+                                         mylogger<<"\ndata sent to server is "<<str;
                                          readOneBuffer();
                                      });
             

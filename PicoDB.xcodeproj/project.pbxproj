@@ -10,6 +10,7 @@
 		A511D64E18E35D6C00628059 /* PicoDB.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = A511D64D18E35D6C00628059 /* PicoDB.1 */; };
 		A511D67C18E3628700628059 /* MutilThreadedServerClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A511D65918E3628700628059 /* MutilThreadedServerClient.cpp */; };
 		A511D67E18E3628700628059 /* jsoncpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A511D67818E3628700628059 /* jsoncpp.cpp */; };
+		A5D22E1B190C5D8800F5F7EC /* StackTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A5D22E19190C5D8800F5F7EC /* StackTrace.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -77,6 +78,8 @@
 		A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_buffered_message.h; sourceTree = "<group>"; };
 		A591D0FD190AF72B00D9E066 /* pico_logger_wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_logger_wrapper.h; sourceTree = "<group>"; };
 		A598208818ECBE1F00FFB6AE /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = logger.h; path = ../logger.h; sourceTree = "<group>"; };
+		A5D22E19190C5D8800F5F7EC /* StackTrace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StackTrace.cpp; sourceTree = "<group>"; };
+		A5D22E1A190C5D8800F5F7EC /* StackTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StackTrace.h; sourceTree = "<group>"; };
 		A5DBC9F919007ADE00BBD159 /* pico_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_test.h; sourceTree = "<group>"; };
 		A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PicoHedgeFund.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -132,6 +135,8 @@
 				A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */,
 				A537010E18F4987500C1F898 /* countdown_latch.h */,
 				A556EB8019015C84005F4031 /* file_test.h */,
+				A5D22E19190C5D8800F5F7EC /* StackTrace.cpp */,
+				A5D22E1A190C5D8800F5F7EC /* StackTrace.h */,
 			);
 			path = PicoDB;
 			sourceTree = "<group>";
@@ -250,6 +255,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5D22E1B190C5D8800F5F7EC /* StackTrace.cpp in Sources */,
 				A511D67C18E3628700628059 /* MutilThreadedServerClient.cpp in Sources */,
 				A511D67E18E3628700628059 /* jsoncpp.cpp in Sources */,
 			);

@@ -22,7 +22,7 @@ namespace pico
         
         }
         void log(const std::string& str){
-            mylogger.log(str);
+            mylogger<<str;
         }
     
     };
