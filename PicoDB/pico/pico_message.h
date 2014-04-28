@@ -20,10 +20,14 @@ namespace pico {
     public:
         std::string key;
         std::string value;
-        std::string oldvalue;
+        std::string oldvalue;//for update messages
         std::string user;
         std::string db;
         std::string command;
+        long requestId;//each command that passes must have an Id
+        //then when server sends the response, the server sends the same id back to
+        //client then the client knows , this reply message is for which request
+        
         std::string collection;
         std::string json_form_of_message;
         std::string json_key_value_pair;
@@ -42,6 +46,7 @@ namespace pico {
             this->user = msg.user;
             this->db = msg.db;
             this->command = msg.command;
+            this->requestId= msg.requestId;
             this->collection = msg.collection;
             this->messageSize = msg.messageSize;
             this->key = msg.key;
@@ -68,6 +73,7 @@ namespace pico {
             }
             this->json_form_of_message = message_from_client;
             this->command = root.get("command", "unknown").asString();
+//            this->requestId= ;
             this->collection = root.get("collection", "unknown").asString();
             this->db = root.get("db", "unknown").asString();
             this->user = root.get("user", "unknown").asString();
@@ -129,6 +135,7 @@ namespace pico {
             this->user = msg.user;
             this->db = msg.db;
             this->command = msg.command;
+            this->requestId= msg.requestId;
             this->collection = msg.collection;
             this->messageSize = msg.messageSize;
             this->key = msg.key;

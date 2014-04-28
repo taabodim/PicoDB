@@ -50,6 +50,7 @@ namespace pico {
         
         socketType socket_;
         pico_concurrent_list <queueType> commandQueue_;
+        ClientResponseProcessor responseProcessor;
     public:
         static string logFileName;
         
@@ -156,7 +157,7 @@ namespace pico {
         void processTheMessageJustRead(bufferTypePtr currentBuffer,std::size_t t){
             
             string str =currentBuffer->toString();
-           
+            
             mylogger<<"\n client : this is the message that client read just now "<<str;
             
             if(sendmetherestofdata(str))
@@ -198,6 +199,9 @@ namespace pico {
             try {
                 mylogger<<"\nthis is the complete message from server : "<<msg;
                 //process the data from server and queue the right message or dont
+                
+              TODO
+                resposne.processResponse(msg);
                 writeOneBuffer();
                 
             } catch (std::exception &e) {
@@ -221,7 +225,7 @@ namespace pico {
                    std::size_t t,string& str)
         {
             mylogger<<"\nClient Received :  "<<t<<" bytes from server ";
-          //  if(error) mylogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------"<<std::endl;
+            //  if(error) mylogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------"<<std::endl;
         }
         void append_to_last_message(string str) {
             last_read_message.append(str);
@@ -271,7 +275,20 @@ namespace pico {
             //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
             
         }
-        
+        void get(std::string key){
+            
+            string command("get");
+            string database("currencyDB");
+            string user("currencyUser");
+            string col("currencyCollection");
+            string oldValue("");
+            queueType msg (key,oldValue,newValue,command,database,user,col );
+            queueMessages(msg);
+            
+            //            queueType msgReadFromQueue = commandQueue_.pop();
+            //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
+            
+        }
         void writeOneBuffer()
         {
             
@@ -320,16 +337,20 @@ namespace pico {
             }
             bufferQueueIsEmpty.notify_all();
         }
+        
+        
+        
         void currentTestCase()
         {
             using namespace std::chrono;
             steady_clock::time_point t1 = steady_clock::now();
-          
             
             
-           // write1000smallRandomData();
-//            writeOneDeleteOne();
-            write1000Keys_and_deleteTheLast500();
+            
+            // write1000smallRandomData();
+            //            writeOneDeleteOne();
+            insert1SmallKeyBigValueAndGetItAndUpdateItAndDeleteIt();
+            //write1000SmallKeysBigValues_and_deleteAll();
             
             
             steady_clock::time_point t2 = steady_clock::now();
@@ -340,16 +361,28 @@ namespace pico {
             std::cout << "\nIt took me " << time_span.count() << " seconds.";
             std::cout << std::endl;
         }
+        
+        void insert1SmallKeyBigValueAndGetItAndUpdateItAndDeleteIt()
+        {
+            
+            std::string key(pico_test::smallKey0);
+            insert(key,pico_test::bigValue0);
+            get(key);
+            
+        }
+        void getTest(std::string key)
+        {
+            
+            std::size_t hashcodeOfSentKey =   calc_hash_code(key);
+            
+        }
         void write1000smallRandomData()
         {
-         
+            
             
             for(int  i=0;i<1000;i++)
                 insert(random_string(20),random_string(20));
             
-            
-           
-        
         }
         void writeOneDeleteOne()
         {
@@ -384,15 +417,34 @@ namespace pico {
                 deleteTest(pico_test::smallKey2,pico_test::smallKey2);
             //
         }
-
-        void write1000Keys_and_deleteTheLast500()
+        void write1000SmallKeysBigValues_and_deleteAll()
         {
-//            for(int  i=0;i<1000;i++)
-//            {
-//                std::string key(pico_test::smallKey0);
-//                key.append(convertToString(i));
-//                insert(key,pico_test::smallValue0);
-//            }
+            for(int  i=0;i<1000;i++)
+            {
+                std::string key(pico_test::smallKey0);
+                key.append(convertToString(i));
+                insert(key,pico_test::bigValue0);
+            }
+            
+            //            for(int  i=0;i<1000;i++)
+            //            {
+            //                std::string key(pico_test::smallKey0);
+            //                key.append(convertToString(i));
+            //
+            //                deleteTest(key,pico_test::smallKey2);
+            //            }
+            
+            
+        }
+        
+        void write1000SmallKeysValues_and_deleteAll()
+        {
+            for(int  i=0;i<1000;i++)
+            {
+                std::string key(pico_test::smallKey0);
+                key.append(convertToString(i));
+                insert(key,pico_test::smallValue0);
+            }
             
             for(int  i=0;i<1000;i++)
             {
@@ -402,13 +454,7 @@ namespace pico {
                 deleteTest(key,pico_test::smallKey2);
             }
             
-//            for(int  i=999;i>499;i--)
-//            {
-//                std::string key(pico_test::smallKey0);
-//                key.append(convertToString(i));
-//                
-//                deleteTest(key,pico_test::smallKey2);
-//            }
+            
         }
         
         

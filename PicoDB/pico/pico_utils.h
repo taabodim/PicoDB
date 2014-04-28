@@ -85,6 +85,23 @@ namespace pico{
         std::string str = boost::lexical_cast<std::string>(i);
         return str;
     }
+    template<typename T>
+    T calc_hash_code(T obj) {
+       
+        std::string objStr = boost::lexical_cast < string > (obj);
+        std::size_t hash_code = std::hash<std::string>()(objStr);
+        
+        return hash_code;
+        
+    }
+    
+    template<>
+    std::size_t calc_hash_code(String obj) {
+        
+        std::size_t hash_code = std::hash<std::string>()(obj);
+        return hash_code;
+        
+    }
     
     bool openFileIfItDoesntExist(const std::string& name) {
         std::fstream f;
