@@ -109,11 +109,15 @@ namespace pico {
                 else{
                     mylogger<<"\nclient : start : error is "<<ec.value()<<" error message is "<<ec.message();
                     mylogger <<"\n error name is "<< ec.category().name();}
-                
+        
             } catch (const std::exception& e) {
                 mylogger<<" exception : "<<e.what();
+                raise(SIGABRT);
+
             } catch (...) {
                 mylogger<< "<----->unknown exception thrown.<------>\n";
+                raise(SIGABRT);
+
             }
         }
         //	void readAsync() {
@@ -589,7 +593,7 @@ namespace pico {
         void runTestCase()
         {
             
-            //boost::thread poncoClientThread(boost::bind(&PonocoDriver::currentTestCase,this));
+            boost::thread poncoClientThread(boost::bind(&PonocoDriver::currentTestCase,this));
             
         }
         

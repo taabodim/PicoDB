@@ -42,7 +42,7 @@ namespace pico{
         
         pico_concurrent_list()
         {
-            mylogger<<("pico_concurrent_list being constructed");
+            mylogger<<("\npico_concurrent_list being constructed");
         }
         
         queueType pop()//this method returns the end of queue and removes it from the end of queue

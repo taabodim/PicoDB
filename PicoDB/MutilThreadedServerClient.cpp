@@ -492,8 +492,13 @@ void runPonocoDriver() {
         
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";
+        raise(SIGABRT);
+
+        
 	} catch (...) {
 		std::cerr << "Exception: unknown happened for client" << "\n";
+        raise(SIGABRT);
+
 	}
 }
 void runPoncoClientProgram() //this is the third party program that is going to put
@@ -527,8 +532,12 @@ void clientServerExample() {
 		      
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";
+        raise(SIGABRT);
+
 	} catch (...) {
 		std::cerr << "Exception: unknown thrown" << "\n";
+        raise(SIGABRT);
+
 	}
 }
 void performanceExample()
@@ -881,21 +890,7 @@ void test_pico_index()
     pico_binary_index_tree index;
     index.test_tree();
 }
-void printStackTraceHandler(int sig) {
-    void *array[10];
-    size_t size;
-    
-    // get void*'s for all entries on the stack
-    size = backtrace(array, 10);
-    
-    // print out all the frames to stderr
-    fprintf(stderr, "Error: signal %d:\n", sig);
-    backtrace_symbols_fd(array, size, STDERR_FILENO);
-    //realname = abi::__cxa_demangle(e.what(), 0, 0, &status);
-    //  std::cout << ti.name() << "\t=> " << realname << "\t: " << status << '\n';
-    
-    exit(1);
-}
+
 
 
 //void bar() { baz(); }
@@ -966,8 +961,13 @@ int main(int argc, char** argv) {
         
 	} catch (const std::exception& e) {
 		cout << " exception : " << e.what() << endl;
-	} catch (...) {
+        raise(SIGABRT);
+
+	}
+    catch (...) {
 		cout << "<----->unknown exception thrown.<------>";
+        raise(SIGABRT);
+
 	}
 	return 0;
 }
