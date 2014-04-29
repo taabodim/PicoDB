@@ -17,20 +17,19 @@ namespace pico {
     private:
         collection_manager collectionManager;
         
-        std::string insertCommand;
-        std::string deleteCommand;
-        std::string updateCommand;
-        std::string findCommand;
-        std::string addUserToDBCommand;
-        std::string deleteUserToDBCommand;
+         static std::string insertCommand;
+         static std::string deleteCommand;
+         static std::string updateCommand;
+         static std::string findCommand;
+         static std::string getCommand;
+         static std::string addUserToDBCommand;
+         static std::string deleteUserToDBCommand;
         
     public:
         static string logFileName;
         
-        request_processor() :
-        insertCommand("insert"), deleteCommand("delete"), updateCommand(
-                                                                        "update"), findCommand("find"), addUserToDBCommand(
-                                                                                                                           "adduser"), deleteUserToDBCommand("deleteuser") {
+        request_processor()
+        {
             
         }
         
@@ -50,28 +49,33 @@ namespace pico {
             string str("message want processed");
             
             if (picoMessage.command.compare(insertCommand) == 0) {
-               // cout << "inserting one record per client request";
+               // mylogger << "inserting one record per client request";
                 str = insertOneMessage(picoMessage);
             }
             else if (picoMessage.command.compare(deleteCommand) == 0) {
-              //  cout << "deleting one record per client request";
+              //  mylogger << "deleting one record per client request";
                 string str = deleteRecords(picoMessage);
                 
             } else if (picoMessage.command.compare(updateCommand) == 0) {
-                //cout << "updating one record per client request";
+                // mylogger << "updating one record per client request";
                 string str = updateRecords(picoMessage);
             } else if (picoMessage.command.compare(findCommand) == 0) {
-                cout << "finding records per client request";
+                mylogger << "finding records per client request";
                 //	string str = findRecords(picoMessage);
             }
             else if (picoMessage.command.compare(addUserToDBCommand) == 0) {
-                cout << "adding user per client request";
+                mylogger << "adding user per client request";
                 //	string str = addUser(picoMessage);
                 //return str;
             } else if (picoMessage.command.compare(deleteUserToDBCommand) == 0) {
-                cout << "deleting user per client request";
+                mylogger << "deleting user per client request";
                 //	string str = deleteUser(picoMessage);
                 //	return str;
+            }else if (picoMessage.command.compare(getCommand)==0)
+            {
+                mylogger<<" getting a record per client request\n";
+            	 pico_message retMsg= getOneMessage(picoMessage);
+                return retMsg;
             }
             
             pico_message retMsg = pico_message::build_message_from_string(str);
@@ -180,6 +184,20 @@ namespace pico {
             return result;
             
         }
+        
+        
+        pico_message getOneMessage(pico_message picoMsg) {
+           
+            std::shared_ptr<pico_collection> collectionPtr = collectionManager.getTheCollection(picoMsg.collection);
+            
+            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+            mylogger<<"\n request_processor : record that is going to be fetched  from this : "<<firstrecord.toString()<<"offset of record is "<<firstrecord.offset_of_record;
+           
+            pico_message msg = collectionPtr->retrieveOneMessage(firstrecord.offset_of_record);
+            return msg;
+            
+        }
+
 //        string findRecords(const std::string collection, pico_record record) {
 //            pico_collection optionCollection(collection);
 //            list<pico_record> all_records = optionCollection.find(record);

@@ -19,7 +19,7 @@
 #include <utility>
 #include <boost/asio.hpp>
 #include <array>
-#include "pico_client.h"
+#include <pico/pico_client.h>
 #include <boost/thread.hpp>
 #include <pico/pico_buffer.h>
 #include <pico/pico_session.h>

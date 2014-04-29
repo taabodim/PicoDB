@@ -177,6 +177,31 @@ namespace pico {
             
         }
         
+        pico_message retrieveOneMessage(offsetType offsetOfFirstRecordOfMessage)
+        //this function retrieves all the records of a message starting from the first one
+        //until the next "first record" is found
+        {
+            list<pico_record> all_records_for_this_message;
+            
+            offsetType nextOffset=offsetOfFirstRecordOfMessage;
+            offsetType endOffset = getEndOfFileOffset(file);
+            do
+            {
+                
+                pico_record  nextRecord = retrieve(nextOffset);
+                all_records_for_this_message.push_back(nextRecord);
+                
+                nextOffset +=  pico_record::max_size;
+              
+            } while(nextOffset<=endOffset);
+            
+           
+           pico_message  msg =  pico_message::convertBuffersToMessage(all_records_for_this_message);
+            mylogger<<"\n retrieveOneMessage this is the whole message retrieved "<<msg.toString();
+            return msg;
+    
+        }
+        
         //        list<pico_record> find(pico_record& firstRecordOfMessageToBeFound) {
         //
         //		list<pico_record> all_records;

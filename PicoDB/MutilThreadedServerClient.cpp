@@ -377,17 +377,17 @@ void sleepViaBoost(int seconds)
 {
 boost::this_thread::sleep(boost::posix_time::seconds(seconds));
 }
-void runPicoHedgeFundClient(std::shared_ptr<clientType> ptr)
+void runPicoHedgeFundClient(std::shared_ptr<DriverType> ptr)
 {
     cout<<("hedge fund is starting...");
-    PicoHedgeFund hedgefund(ptr);
-    hedgefund.buy(1);
+    //PicoHedgeFund hedgefund(ptr);
+   // hedgefund.buy(1);
     cout<<("hedge fund finished buying currencies...");
     
 }
-void runClient() {
+void runPicoDriver() {
 	try {
-	//	mylogger << "starting client" //<< std::endl;
+	//	mylogger << "starting PicoDriver" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
         //localhost{"localhost"} only the local machine via a special interface only visible to programs running on the same compute
 		std::string port { "8877" };
@@ -396,7 +396,7 @@ void runClient() {
         tcp::resolver r(io_service);
         
 		socketType socket(new tcp::socket(io_service));
-        std::shared_ptr<clientType> ptr(new clientType(socket));
+        std::shared_ptr<DriverType> ptr(new DriverType(socket));
 		 ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
@@ -464,8 +464,45 @@ void forwarding_example()
 }
 
 //std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
+void runPonocoDriver() {
+	try {
+        //	mylogger << "starting client" //<< std::endl;
+		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
+        //localhost{"localhost"} only the local machine via a special interface only visible to programs running on the same compute
+		std::string port { "8877" };
+        
+		boost::asio::io_service io_service;
+        tcp::resolver r(io_service);
+        
+		socketType socket(new tcp::socket(io_service));
+        std::shared_ptr<DriverType> ptr(new DriverType(socket));
+        ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
+        //		boost::thread shellThread(
+        //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
+        //and client sends to server
+        
+        
+        //        boost::thread hedgeThred(boost::bind(runPicoHedgeFundClient, ptr));
+        //        hedgeThred.detach();
+        
+		io_service.run();
+        std::cout << "Driver ending...going out of scope" << std::endl;
+        
+        
+        
+	} catch (std::exception& e) {
+		std::cerr << "Exception: " << e.what() << "\n";
+	} catch (...) {
+		std::cerr << "Exception: unknown happened for client" << "\n";
+	}
+}
+void runPoncoClientProgram() //this is the third party program that is going to put
+//messages in the request queue of the PonocoDriver
+{
 
+ 
 
+}
 void clientServerExample() {
 	try {
        
@@ -476,11 +513,17 @@ void clientServerExample() {
 		sleepViaBoost(4);
 
 
-		boost::thread clientThread(runClient);
+		boost::thread picoDriverThread(runPonocoDriver);
         sleepViaBoost(4);
         
-         clientThread.join();
+        
+//        boost::thread poncoClientThread(runPoncoClientProgram);
+//        
+//        poncoClientThread.join();
+      //  picoDriverThread.join(); when i added created another thread
+        //w
         serverThread.join();
+        
 		      
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";
@@ -879,7 +922,7 @@ void registerPrintStackHandlerForSignals() {
 std::unique_ptr<ThreadPool>  pico_collection::delete_thread_pool (new ThreadPool(numberOfDeletionThreads));
     
 //    
-std::string DBClient::logFileName ("client");
+std::string PonocoDriver::logFileName ("client");
 std::string pico_session::logFileName ("session");
 std::string request_processor::logFileName ("session");
 std::string SimpleRunnable::logFileName ("gicapods");
@@ -895,6 +938,14 @@ string  pico_test::smallValue0  ("smallValue0");
 string  pico_test::smallValue1 ("smallValue1");
 string  pico_test::smallValue2 ("smallValue2");
 string  pico_test::smallValue3 ("smallValue3");
+
+std::string request_processor::insertCommand("insert");
+std::string request_processor::deleteCommand("delete");
+std::string request_processor::updateCommand("update");
+std::string request_processor::findCommand("find");
+std::string request_processor::getCommand("get");
+std::string request_processor::addUserToDBCommand("adduser");
+std::string request_processor::deleteUserToDBCommand("deleteuser");
 
 
 string  pico_test::bigValue0("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it. They didn't use the word 'confirm.' So it could be that it's a real lead, but it could also not be. I think that, at the moment, everyone needs to wait for final, confirmed information.That view was echoed by Sarah Bajc, whose partner, Philip Wood, was among the passengers.Every time some official gives one of those absolute statements of 'We're sure it's the pings from the black boxes' or 'We're sure it's in the ocean,' we all crash, she told CNNs New Day.Our feet get knocked out from underneath us. But then it always ends up reversing itself, and they step back from it.She expressed skepticism about the way the investigation has been handled. The fox is very much in charge of the henhouse here, she told New Day. We've got a country leading the investigation who also has the primary liability in the case, and it makes us question every step that's taken.\" More cluesA senior Malaysian government official and another source involved in the investigation divulged new details about the flight to CNN on Thursday, including information about what radar detected, the last words from the cockpit and how high the plane was flying after it went off the grid.Malaysia Airlines Flight 370 disappeared from military radar for about 120 nautical miles after it crossed back over the Malay Peninsula, sources said. Based on available data, this means the plane must have dipped in altitude to between 4,000 and 5,000 feet, sources said.The dip could have been programmed into the computers controlling the plane as an emergency maneuver, said aviation expert David Soucie.The real issue here is it looks like -- more and more -- somebody in the cockpit was directing this plane and directing it away from land,said Peter Goelz, a CNN aviation analyst and former National Transportation Safety Board managing director.And it looks as though they were doing it to avoid any kind of detection.But former U.S. Department of Transportation Inspector General Mary Schiavo was not convinced. She said the reported dip could have occurred in response to a loss of pressure, to reach a level where pressurization was not needed and those aboard the plane would have been able to breathe without oxygen, or to get out of the way of commercial traffic123456endOfMessage");

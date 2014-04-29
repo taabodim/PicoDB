@@ -13,6 +13,7 @@
 #include <pico/pico_concurrent_list.h>
 #include <logger.h>
 #include <pico_logger_wrapper.h>
+#include <pico/pico_utils.h>
 namespace pico {
     class pico_message : public pico_logger_wrapper{
     private:
@@ -24,7 +25,7 @@ namespace pico {
         std::string user;
         std::string db;
         std::string command;
-        long requestId;//each command that passes must have an Id
+        std::string requestId;//each command that passes must have an Id
         //then when server sends the response, the server sends the same id back to
         //client then the client knows , this reply message is for which request
         
@@ -73,7 +74,7 @@ namespace pico {
             }
             this->json_form_of_message = message_from_client;
             this->command = root.get("command", "unknown").asString();
-//            this->requestId= ;
+            this->requestId=root.get("requestId", "0").asString();
             this->collection = root.get("collection", "unknown").asString();
             this->db = root.get("db", "unknown").asString();
             this->user = root.get("user", "unknown").asString();
@@ -123,7 +124,9 @@ namespace pico {
             root["user"] = "unknown";
             root["collection"] = "unknown";
             root["command"] = "unknown";
+            root["requestId"]= convertToString(calc_request_id());
             root["hashCode"] = "unknown";
+            
             Json::StyledWriter writer;
             // Make a new JSON document for the configuration. Preserve original comments.
             std::string output = writer.write(root);
@@ -160,6 +163,7 @@ namespace pico {
             root["user"] = user;
             root["collection"] = collection;
             root["command"] = command;
+            root["requestId"]= convertToString(requestId);
             root["hashCode"] = uniqueMessageId;
             Json::StyledWriter writer;
             // Make a new JSON document for the configuration. Preserve original comments.
@@ -176,6 +180,7 @@ namespace pico {
             user = us;
             key = newKey;
             value = newValue;
+            requestId = calc_request_id();
             json_form_of_message = convert_message_to_json();
             messageSize = json_form_of_message.size();
             json_key_value_pair = createTheKeyValuePair();
@@ -184,8 +189,7 @@ namespace pico {
             convert_to_list_of_records();
             
         }
-        pico_message(std::string newKey,std::string old_value_arg, std::string newValue, std::string com,
-                     std::string database, std::string us, std::string col) {
+        pico_message(std::string newKey,std::string old_value_arg, std::string newValue, std::string com,std::string database, std::string us, std::string col) {
             command = com;
             collection = col;
             db = database;
@@ -193,7 +197,7 @@ namespace pico {
             key = newKey;
             oldvalue = old_value_arg;
             value = newValue;
-            
+            requestId = calc_request_id();
             json_form_of_message = convert_message_to_json();
             messageSize = json_form_of_message.size();
             json_key_value_pair = createTheKeyValuePair();
@@ -388,25 +392,21 @@ namespace pico {
             
             return raw_msg;
         }
-        pico_message get_pico_message(list<pico_buffer> all_buffers) {
+        static pico_message convertBuffersToMessage(list<pico_record> all_buffers) {
             string all_raw_msg;
-            int seq_number = 0;
+            
             while (!all_buffers.empty()) {
                 //get rid of all buffers that are not for this messageId
-                for (list<pico_buffer>::iterator it; it != all_buffers.end();
-                     ++it) {
-                    //                mylogger<<("get_pico_message : parentSequenceNumber :  "<<it->parentSequenceNumber<<endl;
-                    //                mylogger<<("get_pico_message : seq_number :  "<<seq_number<<endl;
-                    //
-                    if (it->parentSequenceNumber == seq_number) {
+                for (list<pico_record>::iterator it; it != all_buffers.end();
+                     ++it)
+                {
+                        //mylogger<<"\nconvertBuffersToMessage : pico_buffer :  "<<*it;
                         all_raw_msg.append((it->toString()));
-                        seq_number++;
-                    }
-                }
-                mylogger << ("pico_message : all_raw_msg is ");
-                
-                mylogger << (all_raw_msg);
-            }
+                    
+                }//for
+               // mylogger << "pico_message : convertBuffersToMessage : all_raw_msg is "<<all_raw_msg<<"\n";
+            }//while
+        
             pico_message pico_msg(all_raw_msg);
             return pico_msg;
             

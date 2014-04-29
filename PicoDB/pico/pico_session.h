@@ -62,21 +62,28 @@ namespace pico {
         }
         void queueMessages(queueType message) {
             //TODO put a lock here to make the all the buffers in a message go after each other.
-            boost::interprocess::scoped_lock<boost::mutex> queueMessagesLock(queueMessagesMutext);
-            
+            while(true)
+            {
+            boost::interprocess::scoped_lock<boost::mutex> queueMessagesLock(queueMessagesMutext,boost::interprocess::try_to_lock);
+            if(queueMessagesLock)
+            {
             //put all the buffers in the message in the buffer queue
             while(!message.buffered_message.msg_in_buffers->empty())
             {
                 
                 mylogger<<"pico_session : popping current Buffer ";
                 bufferType buf = message.buffered_message.msg_in_buffers->pop();
-                //                    mylogger<<"pico_client : popping current Buffer this is current buffer ";
+                //                    mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
                 
                 std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
                 bufferQueue_.push(curBufPtr);
                 
             }
             bufferQueueIsEmpty.notify_all();
+                break;
+            }
+            
+            }
         }
         
         void writeOneBuffer()

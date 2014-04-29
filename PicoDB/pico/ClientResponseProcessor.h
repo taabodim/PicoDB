@@ -30,9 +30,11 @@ namespace pico {
             pico_message picoMessage(messageFromServer);
  
             mylogger<<"this response is for this request .."<<picoMessage.requestId<<"\n";
+            //put the message in responseQueue, so the get method that checks it,
+            //fetches the message
             
             //if there is client sent a key to get a value
-            TODO..
+           // TODO..
             //the message has to have a specific 
             
         }

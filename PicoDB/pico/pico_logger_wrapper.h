@@ -18,14 +18,31 @@ namespace pico
     
     public:
     logger mylogger;
+    
         pico_logger_wrapper():mylogger("gicapods"){
         
         }
         void log(const std::string& str){
             mylogger<<str;
         }
+        
     
     };
+
+    //this is how you make a singleton properly
+    //class S
+//    {
+//    public:
+//        static S& getInstance()
+//        {
+//            static S    instance;
+//            return instance;
+//        }
+//    private:
+//        S() {}
+//        S(S const&);              // Don't Implement.
+//        void operator=(S const&); // Don't implement
+//    };
  
 }
 

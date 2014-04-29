@@ -22,14 +22,14 @@ namespace pico{
         static const bool value=false;
     };
     
-  
     
-//    template<>
-//    struct is_unique_ptr<bufferTypeUnqiuePtr>{
-//        static const bool value=true;
-//    };
     
-   
+    //    template<>
+    //    struct is_unique_ptr<bufferTypeUnqiuePtr>{
+    //        static const bool value=true;
+    //    };
+    
+    
     
     template <typename queueType>
     class pico_concurrent_list : public pico_logger_wrapper{
@@ -42,25 +42,54 @@ namespace pico{
         
         pico_concurrent_list()
         {
-             mylogger<<("pico_concurrent_list being constructed");
+            mylogger<<("pico_concurrent_list being constructed");
         }
-       
-        queueType pop()
+        
+        queueType pop()//this method returns the end of queue and removes it from the end of queue
         {
             queueType msg;
-            boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);
-           if(underlying_list.size()>0)
+           while(true)
            {
-            msg = underlying_list.back();
-            underlying_list.pop_back();
-            
-        //mylogger<<"\npico_concurrent_list : poping from end of the list this item ..\n"<<msg.toString();
-     
-            return msg;
-           }else{
-               mylogger<<"pico_concurrent_list : returning empty message!!!\n";
-               return msg;//empty message
+            boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_,boost::interprocess::try_to_lock);
+               if(lock_)
+               {
+            if(underlying_list.size()>0)
+            {
+                msg = underlying_list.back();
+                underlying_list.pop_back();
+                
+                //mylogger<<"\npico_concurrent_list : poping from end of the list this item ..\n"<<msg.toString();
+                
+                return msg;
+            }else{
+                mylogger<<"pico_concurrent_list : returning empty message!!!\n";
+                return msg;//empty message
+            }
+               }
            }
+        }
+        
+        queueType peek()//this method returns the end of queue without deleting it
+        {
+            queueType msg;
+            while(true)
+            {
+                boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_,boost::interprocess::try_to_lock);
+                if(lock_)
+                {
+                    if(underlying_list.size()>0)
+                    {
+                        msg = underlying_list.back();
+                        //mylogger<<"\npico_concurrent_list : poping from end of the list this item ..\n"<<msg.toString();
+                        
+                        return msg;
+                    }else{
+                        mylogger<<"pico_concurrent_list : returning empty message!!!\n";
+                        return msg;//empty message
+                    }
+                    break;
+                }
+            }
         }
         bool empty()
         {
@@ -68,10 +97,17 @@ namespace pico{
         }
         void push(queueType msg)
         {
-            boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_);//throws bad access
-            //mylogger<<("pushing pico msg to the front");
-            underlying_list.push_front(msg);
-            
+            while(true)
+            {
+                
+                boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_,boost::interprocess::try_to_lock);//throws bad access
+                //mylogger<<("pushing pico msg to the front");
+                if(lock_)
+                {
+                    underlying_list.push_front(msg);
+                    break;
+                }
+            }
         }
         void printAll()
         {
@@ -125,7 +161,7 @@ namespace pico{
             return underlying_list.end();
         }
         
-        string toString() 
+        string toString()
         {
             string str;
             while(!underlying_list.empty())
@@ -140,7 +176,7 @@ namespace pico{
         }
         virtual ~pico_concurrent_list()
         {
-             mylogger<<("\npico_concurrent_list being destructed..\n");
+            mylogger<<("\npico_concurrent_list being destructed..\n");
         }
     };
 }

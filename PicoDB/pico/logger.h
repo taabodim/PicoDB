@@ -23,12 +23,7 @@ namespace pico{
         private :
         std::ofstream outfile;
         boost::mutex log_mutex;
-        void log(std::string str )
-        {
-            boost::interprocess::scoped_lock<boost::mutex> lock(log_mutex);
-            append(str);
-            
-        }
+       
         void append(std::string str)
         {
             outfile.write((char*) str.c_str(), str.size());
@@ -37,7 +32,19 @@ namespace pico{
      
 public:
    
-
+        void log(std::string str )
+        {
+            while (true)
+            {
+            boost::interprocess::scoped_lock<boost::mutex> lock(log_mutex,boost::interprocess::try_to_lock);
+            if(lock)
+            {
+                append(str);
+                break;
+            }
+            }
+            
+        }
        logger(std::string filename){
         
         string path("/Users/mahmoudtaabodi/Documents/");
@@ -57,15 +64,15 @@ public:
     logger& operator << (logger& wrapper,T nonstr)
     {
         string str = convertToString<T>(nonstr);
-     // std::cout<<str;
-       // wrapper.log(str);
+       // std::cout<<str;
+        wrapper.log(str);
         return wrapper;
     }
     template<>
     logger& operator << (logger& wrapper,const std::string& str)
     {
-       // std::cout<<str;
-        //wrapper.log(str);
+        //std::cout<<str;
+        wrapper.log(str);
         return wrapper;
     }
 

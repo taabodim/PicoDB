@@ -8,8 +8,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef PICO_CLIENT_H
-#define PICO_CLIENT_H
+#ifndef PonocoDriver_H
+#define PonocoDriver_H
 
 #include <cstdlib>
 #include <deque>
@@ -33,29 +33,33 @@
 #include <pico/pico_session.h> //for the checking if appended function
 #include <pico/pico_test.h>
 #include <pico/pico_logger_wrapper.h>
-
+#include <ClientResponseProcessor.h>
 
 using boost::asio::ip::tcp;
 using namespace std;
+using namespace std::chrono;
+
 
 
 namespace pico {
     
-    class DBClient;
-    typedef DBClient clientType;
+    class PonocoDriver;
+    typedef PonocoDriver DriverType;
     typedef pico_message queueType;
-    class DBClient: public std::enable_shared_from_this<DBClient>, public pico_logger_wrapper {
+    class PonocoDriver: public std::enable_shared_from_this<PonocoDriver>, public pico_logger_wrapper {
     private:
         
         
         socketType socket_;
         pico_concurrent_list <queueType> commandQueue_;
+        pico_concurrent_list <queueType> responseQueue_;
         ClientResponseProcessor responseProcessor;
     public:
         static string logFileName;
         
-        DBClient(socketType socket) :
-        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutext){
+        PonocoDriver(socketType socket) :
+        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutex),
+        responseQueueIsEmptyLock(responseQueueMutex){
             
             socket_ = socket;
             mylogger<<( "client initializing ");
@@ -69,7 +73,7 @@ namespace pico {
                 
                 // Start the asynchronous connect operation.
                 socket_->async_connect(endpoint_iter->endpoint(),
-                                       boost::bind(&DBClient::start, this, _1, endpoint_iter));
+                                       boost::bind(&PonocoDriver::start, this, _1, endpoint_iter));
             } else {
                 // There are no more endpoints to try. Shut down the client.
                 //				stop();
@@ -99,7 +103,7 @@ namespace pico {
             try {
                 if(!ec)
                 {
-                    currentTestCase();
+                    runTestCase();
                     writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
                 }
                 else{
@@ -200,8 +204,9 @@ namespace pico {
                 mylogger<<"\nthis is the complete message from server : "<<msg;
                 //process the data from server and queue the right message or dont
                 
-              TODO  
-                resposne.processResponse(msg);
+                // TODO
+                responseProcessor.processResponse(msg);
+                queueTheResponse(msg);
                 writeOneBuffer();
                 
             } catch (std::exception &e) {
@@ -213,8 +218,7 @@ namespace pico {
             string msg("sendmetherestofdata");
             
             pico_message reply = pico_message::build_message_from_string(msg);
-          	queueMessages(reply);
-            
+          	queueRequestMessages(reply);
         }
         void  ignoreThisMessageAndWriterNextBuffer()
         {
@@ -231,6 +235,7 @@ namespace pico {
             last_read_message.append(str);
             
         }
+        //this is the driver function thats part of driver api
         void insert(std::string key,std::string value){
             
             string command("insert");
@@ -239,8 +244,7 @@ namespace pico {
             string col("currencyCollection");
             
             queueType msg (key,value,command,database,user,col );
-            queueMessages(msg);
-            
+            queueRequestMessages(msg);
             //            queueType msgReadFromQueue = commandQueue_.pop();
             //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
             
@@ -254,12 +258,11 @@ namespace pico {
             string col("currencyCollection");
             
             queueType msg (key,value,command,database,user,col );
-            queueMessages(msg);
-            
-            //            queueType msgReadFromQueue = commandQueue_.pop();
-            //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
-            
-        }
+           queueRequestMessages(msg);
+                //            queueType msgReadFromQueue = commandQueue_.pop();
+                //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
+                
+                }
         
         void update(std::string key,std::string oldValue,std::string newValue){
             
@@ -269,24 +272,65 @@ namespace pico {
             string col("currencyCollection");
             
             queueType msg (key,oldValue,newValue,command,database,user,col );
-            queueMessages(msg);
+            queueRequestMessages(msg);
             
             //            queueType msgReadFromQueue = commandQueue_.pop();
             //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
             
         }
-        void get(std::string key){
+        std::string get(std::string key,double userTimeOut=10){
             
             string command("get");
             string database("currencyDB");
             string user("currencyUser");
             string col("currencyCollection");
             string oldValue("");
+            string newValue("");
             queueType msg (key,oldValue,newValue,command,database,user,col );
-            queueMessages(msg);
+            queueRequestMessages(msg);
             
-            //            queueType msgReadFromQueue = commandQueue_.pop();
-            //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
+            steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
+            mylogger<<"Client : waiting for our response from server !\n";
+            
+            while(true)
+            {
+                while(responseQueue_.empty())
+                {
+                    responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
+                }
+                queueType response = responseQueue_.peek();
+                mylogger<<"Client : response.requestId"<<response.requestId<<"\n"<<
+                "msg.requestId is "<<msg.requestId<<"\n";
+                if(response.requestId==msg.requestId)
+                {
+                    //this is our response
+                    mylogger<<"Client : got our response"<<response.requestId<<"\n"<<
+                    "this is our response "<<response.value;
+                    return response.value;
+                }
+                else
+                {
+                    steady_clock::time_point t2 = steady_clock::now();//time that we are going to check to determine timeout
+                    
+                    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+                    double timeoutInSeconds =  time_span.count();
+                    if(timeoutInSeconds>=userTimeOut)
+                    {
+                        //we ran out of time, get failed....
+                        mylogger<<"Client : get Operation TIMED OUT!!\n";
+                        break;
+                    }
+                    else{
+                        
+                    }
+                    
+                }
+                
+            }//while
+            
+            std::string timeout("OPERATION TIMED OUT!");
+            return timeout;
+            
             
         }
         void writeOneBuffer()
@@ -319,50 +363,112 @@ namespace pico {
                                      });
             
         }
-        void queueMessages(queueType message) {
-            //TODO put a lock here to make the all the buffers in a message go after each other.
-            boost::interprocess::scoped_lock<boost::mutex> queueMessagesLock(queueMessagesMutext);
-            
-            //put all the buffers in the message in the buffer queue
-            while(!message.buffered_message.msg_in_buffers->empty())
-            {
-                
-                mylogger<<"pico_client : popping current Buffer ";
-                bufferType buf = message.buffered_message.msg_in_buffers->pop();
-                //                    mylogger<<"pico_client : popping current Buffer this is current buffer ";
-                
-                std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
-                bufferQueue_.push(curBufPtr);
-                
-            }
-            bufferQueueIsEmpty.notify_all();
-        }
+        void queueTheResponse(queueType message)
         
-        
-        
-        void currentTestCase()
         {
-            using namespace std::chrono;
-            steady_clock::time_point t1 = steady_clock::now();
+            mylogger<<"client : putting the response in the queue\n";
+            responseQueue_.push(message);
+            responseQueueIsEmpty.notify_all();
             
-            
-            
-            // write1000smallRandomData();
-            //            writeOneDeleteOne();
-            insert1SmallKeyBigValueAndGetItAndUpdateItAndDeleteIt();
-            //write1000SmallKeysBigValues_and_deleteAll();
-            
-            
-            steady_clock::time_point t2 = steady_clock::now();
-            
-            duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-            
-            std::cout << "****************************************\n";
-            std::cout << "\nIt took me " << time_span.count() << " seconds.";
-            std::cout << std::endl;
+        }
+        void queueRequestMessages(queueType message) {
+            //TODO put a lock here to make the all the buffers in a message go after each other.
+            while(true)
+            {
+                boost::interprocess::scoped_lock<boost::mutex> queueRequestMessagesLock(queueRequestMessagesMutex, boost::interprocess::try_to_lock);
+                
+                if (queueRequestMessagesLock)
+                {
+                    //put all the buffers in the message in the buffer queue
+                    while(!message.buffered_message.msg_in_buffers->empty())
+                    {
+                        
+                        mylogger<<"PonocoDriver : popping current Buffer ";
+                        bufferType buf = message.buffered_message.msg_in_buffers->pop();
+                        //                    mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
+                        
+                        std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
+                        bufferQueue_.push(curBufPtr);
+                        
+                    }
+                    bufferQueueIsEmpty.notify_all();
+                    break;
+                }//lock obtained
+                else
+                {
+                    mylogger<<"queueRequestMessages was called but unable to get the lock\n";
+                    //    return false;
+                }
+            }
         }
         
-        void insert1SmallKeyBigValueAndGetItAndUpdateItAndDeleteIt()
+        
+        
+        //dont delete these declarations, later they have to be moved to pico_test class
+        //        void insert1SmallKeyBigValueAndGetItAndUpdateItAndDeleteIt();
+        //        void getTest(std::string key);
+        //        void write1000smallRandomData();
+        //        void writeOneDeleteOne();
+        //        void writeThe_same_record_to_check_if_we_update_or_insert_multiple();
+        //
+        //        void writeTenKEY0KEY1KEY2DeleteAllKEY2();
+        //        void write1000SmallKeysBigValues_and_deleteAll();
+        //        void write1000SmallKeysValues_and_deleteAll();
+        
+        
+        //        writer_buffer_container writer_buffer_container_;
+        pico_concurrent_list<bufferTypePtr> bufferQueue_;
+        asyncReader asyncReader_;
+        boost::mutex sessionMutex;   // mutex for the condition variable
+        boost::mutex allowedToWriteLockMutex;
+        boost::mutex queueRequestMessagesMutex;
+        boost::mutex responseQueueMutex;
+        boost::condition_variable bufferQueueIsEmpty;
+        boost::condition_variable responseQueueIsEmpty;
+        
+        boost::condition_variable clientIsAllowedToWrite;
+        boost::unique_lock<boost::mutex> allowedToWriteLock;
+        boost::unique_lock<boost::mutex> writeOneBufferLock;
+        boost::unique_lock<boost::mutex> responseQueueIsEmptyLock;
+        
+        string last_read_message;
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        /*******************************************************************/
+        /*******************************************************************/
+        /*******************************************************************/
+        /**********************Test Functions**********************************/
+        /*******************************************************************/
+        /*******************************************************************/
+        /*******************************************************************/
+        
+        
+        void insert1SmallKeyBigValue_And_GetIt()
         {
             
             std::string key(pico_test::smallKey0);
@@ -458,43 +564,36 @@ namespace pico {
         }
         
         
-        //        writer_buffer_container writer_buffer_container_;
-        pico_concurrent_list<bufferTypePtr> bufferQueue_;
-        asyncReader asyncReader_;
-        boost::mutex sessionMutex;   // mutex for the condition variable
-        boost::mutex allowedToWriteLockMutext;
-        boost::mutex queueMessagesMutext;
-        boost::condition_variable bufferQueueIsEmpty;
-        boost::condition_variable clientIsAllowedToWrite;
-        boost::unique_lock<boost::mutex> allowedToWriteLock;
-        boost::unique_lock<boost::mutex> writeOneBufferLock;
-        string last_read_message;
-        
-    };
-    
-    
-    void startTheShell(std::shared_ptr<clientType> ptr) {
-        std::string quitCmd("quit");
-        
-        cout << "Wlecome to the Pico Shell  " << endl;
-        std::string shellCommand; // declare one variable
-        do {
+        void currentTestCase()
+        {
             
-            cin >> shellCommand;
-            try{
-                //		queueType msg ( new pico_message(shellCommand));
-                //		ptr->queueCommand(msg);
-            }catch(...)
-            {
-                cout<<("error in parsing command");
-            }
             
-        } while (shellCommand.compare(quitCmd) != 0);
-    }
-    
-    
-    
-    
-    
+            steady_clock::time_point t1 = steady_clock::now();
+            
+            
+            
+            // write1000smallRandomData();
+            //            writeOneDeleteOne();
+            insert1SmallKeyBigValue_And_GetIt();
+            //write1000SmallKeysBigValues_and_deleteAll();
+            
+            
+            steady_clock::time_point t2 = steady_clock::now();
+            
+            duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+            
+            std::cout << "****************************************\n";
+            std::cout << "\nIt took me " << time_span.count() << " seconds.";
+            std::cout << std::endl;
+        }
+        void runTestCase()
+        {
+            
+            //boost::thread poncoClientThread(boost::bind(&PonocoDriver::currentTestCase,this));
+            
+        }
+        
+        
+    };//end of class
 } //end of namespace
 #endif

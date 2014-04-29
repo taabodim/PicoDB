@@ -63,7 +63,7 @@ namespace pico{
             
             
             const char charset[] =
-            "0123456789";
+            "09182736455463728190";
             const size_t max_index = (sizeof(charset) - 1);
             
             steady_clock::time_point t2 = steady_clock::now();
@@ -94,9 +94,8 @@ namespace pico{
         return hash_code;
         
     }
-    
-    template<>
-    std::size_t calc_hash_code(String obj) {
+
+    std::size_t calc_hash_code(std::string obj) {
         
         std::size_t hash_code = std::hash<std::string>()(obj);
         return hash_code;
@@ -130,6 +129,11 @@ namespace pico{
         
         return file.tellg();
         
+    }
+    
+    std::string calc_request_id()
+    {
+        return random_number<string>(10);
     }
 }
 
