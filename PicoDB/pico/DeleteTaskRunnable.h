@@ -19,7 +19,7 @@ namespace pico {
         
     public:
         static string logFileName;
-        
+        //
 //        std::shared_ptr<pico_collection> collection;//this is the collection that delete will be called for
         //this is pointer because of cyclic header dependency, we cant have a member variable
        
