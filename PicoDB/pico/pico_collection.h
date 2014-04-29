@@ -432,7 +432,8 @@ namespace pico {
                    break;
                }
                else{
-                   mylogger<<"overwrite didnt work on offset "<<record_offset<<"\n";
+                   currentRecord.getKeyAsString()
+                   mylogger<<"overwrite didnt work on offset "<<record_offset<<"\n"<<" currentRecord.getKeyAsString() is "<<currentRecord.getKeyAsString()<<" record                   .getKeyAsString()"<<;
                }
             }while(true);
         }
