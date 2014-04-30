@@ -28,7 +28,7 @@ namespace pic{
             
             std::string key(pico_test::smallKey0);
             driverPtr->insert(key,pico_test::bigValue0);
-            driverPtr->get(key);
+          //  driverPtr->get(key);
             
         }
 //        void getTest(std::string key)

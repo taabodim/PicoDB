@@ -34,6 +34,7 @@
 #include <pico/pico_test.h>
 #include <pico/pico_logger_wrapper.h>
 #include <ClientResponseProcessor.h>
+#include <PonocoDriverHelper.h>
 
 using boost::asio::ip::tcp;
 using namespace std;
@@ -50,24 +51,18 @@ namespace pico {
     private:
         socketType socket_;
         ClientResponseProcessor responseProcessor;
-   
+        std::shared_ptr<PonocoDriverHelper> syncHelper;
     
     public:
-        PonocoDriver(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtrArg ) :
-        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutex),
-        responseQueueIsEmptyLock(responseQueueMutex),bufferQueuePtr_(bufferQueuePtrArg){
-            
+        PonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelperArg ) {
+            syncHelper = syncHelperArg;
             mylogger<< "Ponoco Instance is initializing to help the PonocoClient Class ";
             
         }
-        
-        
-        
-        PonocoDriver(socketType socket,std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtrArg) :
-        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutex),
-        responseQueueIsEmptyLock(responseQueueMutex),bufferQueuePtr_(bufferQueuePtrArg) {
+    PonocoDriver(socketType socket,std::shared_ptr<PonocoDriverHelper> syncHelperArg) {
             
             socket_ = socket;
+           syncHelper = syncHelperArg;
             mylogger<< " Ponoco Driver is initializing ";
             
         }
@@ -304,11 +299,11 @@ namespace pico {
             
             while(true)
             {
-                while(responseQueue_.empty())
+                while(syncHelper->responseQueue_.empty())
                 {
-                    responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
+                    syncHelper->responseQueueIsEmpty.wait(syncHelper->responseQueueIsEmptyLock);
                 }
-                queueType response = responseQueue_.peek();
+                queueType response = syncHelper->responseQueue_.peek();
                 mylogger<<"Client : response.requestId"<<response.requestId<<"\n"<<
                 "msg.requestId is "<<msg.requestId<<"\n";
                 if(response.requestId==msg.requestId)
@@ -346,14 +341,14 @@ namespace pico {
         void writeOneBuffer()
         {
             
-            if(bufferQueuePtr_->empty())
+            if(syncHelper->bufferQueuePtr_->empty())
             {
                 
                 mylogger<<"client : bufferQueue is empty..waiting ...\n";
                 
-                bufferQueueIsEmpty.wait(writeOneBufferLock);
+                syncHelper->bufferQueueIsEmpty.wait(syncHelper->writeOneBufferLock);
             }
-            bufferTypePtr currentBuffer =bufferQueuePtr_->pop();
+            bufferTypePtr currentBuffer =syncHelper->bufferQueuePtr_->pop();
             char* data = currentBuffer->getData();
             std::size_t dataSize = currentBuffer->getSize();
             
@@ -377,16 +372,16 @@ namespace pico {
         
         {
             mylogger<<"client : putting the response in the queue\n";
-            responseQueue_.push(message);
-            responseQueueIsEmpty.notify_all();
+            syncHelper->responseQueue_.push(message);
+            syncHelper->responseQueueIsEmpty.notify_all();
             
         }
         void queueRequestMessages(queueType message) {
             //TODO put a lock here to make the all the buffers in a message go after each other.
             while(true)
             {
-                boost::interprocess::scoped_lock<boost::mutex> queueRequestMessagesLock(queueRequestMessagesMutex, boost::interprocess::try_to_lock);
-                
+//                boost::interprocess::scoped_lock<boost::mutex> queueRequestMessagesLock(syncHelper->queueRequestMessagesMutex, boost::interprocess::try_to_lock);
+//                
                 if (queueRequestMessagesLock)
                 {
                     //put all the buffers in the message in the buffer queue
@@ -398,10 +393,10 @@ namespace pico {
                         //                    mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
                         
                         std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
-                        bufferQueuePtr_->push(curBufPtr);
+                        syncHelper->bufferQueuePtr_->push(curBufPtr);
                         
                     }
-                    bufferQueueIsEmpty.notify_all();
+                    syncHelper->bufferQueueIsEmpty.notify_all();
                     break;
                 }//lock obtained
                 else
@@ -411,38 +406,8 @@ namespace pico {
                 }
             }
         }
-        
-        
-        std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
-
-        
-        //this is the list that all the requests are buffered to
-       // pico_concurrent_list<bufferTypePtr> bufferQueue_; //this is shared among all
-        //the instances of PonocoDriver and PonocoClient, thats how they interact with each other
-        //so I am going to use these two lists in the constructor and make them shared that way
-        //as I am going to use one instance of it, i am going to use a std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
-        pico_concurrent_list <queueType> responseQueue_;
-        
-        
-        
-        
-        asyncReader asyncReader_;
-        boost::mutex sessionMutex;   // mutex for the condition variable
-        boost::mutex allowedToWriteLockMutex;
-        boost::mutex queueRequestMessagesMutex;
-        boost::mutex responseQueueMutex;
-        boost::condition_variable bufferQueueIsEmpty;
-        boost::condition_variable responseQueueIsEmpty;
-        
-        boost::condition_variable clientIsAllowedToWrite;
-        boost::unique_lock<boost::mutex> allowedToWriteLock;
-        boost::unique_lock<boost::mutex> writeOneBufferLock;
-        boost::unique_lock<boost::mutex> responseQueueIsEmptyLock;
-        
         string last_read_message;
-        
-        
-        
+        asyncReader asyncReader_;
     };//end of class
 } //end of namespace
 #endif

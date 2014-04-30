@@ -40,7 +40,9 @@ namespace pico {
             } catch (const std::exception& e) {
                 cout << " exception : " << e.what() << endl;
             } catch (...) {
+                
                 cout << "<----->unknown exception thrown.<------>";
+                raise(SIGABRT);
             }
         }
         void readOneBuffer() {

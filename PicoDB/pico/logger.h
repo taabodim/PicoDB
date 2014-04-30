@@ -57,7 +57,12 @@ public:
      }
    
         logger()=delete;
-    
+        
+    virtual ~logger()
+        {
+                if(outfile.good())
+                    outfile.close();
+        }
     
 };
     

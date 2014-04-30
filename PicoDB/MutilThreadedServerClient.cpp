@@ -390,7 +390,7 @@ void runPicoHedgeFundClient(std::shared_ptr<DriverType> ptr)
     cout<<("hedge fund finished buying currencies...");
     
 }
-void runPicoDriver(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> sharedReqQueue) {
+void runPicoDriver(std::shared_ptr<PonocoDriverHelper> syncHelper) {
 	try {
 	//	mylogger << "starting PicoDriver" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
@@ -401,7 +401,7 @@ void runPicoDriver(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> sharedRe
         tcp::resolver r(io_service);
         
 		socketType socket(new tcp::socket(io_service));
-        std::shared_ptr<DriverType> ptr(new DriverType(socket,sharedReqQueue));
+        std::shared_ptr<DriverType> ptr(new DriverType(socket,syncHelper));
 		 ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
@@ -470,19 +470,17 @@ void forwarding_example()
 
 //std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
 
-void runPoncoClientProgram(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtrArg) //this is the third party program that is going to put
+void runPoncoClientProgram(std::shared_ptr<PonocoDriverHelper> syncHelper) //this is the third party program that is going to put
 //messages in the request queue of the PonocoDriver
 {
-    using namespace pico;
-   
-    std::shared_ptr<PonocoDriver> driverPtr (new PonocoDriver(bufferQueuePtrArg));
+    std::shared_ptr<PonocoDriver> driverPtr (new PonocoDriver(syncHelper));
    
     pic::PonocoClient client(driverPtr);
     client.currentTestCase();
    
     
 }
-void runPonocoDriver(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> sharedReqQueue) {
+void runPonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelper) {
 	try {
         //	mylogger << "starting client" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
@@ -493,7 +491,7 @@ void runPonocoDriver(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> shared
         tcp::resolver r(io_service);
         
 		socketType socket(new tcp::socket(io_service));
-        std::shared_ptr<DriverType> ptr(new DriverType(socket,sharedReqQueue));
+        std::shared_ptr<DriverType> ptr(new DriverType(socket,syncHelper));
       
         ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
@@ -526,23 +524,24 @@ void clientServerExample() {
        
 	
         using namespace pico;
-	    typedef std::shared_ptr<pico_concurrent_list<bufferTypePtr>> sharedConList;
-         sharedConList sharedReqQueue  (new pico_concurrent_list<bufferTypePtr>);
+	  
+         std::shared_ptr<PonocoDriverHelper> sharedSyncHelper  (new PonocoDriverHelper);
         
         boost::thread serverThread(runServer);
 		sleepViaBoost(4);
 
 
-		boost::thread picoDriverThread(boost::bind(runPonocoDriver,sharedReqQueue));
+		boost::thread picoDriverThread(boost::bind(runPonocoDriver,sharedSyncHelper));
         sleepViaBoost(4);
         
         
-        boost::thread poncoClientThread(boost::bind(runPoncoClientProgram,sharedReqQueue));
-        
-        poncoClientThread.join();
+        boost::thread poncoClientThread(boost::bind(runPoncoClientProgram,sharedSyncHelper));
+       
+       
         
         picoDriverThread.join();
         serverThread.join();
+        poncoClientThread.join();
        
 		      
 	} catch (std::exception& e) {
@@ -938,7 +937,7 @@ void printStackTraceHandler(int sig) {
     //realname = abi::__cxa_demangle(e.what(), 0, 0, &status);
     //  std::cout << ti.name() << "\t=> " << realname << "\t: " << status << '\n';
     
-    exit(1);
+    //exit(1);
 }
 
 void registerPrintStackHandlerForSignals() {
