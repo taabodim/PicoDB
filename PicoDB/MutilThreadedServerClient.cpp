@@ -46,11 +46,11 @@
 #include "ObjectPool.h"
 #include "Runnable.h"
 #include "ThreadWorker.h"
-
+#include <pico_logger_wrapper.h>
 #include <iostream>
 #include <SimpleRunnable.h>
 
-
+#include <PonocoClient.h>
 #include <jsonCppExamples.h>
 #include <string>
 #include <vector>
@@ -66,6 +66,7 @@
 #include <pico/pico_collection.h>
 #include <pico/pico_client.h>
 #include <pico/pico_index.h>
+#include <pico/pico_concurrent_list.h>
 
 using namespace pico;
 using namespace std;
@@ -375,7 +376,11 @@ void createACollection() {
 }
 void sleepViaBoost(int seconds)
 {
-boost::this_thread::sleep(boost::posix_time::seconds(seconds));
+//boost::this_thread::sleep(boost::posix_time::seconds(seconds)); this throws some weird exception
+    
+    std::chrono::milliseconds dura( seconds*1000 );
+    std::this_thread::sleep_for( dura );
+    
 }
 void runPicoHedgeFundClient(std::shared_ptr<DriverType> ptr)
 {
@@ -385,7 +390,7 @@ void runPicoHedgeFundClient(std::shared_ptr<DriverType> ptr)
     cout<<("hedge fund finished buying currencies...");
     
 }
-void runPicoDriver() {
+void runPicoDriver(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> sharedReqQueue) {
 	try {
 	//	mylogger << "starting PicoDriver" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
@@ -396,7 +401,7 @@ void runPicoDriver() {
         tcp::resolver r(io_service);
         
 		socketType socket(new tcp::socket(io_service));
-        std::shared_ptr<DriverType> ptr(new DriverType(socket));
+        std::shared_ptr<DriverType> ptr(new DriverType(socket,sharedReqQueue));
 		 ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
@@ -464,7 +469,20 @@ void forwarding_example()
 }
 
 //std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
-void runPonocoDriver() {
+
+void runPoncoClientProgram(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtrArg) //this is the third party program that is going to put
+//messages in the request queue of the PonocoDriver
+{
+    using namespace pico;
+   
+    std::shared_ptr<PonocoDriver> driverPtr (new PonocoDriver(bufferQueuePtrArg));
+   
+    pic::PonocoClient client(driverPtr);
+    client.currentTestCase();
+   
+    
+}
+void runPonocoDriver(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> sharedReqQueue) {
 	try {
         //	mylogger << "starting client" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
@@ -475,7 +493,8 @@ void runPonocoDriver() {
         tcp::resolver r(io_service);
         
 		socketType socket(new tcp::socket(io_service));
-        std::shared_ptr<DriverType> ptr(new DriverType(socket));
+        std::shared_ptr<DriverType> ptr(new DriverType(socket,sharedReqQueue));
+      
         ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
@@ -501,34 +520,30 @@ void runPonocoDriver() {
 
 	}
 }
-void runPoncoClientProgram() //this is the third party program that is going to put
-//messages in the request queue of the PonocoDriver
-{
 
- 
-
-}
 void clientServerExample() {
 	try {
        
 	
         using namespace pico;
-	    
+	    typedef std::shared_ptr<pico_concurrent_list<bufferTypePtr>> sharedConList;
+         sharedConList sharedReqQueue  (new pico_concurrent_list<bufferTypePtr>);
+        
         boost::thread serverThread(runServer);
 		sleepViaBoost(4);
 
 
-		boost::thread picoDriverThread(runPonocoDriver);
+		boost::thread picoDriverThread(boost::bind(runPonocoDriver,sharedReqQueue));
         sleepViaBoost(4);
         
         
-//        boost::thread poncoClientThread(runPoncoClientProgram);
-//        
-//        poncoClientThread.join();
-      //  picoDriverThread.join(); when i added created another thread
-        //w
-        serverThread.join();
+        boost::thread poncoClientThread(boost::bind(runPoncoClientProgram,sharedReqQueue));
         
+        poncoClientThread.join();
+        
+        picoDriverThread.join();
+        serverThread.join();
+       
 		      
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";
@@ -896,8 +911,38 @@ void test_pico_index()
 //void bar() { baz(); }
 //void foo() { bar(); }
 
+logger* pico_logger_wrapper::myloggerPtr=new logger("gicapods");
+void printStackTraceHandler(int sig) {
+    void *array[10];
+    size_t size;
+    
+    // get void*'s for all entries on the stack
+    size = backtrace(array, 10);
+    
+    // print out all the frames to stderr
+    fprintf(stderr, "Error: signal %d:\n", sig);
+    backtrace_symbols_fd(array, size, STDERR_FILENO);
+    
+    
+    pico_logger_wrapper::myloggerPtr->log("this is the stack trace :\n ");
+//    for(int i=0;i<10;i++)
+//    {
+//    std::string *sp = static_cast<std::string*>(array[i]);
+//    // You could use 'sp' directly, or this, which does a copy.
+//    std::string s = *sp;
+//    // Don't forget to destroy the memory that you've allocated.
+//  //  delete sp;
+//    
+//    pico_logger_wrapper::myloggerPtr->log(s);
+//    }
+    //realname = abi::__cxa_demangle(e.what(), 0, 0, &status);
+    //  std::cout << ti.name() << "\t=> " << realname << "\t: " << status << '\n';
+    
+    exit(1);
+}
 
 void registerPrintStackHandlerForSignals() {
+    
     signal(SIGSEGV, printStackTraceHandler);   // install our handler
     
 	signal(SIGHUP, printStackTraceHandler);
@@ -917,7 +962,7 @@ void registerPrintStackHandlerForSignals() {
 std::unique_ptr<ThreadPool>  pico_collection::delete_thread_pool (new ThreadPool(numberOfDeletionThreads));
     
 //    
-std::string PonocoDriver::logFileName ("client");
+
 std::string pico_session::logFileName ("session");
 std::string request_processor::logFileName ("session");
 std::string SimpleRunnable::logFileName ("gicapods");
@@ -948,6 +993,7 @@ string  pico_test::bigValue0("Families skepticalFamilies of the 239 people who w
 string  pico_test::bigValue1("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from ;radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it.endOfMessage");
 int main(int argc, char** argv) {
 	try {
+        pico_logger_wrapper logger;//just to initialize the static pointer
         registerPrintStackHandlerForSignals();
 		std::set_unexpected(myunexpected);
 //        test_pico_index();

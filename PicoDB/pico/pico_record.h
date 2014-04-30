@@ -115,9 +115,10 @@ namespace pico {
             return *this;
         }
         bool operator==(pico_record&  buffer) {
+
             if(buffer.getKeyAsString().compare(this->getKeyAsString())==0)
                 return true;
-            
+//
             return false;
             
         }
@@ -136,11 +137,13 @@ namespace pico {
         char* getkey() {
             return key_;
         }
+        //this will mess up the end of value_ data !! ,, dangerous!!
         std::string getKeyAsString() {
             std::string key(key_);
             return key;
         }
         std::string getValueAsString() {
+             value_[max_value_size]='\0';
             std::string val(value_);
             return val;
         }

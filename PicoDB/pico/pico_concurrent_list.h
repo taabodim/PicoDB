@@ -35,7 +35,6 @@ namespace pico{
     class pico_concurrent_list : public pico_logger_wrapper{
     private:
         boost::mutex mutex_;
-        //logger mylogger;
         
     public:
         list<queueType> underlying_list;

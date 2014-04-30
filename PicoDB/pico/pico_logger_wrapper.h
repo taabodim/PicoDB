@@ -8,27 +8,67 @@
 
 #ifndef PicoDB_pico_logger_wrapper_h
 #define PicoDB_pico_logger_wrapper_h
-#include <pico/pico_utils.h>
 #include <logger.h>
-
 
 namespace pico
 {
+    
+    template<typename T>
+    logger& operator << (logger& wrapper,T nonstr)
+    {
+        string str = boost::lexical_cast<std::string>(nonstr);
+        // std::cout<<str;
+        wrapper.log(str);
+        return wrapper;
+    }
+    
+    template<>
+    logger& operator << (logger& wrapper,const std::string& str)
+    {
+        //std::cout<<str;
+        wrapper.log(str);
+        return wrapper;
+    }
+
+//    template<typename T>
+//     logger* operator << (logger*  wrapper,T nonstr)
+//    {
+//        string str = boost::lexical_cast<std::string>(nonstr);
+//        // std::cout<<str;
+//        wrapper->log(str);
+//        return wrapper;
+//    }
+//    
+//    template<>
+//    logger*  operator << (logger*  wrapper,const std::string& str)
+//    {
+//        //std::cout<<str;
+//        wrapper->log(str);
+//        return wrapper;
+//    }
     class pico_logger_wrapper {
     
     public:
     logger mylogger;
-    
-        pico_logger_wrapper():mylogger("gicapods"){
+        static logger* myloggerPtr;;
+        //this is to have only one instance of logger everywhere
         
-        }
+        pico_logger_wrapper():mylogger("gicapods"){
+       
+        if(myloggerPtr==NULL)
+         {
+             myloggerPtr = new logger("gicapods");
+         }
+    }
+        
         void log(const std::string& str){
             mylogger<<str;
         }
         
     
+       
     };
-
+   
     //this is how you make a singleton properly
     //class S
 //    {

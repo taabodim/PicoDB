@@ -48,21 +48,27 @@ namespace pico {
     typedef pico_message queueType;
     class PonocoDriver: public std::enable_shared_from_this<PonocoDriver>, public pico_logger_wrapper {
     private:
-        
-        
         socketType socket_;
-        pico_concurrent_list <queueType> commandQueue_;
-        pico_concurrent_list <queueType> responseQueue_;
         ClientResponseProcessor responseProcessor;
+   
+    
     public:
-        static string logFileName;
-        
-        PonocoDriver(socketType socket) :
+        PonocoDriver(std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtrArg ) :
         writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutex),
-        responseQueueIsEmptyLock(responseQueueMutex){
+        responseQueueIsEmptyLock(responseQueueMutex),bufferQueuePtr_(bufferQueuePtrArg){
+            
+            mylogger<< "Ponoco Instance is initializing to help the PonocoClient Class ";
+            
+        }
+        
+        
+        
+        PonocoDriver(socketType socket,std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtrArg) :
+        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutex),
+        responseQueueIsEmptyLock(responseQueueMutex),bufferQueuePtr_(bufferQueuePtrArg) {
             
             socket_ = socket;
-            mylogger<<( "client initializing ");
+            mylogger<< " Ponoco Driver is initializing ";
             
         }
         
@@ -103,7 +109,7 @@ namespace pico {
             try {
                 if(!ec)
                 {
-                    runTestCase();
+                  
                     writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
                 }
                 else{
@@ -340,14 +346,14 @@ namespace pico {
         void writeOneBuffer()
         {
             
-            if(bufferQueue_.empty())
+            if(bufferQueuePtr_->empty())
             {
                 
                 mylogger<<"client : bufferQueue is empty..waiting ...\n";
                 
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
             }
-            bufferTypePtr currentBuffer = bufferQueue_.pop();
+            bufferTypePtr currentBuffer =bufferQueuePtr_->pop();
             char* data = currentBuffer->getData();
             std::size_t dataSize = currentBuffer->getSize();
             
@@ -392,7 +398,7 @@ namespace pico {
                         //                    mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
                         
                         std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
-                        bufferQueue_.push(curBufPtr);
+                        bufferQueuePtr_->push(curBufPtr);
                         
                     }
                     bufferQueueIsEmpty.notify_all();
@@ -407,21 +413,19 @@ namespace pico {
         }
         
         
+        std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
+
         
-        //dont delete these declarations, later they have to be moved to pico_test class
-        //        void insert1SmallKeyBigValueAndGetItAndUpdateItAndDeleteIt();
-        //        void getTest(std::string key);
-        //        void write1000smallRandomData();
-        //        void writeOneDeleteOne();
-        //        void writeThe_same_record_to_check_if_we_update_or_insert_multiple();
-        //
-        //        void writeTenKEY0KEY1KEY2DeleteAllKEY2();
-        //        void write1000SmallKeysBigValues_and_deleteAll();
-        //        void write1000SmallKeysValues_and_deleteAll();
+        //this is the list that all the requests are buffered to
+       // pico_concurrent_list<bufferTypePtr> bufferQueue_; //this is shared among all
+        //the instances of PonocoDriver and PonocoClient, thats how they interact with each other
+        //so I am going to use these two lists in the constructor and make them shared that way
+        //as I am going to use one instance of it, i am going to use a std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
+        pico_concurrent_list <queueType> responseQueue_;
         
         
-        //        writer_buffer_container writer_buffer_container_;
-        pico_concurrent_list<bufferTypePtr> bufferQueue_;
+        
+        
         asyncReader asyncReader_;
         boost::mutex sessionMutex;   // mutex for the condition variable
         boost::mutex allowedToWriteLockMutex;
@@ -437,165 +441,6 @@ namespace pico {
         
         string last_read_message;
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        /*******************************************************************/
-        /*******************************************************************/
-        /*******************************************************************/
-        /**********************Test Functions**********************************/
-        /*******************************************************************/
-        /*******************************************************************/
-        /*******************************************************************/
-        
-        
-        void insert1SmallKeyBigValue_And_GetIt()
-        {
-            
-            std::string key(pico_test::smallKey0);
-            insert(key,pico_test::bigValue0);
-            get(key);
-            
-        }
-        void getTest(std::string key)
-        {
-            
-            std::size_t hashcodeOfSentKey =   calc_hash_code(key);
-            
-        }
-        void write1000smallRandomData()
-        {
-            
-            
-            for(int  i=0;i<1000;i++)
-                insert(random_string(20),random_string(20));
-            
-        }
-        void writeOneDeleteOne()
-        {
-            for(int  i=0;i<1;i++)
-                insert(pico_test::smallKey0,pico_test::smallValue0);
-            for(int  i=0;i<1;i++)
-                deleteTest(pico_test::smallKey0,pico_test::smallValue0);
-            
-        }
-        void writeThe_same_record_to_check_if_we_update_or_insert_multiple()
-        {
-            for(int  i=0;i<2;i++)
-            {
-                insert(pico_test::smallKey0,pico_test::smallValue0);
-            }
-        }
-        
-        void writeTenKEY0KEY1KEY2DeleteAllKEY2()
-        {
-            for(int  i=0;i<1;i++)
-            {
-                
-                insert(pico_test::smallKey0,pico_test::smallValue0);
-                insert(pico_test::smallKey1,pico_test::smallValue1);
-                insert(pico_test::smallKey2,pico_test::smallValue2);
-                insert(pico_test::smallKey2,pico_test::smallValue2);
-                insert(pico_test::smallKey2,pico_test::smallValue2);
-                insert(pico_test::smallKey0,pico_test::smallValue0);
-                insert(pico_test::smallKey1,pico_test::smallValue1);
-            }
-            for(int  i=0;i<1;i++)
-                deleteTest(pico_test::smallKey2,pico_test::smallKey2);
-            //
-        }
-        void write1000SmallKeysBigValues_and_deleteAll()
-        {
-            for(int  i=0;i<1000;i++)
-            {
-                std::string key(pico_test::smallKey0);
-                key.append(convertToString(i));
-                insert(key,pico_test::bigValue0);
-            }
-            
-            //            for(int  i=0;i<1000;i++)
-            //            {
-            //                std::string key(pico_test::smallKey0);
-            //                key.append(convertToString(i));
-            //
-            //                deleteTest(key,pico_test::smallKey2);
-            //            }
-            
-            
-        }
-        
-        void write1000SmallKeysValues_and_deleteAll()
-        {
-            for(int  i=0;i<1000;i++)
-            {
-                std::string key(pico_test::smallKey0);
-                key.append(convertToString(i));
-                insert(key,pico_test::smallValue0);
-            }
-            
-            for(int  i=0;i<1000;i++)
-            {
-                std::string key(pico_test::smallKey0);
-                key.append(convertToString(i));
-                
-                deleteTest(key,pico_test::smallKey2);
-            }
-            
-            
-        }
-        
-        
-        void currentTestCase()
-        {
-            
-            
-            steady_clock::time_point t1 = steady_clock::now();
-            
-            
-            
-            // write1000smallRandomData();
-            //            writeOneDeleteOne();
-            insert1SmallKeyBigValue_And_GetIt();
-            //write1000SmallKeysBigValues_and_deleteAll();
-            
-            
-            steady_clock::time_point t2 = steady_clock::now();
-            
-            duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-            
-            std::cout << "****************************************\n";
-            std::cout << "\nIt took me " << time_span.count() << " seconds.";
-            std::cout << std::endl;
-        }
-        void runTestCase()
-        {
-            
-            boost::thread poncoClientThread(boost::bind(&PonocoDriver::currentTestCase,this));
-            
-        }
         
         
     };//end of class

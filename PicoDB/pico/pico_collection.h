@@ -233,6 +233,7 @@ namespace pico {
             
             record_read_from_file.offset_of_record = offset;
             mylogger << "\n read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString();
+             mylogger << "\n read_all_records : record_read_from_file.getValueAsString() " << record_read_from_file.getValueAsString();
             infileLocal.close();
             return record_read_from_file;
           
@@ -432,8 +433,8 @@ namespace pico {
                    break;
                }
                else{
-                   currentRecord.getKeyAsString()
-                   mylogger<<"overwrite didnt work on offset "<<record_offset<<"\n"<<" currentRecord.getKeyAsString() is "<<currentRecord.getKeyAsString()<<" record                   .getKeyAsString()"<<;
+                   
+                   mylogger<<"overwrite didnt work on offset "<<record_offset<<"\n"<<" currentRecord.getKeyAsString() is "<<currentRecord.getKeyAsString()<<" vs record.getKeyAsString is "<<record.getKeyAsString() << "currentRecord.getValueAsString() is "<<currentRecord.getValueAsString()<<" vs record.getValueAsString() is "<<record.getValueAsString() ;
                }
             }while(true);
         }
@@ -448,13 +449,19 @@ namespace pico {
         }
         void append_a_record(pico_record& record,offsetType record_offset)
         {
-            //cout << "appending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
+            mylogger << "appending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
+            mylogger << "appending  one record key is :  "<<record.getkey()<<" \n";
+            mylogger << "appending one record value is :  "<<record.getValue()<<" \n";
+            
             if(record_offset==-1) record_offset=0;
             file.seekp(record_offset,ios_base::beg);
             file.write((char*) record.getkey(), record.max_key_size);
             file.write((char*) record.getValue(), record.max_value_size);
             file.flush();
-            index.add_to_tree(record);
+            if(pico_record::recordStartsWithBEGKEY(record))
+            {
+                index.add_to_tree(record);
+            }
             
         }
         

@@ -15,7 +15,8 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <pico_utils.h>
+
+
 using namespace std;
 namespace pico{
     
@@ -60,21 +61,9 @@ public:
     
 };
     
-    template<typename T>
-    logger& operator << (logger& wrapper,T nonstr)
-    {
-        string str = convertToString<T>(nonstr);
-       // std::cout<<str;
-        wrapper.log(str);
-        return wrapper;
-    }
-    template<>
-    logger& operator << (logger& wrapper,const std::string& str)
-    {
-        //std::cout<<str;
-        wrapper.log(str);
-        return wrapper;
-    }
+  
+    
+ 
 
 }
 
