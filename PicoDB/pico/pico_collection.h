@@ -34,7 +34,7 @@ namespace pico {
         boost::mutex writerMutex;
         
     public:
-       
+        
         boost::mutex collectionMutex;
         pico_binary_index_tree index;
         
@@ -86,7 +86,7 @@ namespace pico {
         //        return alloffsets;
         //    }
         
-               
+        
         size_t getNumberOfMessages() {
             //    	list<offsetType> all_Messages_offsets = read_all_Messages_offsets();
             //		return all_Messages_offsets.size();
@@ -109,7 +109,7 @@ namespace pico {
         void queue_record_for_deletion(pico_record& firstRecordOfMessageToBeDeleted)
         {
             auto deleteTask = std::make_shared<DeleteTaskRunnable> (shared_from_this(),firstRecordOfMessageToBeDeleted);
-           
+            
             //mylogger<<"hello"<<"I am here"<<" "<<3<<3.23<<"\n";
             delete_thread_pool->submitTask(deleteTask);
         }
@@ -126,14 +126,14 @@ namespace pico {
             firstRecordOfMessageToBeDeleted.offset_of_record = node.offset;
             queue_record_for_deletion(firstRecordOfMessageToBeDeleted);
             index.remove(node);
-   
+            
             
             
         }
         void deletion_function(pico_record firstRecordOfMessageToBeDeleted)//this function is the main function that deletion thread calls to delete the record
         {
             
-         //   read_offset_of_this_record(firstRecordOfMessageToBeDeleted); the index has already been deleted
+            //   read_offset_of_this_record(firstRecordOfMessageToBeDeleted); the index has already been deleted
             mylogger<<"this offset is going to be deleted "<<firstRecordOfMessageToBeDeleted.offset_of_record<<"\n";
             deleteOneMessage(firstRecordOfMessageToBeDeleted.offset_of_record);
             
@@ -192,14 +192,14 @@ namespace pico {
                 all_records_for_this_message.push_back(nextRecord);
                 
                 nextOffset +=  pico_record::max_size;
-              
+                
             } while(nextOffset<=endOffset);
             
-           
-           pico_message  msg =  pico_message::convertBuffersToMessage(all_records_for_this_message);
+            
+            pico_message  msg =  pico_message::convertBuffersToMessage(all_records_for_this_message);
             mylogger<<"\n retrieveOneMessage this is the whole message retrieved "<<msg.toString();
             return msg;
-    
+            
         }
         
         //        list<pico_record> find(pico_record& firstRecordOfMessageToBeFound) {
@@ -233,10 +233,10 @@ namespace pico {
             
             record_read_from_file.offset_of_record = offset;
             mylogger << "\n read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString();
-             mylogger << "\n read_all_records : record_read_from_file.getValueAsString() " << record_read_from_file.getValueAsString();
+            mylogger << "\n read_all_records : record_read_from_file.getValueAsString() " << record_read_from_file.getValueAsString();
             infileLocal.close();
             return record_read_from_file;
-          
+            
         }
         //    list<pico_record> read_all_records() { //this function was debugged!
         //
@@ -265,11 +265,11 @@ namespace pico {
             //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY
             list<offsetType> list_of_offsets;
             offsetType endOfFile_Offset = getEndOfFileOffset(file);
-           // cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
+            // cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
             
             for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
                  pico_record::max_size) {
-              //  cout << " read_all_records_offsets : reading one record from offset "<<offset  //<< std::endl;
+                //  cout << " read_all_records_offsets : reading one record from offset "<<offset  //<< std::endl;
                 
                 pico_record record_read_from_file = retrieve(offset);
                 
@@ -288,23 +288,30 @@ namespace pico {
         }
         
         list<pico_record> read_all_messages_records() {
-            //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY and return them as pico_records not offsets
             list<pico_record> list_;
-            offsetType endOfFile_Offset = getEndOfFileOffset(file);
-           mylogger << "\n offset of end of file is " << endOfFile_Offset;
-            
-            for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-                 pico_record::max_size) {
-            
-                mylogger << "\n read_all_records_offsets : reading one record from offset "<<offset;
+            try{
+                //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY and return them as pico_records not offsets
                 
-                pico_record record_read_from_file = retrieve(offset);
+                offsetType endOfFile_Offset = getEndOfFileOffset(file);
+                mylogger << "\n offset of end of file is " << endOfFile_Offset;
                 
-                
-                if(pico_record::recordStartsWithBEGKEY(record_read_from_file))
-                {
-                    list_.push_back(record_read_from_file);
+                for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
+                     pico_record::max_size) {
+                    
+                    mylogger << "\n read_all_records_offsets : reading one record from offset "<<offset;
+                    
+                    pico_record record_read_from_file = retrieve(offset);
+                    
+                    
+                    if(pico_record::recordStartsWithBEGKEY(record_read_from_file))
+                    {
+                        list_.push_back(record_read_from_file);
+                    }
+                    
                 }
+            }catch (...) {
+                std::cerr << "Exception: read_all_messages_records: unknown thrown" << "\n";
+                raise(SIGABRT);
                 
             }
             return list_;
@@ -415,27 +422,27 @@ namespace pico {
         }
         void overwrite(pico_record record,offsetType record_offset) { //this overwrites a file
             
-//            mylogger << "overwriting  one record to collection at this offset record_offset : "<<record_offset<<" \n";
-//            boost::interprocess::scoped_lock<boost::mutex> writerLock( writerMutex);
+            //            mylogger << "overwriting  one record to collection at this offset record_offset : "<<record_offset<<" \n";
+            //            boost::interprocess::scoped_lock<boost::mutex> writerLock( writerMutex);
             do
-           {
-               //this while loop will take care of multi threaded delete
-            file.seekp(record_offset);
-            file.write((char*) record.getkey(), record.max_key_size);
-            file.write((char*) record.getValue(), record.max_value_size);
-            file.flush();
-            pico_record  currentRecord =retrieve(record_offset);
-               if(currentRecord.getKeyAsString().compare(record
-                                                         .getKeyAsString())==0
-                  && currentRecord.getValueAsString().compare(record
-                                                            .getValueAsString())==0)
-               {
-                   break;
-               }
-               else{
-                   
-                   mylogger<<"overwrite didnt work on offset "<<record_offset<<"\n"<<" currentRecord.getKeyAsString() is "<<currentRecord.getKeyAsString()<<" vs record.getKeyAsString is "<<record.getKeyAsString() << "currentRecord.getValueAsString() is "<<currentRecord.getValueAsString()<<" vs record.getValueAsString() is "<<record.getValueAsString() ;
-               }
+            {
+                //this while loop will take care of multi threaded delete
+                file.seekp(record_offset);
+                file.write((char*) record.getkey(), record.max_key_size);
+                file.write((char*) record.getValue(), record.max_value_size);
+                file.flush();
+                pico_record  currentRecord =retrieve(record_offset);
+                if(currentRecord.getKeyAsString().compare(record
+                                                          .getKeyAsString())==0
+                   && currentRecord.getValueAsString().compare(record
+                                                               .getValueAsString())==0)
+                {
+                    break;
+                }
+                else{
+                    
+                    mylogger<<"overwrite didnt work on offset "<<record_offset<<"\n"<<" currentRecord.getKeyAsString() is "<<currentRecord.getKeyAsString()<<" vs record.getKeyAsString is "<<record.getKeyAsString() << "currentRecord.getValueAsString() is "<<currentRecord.getValueAsString()<<" vs record.getValueAsString() is "<<record.getValueAsString() ;
+                }
             }while(true);
         }
         void insert(pico_record& record) { //this appends to the end of file
@@ -492,8 +499,8 @@ namespace pico {
         collection->deletion_function(record);
         numberOfoutputs++;
         long  x = numberOfoutputs.load(std::memory_order_relaxed);
-//        str.append();
-//        str.append(convertToString<long>(x));
+        //        str.append();
+        //        str.append(convertToString<long>(x));
         mylogger<<" this is the num of deleted messages from collection : "<<x;
         
     }

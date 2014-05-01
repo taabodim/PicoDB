@@ -25,11 +25,11 @@ namespace pico {
         typedef pico_message queueType;
         
         PonocoDriverHelper():
-        writeOneBufferLock(sessionMutex),allowedToWriteLock(allowedToWriteLockMutex),
-        responseQueueIsEmptyLock(responseQueueMutex),bufferQueuePtr_(new pico_concurrent_list<bufferTypePtr>){
+        bufferQueuePtr_(new pico_concurrent_list<bufferTypePtr>)
+        {
             
         }
-        std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
+               std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
         
         
         //this is the list that all the requests are buffered to
@@ -39,25 +39,36 @@ namespace pico {
         //as I am going to use one instance of it, i am going to use a std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
         pico_concurrent_list <queueType> responseQueue_;
 
-        
-        boost::mutex sessionMutex;   // mutex for the condition variable
+        bool clientIsConnected;
+        boost::mutex writeOneBufferMutex;   // mutex for the condition variable
         boost::mutex allowedToWriteLockMutex;
         boost::mutex queueRequestMessagesMutex;
         boost::mutex responseQueueMutex;
+        boost::mutex  waitForClientToConnectMutex;
+        
+        boost::condition_variable clientIsConnectedCV;
         boost::condition_variable bufferQueueIsEmpty;
         boost::condition_variable responseQueueIsEmpty;
-        
         boost::condition_variable clientIsAllowedToWrite;
-        boost::unique_lock<boost::mutex> allowedToWriteLock;
+    
         boost::unique_lock<boost::mutex> writeOneBufferLock;
-        boost::unique_lock<boost::mutex> responseQueueIsEmptyLock;
+        
+     //cv and mutex objects should be member variable
+        //locks should be on stack
+        
+        //        boost::unique_lock<boost::mutex> allowedToWriteLock;
+//        boost::unique_lock<boost::mutex> writeOneBufferLock;
+//        boost::unique_lock<boost::mutex> responseQueueIsEmptyLock;
 //
 //        boost::mutex::scoped_lock<boost::mutex> allowedToWriteLock;
 //        boost::mutex::scoped_lock<boost::mutex> writeOneBufferLock;
 //        boost::mutex::scoped_lock<boost::mutex> responseQueueIsEmptyLock;
         
         
-        
+//        writeOneBufferLock(writeOneBufferMutex)
+//        allowedToWriteLock(allowedToWriteLockMutex)
+//        responseQueueIsEmptyLock(responseQueueMutex)
+
         
         
         

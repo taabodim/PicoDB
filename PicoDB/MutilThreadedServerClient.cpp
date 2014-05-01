@@ -318,7 +318,7 @@ void lockExamples() {
 //	boost::unique_lock<boost::mutex> workerLock(wokerMutext);
 //
     
-//    boost::mutex wokerMutext;
+//    boost::mutex wokerMutext; //dont ever use scoped_lock it works very bad under multi threading situations
 //				boost::interprocess::scoped_lock<boost::mutex> workerLock( wokerMutext);
 ////syntax exmaples
 //			boost::thread thrd(&ThreadWorker::runIndefinitely, &workerPtr);
@@ -376,10 +376,11 @@ void createACollection() {
 }
 void sleepViaBoost(int seconds)
 {
-//boost::this_thread::sleep(boost::posix_time::seconds(seconds)); this throws some weird exception
+boost::this_thread::sleep(boost::posix_time::seconds(seconds));
+    //this throws some weird exception
     
-    std::chrono::milliseconds dura( seconds*1000 );
-    std::this_thread::sleep_for( dura );
+//    std::chrono::milliseconds dura( seconds*1000 );
+//    std::this_thread::sleep_for( dura );
     
 }
 void runPicoHedgeFundClient(std::shared_ptr<DriverType> ptr)
@@ -390,7 +391,7 @@ void runPicoHedgeFundClient(std::shared_ptr<DriverType> ptr)
     cout<<("hedge fund finished buying currencies...");
     
 }
-void runPicoDriver(std::shared_ptr<PonocoDriverHelper> syncHelper) {
+void runPicoDriver(PonocoDriverHelper* syncHelper) {
 	try {
 	//	mylogger << "starting PicoDriver" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
@@ -401,8 +402,8 @@ void runPicoDriver(std::shared_ptr<PonocoDriverHelper> syncHelper) {
         tcp::resolver r(io_service);
         
 		socketType socket(new tcp::socket(io_service));
-        std::shared_ptr<DriverType> ptr(new DriverType(socket,syncHelper));
-		 ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
+        std::shared_ptr<DriverType> ptr(new DriverType(syncHelper));
+		 ptr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
         //and client sends to server
@@ -418,8 +419,10 @@ void runPicoDriver(std::shared_ptr<PonocoDriverHelper> syncHelper) {
         
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";
+         raise(SIGABRT);
 	} catch (...) {
 		std::cerr << "Exception: unknown happened for client" << "\n";
+        raise(SIGABRT);
 	}
 }
 
@@ -470,7 +473,7 @@ void forwarding_example()
 
 //std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
 
-void runPoncoClientProgram(std::shared_ptr<PonocoDriverHelper> syncHelper) //this is the third party program that is going to put
+void runPoncoClientProgram(PonocoDriverHelper* syncHelper) //this is the third party program that is going to put
 //messages in the request queue of the PonocoDriver
 {
     std::shared_ptr<PonocoDriver> driverPtr (new PonocoDriver(syncHelper));
@@ -480,20 +483,22 @@ void runPoncoClientProgram(std::shared_ptr<PonocoDriverHelper> syncHelper) //thi
    
     
 }
-void runPonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelper) {
+void runPonocoDriver(DriverType* ptr,PonocoDriverHelper* syncHelper) {
 	try {
         //	mylogger << "starting client" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
-        //localhost{"localhost"} only the local machine via a special interface only visible to programs running on the same compute
+        
+        //std::string localhost{"localhost"};
+//        std::string localhost{"127.0.0.1"};
+        //only the local machine via a special interface only visible to programs running on the same compute
 		std::string port { "8877" };
         
 		boost::asio::io_service io_service;
         tcp::resolver r(io_service);
         
 		socketType socket(new tcp::socket(io_service));
-        std::shared_ptr<DriverType> ptr(new DriverType(socket,syncHelper));
-      
-        ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
+       
+        ptr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
         //and client sends to server
@@ -503,7 +508,7 @@ void runPonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelper) {
         //        hedgeThred.detach();
         
 		io_service.run();
-        std::cout << "Driver ending...going out of scope" << std::endl;
+        std::cout << "Driver ending ..couldnt connect to the server...going out of scope" << std::endl;
         
         
         
@@ -524,25 +529,37 @@ void clientServerExample() {
        
 	
         using namespace pico;
-	  
-         std::shared_ptr<PonocoDriverHelper> sharedSyncHelper  (new PonocoDriverHelper);
-        
-        boost::thread serverThread(runServer);
+
+    //     std::shared_ptr<PonocoDriverHelper> sharedSyncHelper  (new PonocoDriverHelper);
+         PonocoDriverHelper* sharedSyncHelper  =new PonocoDriverHelper;
+//std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
+         DriverType* ptr = new DriverType(sharedSyncHelper);
+        std::thread serverThread(runServer);
 		sleepViaBoost(4);
 
-
-		boost::thread picoDriverThread(boost::bind(runPonocoDriver,sharedSyncHelper));
+         boost::bind(runPonocoDriver,_1, _2)(*ptr,sharedSyncHelper);
+//auto func = std::bind(runPonocoDriver,_1, _2,ptr,sharedSyncHelper);
+       // boost::thread picoDriverThread(boost::bind(runPonocoDriver,_1, _2)(ptr,sharedSyncHelper));
         sleepViaBoost(4);
         
+        //bind(f, _2, _1)(x, y);
         
-        boost::thread poncoClientThread(boost::bind(runPoncoClientProgram,sharedSyncHelper));
+       // auto func1= std::bind(runPoncoClientProgram,_1, _2,ptr,sharedSyncHelper);
+        PonocoRunnable clientThreadRunnable(ptr,sharedSyncHelper);
+        boost::thread poncoClientThread(boost::bind(&PonocoRunnable::run,clientThreadRunnable));
        
        
-        
-        picoDriverThread.join();
-        serverThread.join();
-        poncoClientThread.join();
+//        poncoClientThread.detach();
+//        picoDriverThread.detach();
+//        serverThread.detach();
        
+        //a thread that is waiting on a condition variable, cannot be joined
+      
+        if(serverThread.joinable()) {serverThread.join();}
+//        if(poncoClientThread.joinable())
+//        {poncoClientThread.join();}
+//        if(picoDriverThread.joinable())
+//        {picoDriverThread.join();}
 		      
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";

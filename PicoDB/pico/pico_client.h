@@ -51,35 +51,52 @@ namespace pico {
     private:
         socketType socket_;
         ClientResponseProcessor responseProcessor;
-        std::shared_ptr<PonocoDriverHelper> syncHelper;
-    
-    public:
-        PonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelperArg ) {
-            syncHelper = syncHelperArg;
-            mylogger<< "Ponoco Instance is initializing to help the PonocoClient Class ";
-            
-        }
-    PonocoDriver(socketType socket,std::shared_ptr<PonocoDriverHelper> syncHelperArg) {
-            
-            socket_ = socket;
-           syncHelper = syncHelperArg;
-            mylogger<< " Ponoco Driver is initializing ";
-            
-        }
+      //  typedef  std::shared_ptr<PonocoDriverHelper> helperType;
+       typedef  PonocoDriverHelper* helperType;
+       helperType syncHelper;
         
-        void start_connect(tcp::resolver::iterator endpoint_iter) {
-            mylogger<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
-            if (endpoint_iter != tcp::resolver::iterator()) {
-                mylogger<<  "Trying "<<endpoint_iter->endpoint() << "...\n";
-                
-                // Start the asynchronous connect operation.
-                socket_->async_connect(endpoint_iter->endpoint(),
-                                       boost::bind(&PonocoDriver::start, this, _1, endpoint_iter));
-            } else {
-                // There are no more endpoints to try. Shut down the client.
-                //				stop();
+        
+    public:
+        PonocoDriver(helperType syncHelperArg ) {
+            syncHelper = syncHelperArg;
+              boost::unique_lock<boost::mutex> waitForClientToConnectLock(syncHelper->waitForClientToConnectMutex);
+            //syncHelper->clientIsConnectedCV.wait(waitForClientToConnectLock);
+            while(!syncHelper->clientIsConnected)
+            {
+                //wait until client is connected
             }
-            mylogger<<(  " start_connect ends" );
+            mylogger<< "Ponoco Instance is initializing  ";
+        
+        }
+//        PonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelperArg) {
+//            
+//           
+//            syncHelper = syncHelperArg;
+//            mylogger<< " Ponoco Driver is initializing ";
+//            
+//        }
+        
+        void start_connect(socketType socket,tcp::resolver::iterator endpoint_iter) {
+            try{
+                 socket_ = socket;
+                mylogger<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
+                if (endpoint_iter != tcp::resolver::iterator()) {
+                    mylogger<<  "Trying "<<endpoint_iter->endpoint() << "...\n";
+                    
+                    // Start the asynchronous connect operation.
+                    socket_->async_connect(endpoint_iter->endpoint(),
+                                           boost::bind(&PonocoDriver::start, this, _1, endpoint_iter));
+                } else {
+                    // There are no more endpoints to try. Shut down the client.
+                    //				stop();
+                }
+                mylogger<<(  " start_connect ends" );
+            }catch(...)
+            {
+                std::cerr << "client start_connect : Exception: unknown thrown" << "\n";
+                raise(SIGABRT);
+                
+            }
         }
         void handle_connect(const boost::system::error_code& ec,
                             tcp::resolver::iterator endpoint_iter) {
@@ -93,7 +110,7 @@ namespace pico {
                 mylogger<<(  "Connect timed out\n");
                 
                 // Try the next available endpoint.
-                start_connect(++endpoint_iter);
+                start_connect(this->socket_,++endpoint_iter);
             }
         }
         
@@ -104,21 +121,22 @@ namespace pico {
             try {
                 if(!ec)
                 {
-                  
+                    //syncHelper->clientIsConnectedCV.notify_all();
+                    syncHelper->clientIsConnected=true;
                     writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
                 }
                 else{
                     mylogger<<"\nclient : start : error is "<<ec.value()<<" error message is "<<ec.message();
                     mylogger <<"\n error name is "<< ec.category().name();}
-        
+                
             } catch (const std::exception& e) {
                 mylogger<<" exception : "<<e.what();
                 raise(SIGABRT);
-
+                
             } catch (...) {
                 mylogger<< "<----->unknown exception thrown.<------>\n";
                 raise(SIGABRT);
-
+                
             }
         }
         //	void readAsync() {
@@ -263,11 +281,11 @@ namespace pico {
             string col("currencyCollection");
             
             queueType msg (key,value,command,database,user,col );
-           queueRequestMessages(msg);
-                //            queueType msgReadFromQueue = commandQueue_.pop();
-                //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
-                
-                }
+            queueRequestMessages(msg);
+            //            queueType msgReadFromQueue = commandQueue_.pop();
+            //            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
+            
+        }
         
         void update(std::string key,std::string oldValue,std::string newValue){
             
@@ -296,12 +314,14 @@ namespace pico {
             
             steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
             mylogger<<"Client : waiting for our response from server !\n";
-            
+            boost::unique_lock<boost::mutex> responseQueueIsEmptyLock(syncHelper->responseQueueMutex);
             while(true)
             {
+                
                 while(syncHelper->responseQueue_.empty())
                 {
-                    syncHelper->responseQueueIsEmpty.wait(syncHelper->responseQueueIsEmptyLock);
+                    mylogger<<"Client : waiting for our responseQueue_ to be filled again 1 !\n";
+                 //   syncHelper->responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
                 }
                 queueType response = syncHelper->responseQueue_.peek();
                 mylogger<<"Client : response.requestId"<<response.requestId<<"\n"<<
@@ -311,6 +331,7 @@ namespace pico {
                     //this is our response
                     mylogger<<"Client : got our response"<<response.requestId<<"\n"<<
                     "this is our response "<<response.value;
+                   
                     return response.value;
                 }
                 else
@@ -332,7 +353,7 @@ namespace pico {
                 }
                 
             }//while
-            
+        
             std::string timeout("OPERATION TIMED OUT!");
             return timeout;
             
@@ -340,14 +361,31 @@ namespace pico {
         }
         void writeOneBuffer()
         {
+              mylogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
+            boost::unique_lock<boost::mutex> writeOneBufferLock(syncHelper->writeOneBufferMutex);
             
             if(syncHelper->bufferQueuePtr_->empty())
             {
                 
                 mylogger<<"client : bufferQueue is empty..waiting ...\n";
                 
-                syncHelper->bufferQueueIsEmpty.wait(syncHelper->writeOneBufferLock);
+//                syncHelper->bufferQueueIsEmpty.wait(syncHelper->writeOneBufferLock);
+                try{
+                syncHelper->bufferQueueIsEmpty.wait(writeOneBufferLock);
+                    
+                }
+                catch(std::exception& e)
+                {
+                std::cerr << "Exception writeOneBuffer : " << e.what() << "\n";
+                     raise(SIGABRT);
+                }
+                catch(...)
+                {
+                std::cerr << "Exception: writeOneBuffer : unknown thrown" << "\n";
+                raise(SIGABRT);
+                }
             }
+             mylogger<<"client : is going to send some data over ...\n";
             bufferTypePtr currentBuffer =syncHelper->bufferQueuePtr_->pop();
             char* data = currentBuffer->getData();
             std::size_t dataSize = currentBuffer->getSize();
@@ -367,6 +405,9 @@ namespace pico {
                                          readOneBuffer();
                                      });
             
+            
+            
+            
         }
         void queueTheResponse(queueType message)
         
@@ -378,32 +419,41 @@ namespace pico {
         }
         void queueRequestMessages(queueType message) {
             //TODO put a lock here to make the all the buffers in a message go after each other.
-            while(true)
-            {
-//                boost::interprocess::scoped_lock<boost::mutex> queueRequestMessagesLock(syncHelper->queueRequestMessagesMutex, boost::interprocess::try_to_lock);
-//                
-                if (queueRequestMessagesLock)
-                {
-                    //put all the buffers in the message in the buffer queue
-                    while(!message.buffered_message.msg_in_buffers->empty())
-                    {
-                        
-                        mylogger<<"PonocoDriver : popping current Buffer ";
-                        bufferType buf = message.buffered_message.msg_in_buffers->pop();
-                        //                    mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
-                        
-                        std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
-                        syncHelper->bufferQueuePtr_->push(curBufPtr);
-                        
-                    }
+            try{
+//             boost::interprocess::scoped_lock<boost::mutex> queueRequestMessagesLock(syncHelper->queueRequestMessagesMutex, boost::interprocess::try_to_lock);
+            
+            boost::unique_lock<boost::mutex> writeOneBufferMutexLock(syncHelper->writeOneBufferMutex);
+//                    if (writeOneBufferMutexLock.owns_lock())
+//                    {
+                        //put all the buffers in the message in the buffer queue
+                        while(!message.buffered_message.msg_in_buffers->empty())
+                        {
+                            
+                            mylogger<<"\nPonocoDriver : queueRequestMessages : : popping current Buffer \n";
+                            bufferType buf = message.buffered_message.msg_in_buffers->pop();
+                            mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
+                            
+                            std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
+                            syncHelper->bufferQueuePtr_->push(curBufPtr);
+
+                         
+                          
+                            //this line throws nasty exception
+                        }
+               
                     syncHelper->bufferQueueIsEmpty.notify_all();
-                    break;
-                }//lock obtained
-                else
-                {
-                    mylogger<<"queueRequestMessages was called but unable to get the lock\n";
-                    //    return false;
-                }
+                                      // break;
+//                    }//lock obtained
+//                    else
+//                    {
+//                        mylogger<<"queueRequestMessages was called but unable to get the lock\n";
+//                           // return false;
+//                    }
+            
+            }catch (...) {
+                std::cerr << "Exception: queueRequestMessages(queueType message) : unknown thrown" << "\n";
+                raise(SIGABRT);
+            
             }
         }
         string last_read_message;

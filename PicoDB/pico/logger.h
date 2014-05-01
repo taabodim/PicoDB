@@ -37,10 +37,11 @@ public:
         {
             while (true)
             {
-            boost::interprocess::scoped_lock<boost::mutex> lock(log_mutex,boost::interprocess::try_to_lock);
-            if(lock)
+            boost::unique_lock<boost::mutex> lock(log_mutex, boost::try_to_lock);
+         if(lock)
             {
                 append(str);
+                lock.unlock();
                 break;
             }
             }

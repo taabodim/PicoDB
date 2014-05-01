@@ -10,9 +10,10 @@
 #define PicoDB_PonocoClient_h
 #include <pico/pico_client.h>
 #include <pico/pico_test.h>
+#include <pico_logger_wrapper.h>
 namespace pic{
 
-    class PonocoClient{
+    class PonocoClient : public pico_logger_wrapper{
     private:
         std::shared_ptr<PonocoDriver> driverPtr;
     public:
@@ -28,7 +29,9 @@ namespace pic{
             
             std::string key(pico_test::smallKey0);
             driverPtr->insert(key,pico_test::bigValue0);
-          //  driverPtr->get(key);
+           
+            //  driverPtr->get(key);
+            while(true){}//keep the thread forever
             
         }
 //        void getTest(std::string key)
@@ -137,9 +140,9 @@ namespace pic{
             
             duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
             
-            std::cout << "****************************************\n";
-            std::cout << "\nIt took me " << time_span.count() << " seconds.";
-            std::cout << std::endl;
+            mylogger << "****************************************\n";
+            mylogger<< "\nIt took me " << time_span.count() << " seconds.\n";
+            
         }
         
     };

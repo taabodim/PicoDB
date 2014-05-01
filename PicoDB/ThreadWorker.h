@@ -27,7 +27,6 @@ namespace pico {
         bool free;
         
         boost::mutex workerMutex;
-        boost::unique_lock<boost::mutex> workerLock;
         boost::function<void()> bound_func;
     public:
         bool stopFlag_; //this should be public
@@ -35,7 +34,7 @@ namespace pico {
 
         boost::thread threadHandle;
         
-        ThreadWorker(std::shared_ptr<pico_concurrent_list<taskType>> queueOfTasksArg) :workerLock(workerMutex),bound_func(boost::bind(&ThreadWorker::runIndefinitely, this)),threadHandle(bound_func){
+        ThreadWorker(std::shared_ptr<pico_concurrent_list<taskType>> queueOfTasksArg) :bound_func(boost::bind(&ThreadWorker::runIndefinitely, this)),threadHandle(bound_func){
            
             
             queueOfTasks = queueOfTasksArg;
@@ -82,7 +81,13 @@ namespace pico {
                     }
                     setIsAvailable(true);
                      mylogger << "queueOfTasks is empty,worker is waiting for more tasks.\n ";
-                    workerQueueIsEmpty.wait(workerLock);
+                   
+                    
+                    boost::unique_lock<boost::mutex> workerLock(workerMutex);
+                    if(workerLock.owns_lock())
+                    {
+                        workerQueueIsEmpty.wait(workerLock);
+                    }
                     
                 } catch (std::exception& e) {
                     
@@ -103,7 +108,13 @@ namespace pico {
         }
         void notifyThisThreadQueueWasFilled()
         {
-            workerQueueIsEmpty.notify_all();
+            boost::unique_lock<boost::mutex> workerLock(workerMutex);
+            if(workerLock.owns_lock())
+            {
+               workerQueueIsEmpty.notify_all();
+            }
+
+            
         }
         virtual ~ThreadWorker() {
             stopFlag_ = true;
