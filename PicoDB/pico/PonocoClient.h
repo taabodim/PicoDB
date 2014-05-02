@@ -11,14 +11,14 @@
 #include <pico/pico_client.h>
 #include <pico/pico_test.h>
 #include <pico_logger_wrapper.h>
-namespace pic{
+namespace pico{
 
     class PonocoClient : public pico_logger_wrapper{
     private:
-        std::shared_ptr<PonocoDriver> driverPtr;
+        PonocoDriver* driverPtr;
     public:
         
-        PonocoClient(std::shared_ptr<PonocoDriver> driverPtrArg)
+        PonocoClient(PonocoDriver* driverPtrArg)
         {
             driverPtr = driverPtrArg;
             
@@ -30,8 +30,8 @@ namespace pic{
             std::string key(pico_test::smallKey0);
             driverPtr->insert(key,pico_test::bigValue0);
            
-            //  driverPtr->get(key);
-            while(true){}//keep the thread forever
+              driverPtr->get(key);
+            //while(true){}//keep the thread forever
             
         }
 //        void getTest(std::string key)

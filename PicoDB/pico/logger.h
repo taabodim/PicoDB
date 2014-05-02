@@ -35,16 +35,10 @@ public:
    
         void log(std::string str )
         {
-            while (true)
-            {
-            boost::unique_lock<boost::mutex> lock(log_mutex, boost::try_to_lock);
-         if(lock)
-            {
-                append(str);
-                lock.unlock();
-                break;
-            }
-            }
+
+            boost::unique_lock<boost::mutex> lock(log_mutex);
+            append(str);
+            
             
         }
        logger(std::string filename){

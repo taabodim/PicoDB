@@ -188,12 +188,14 @@ namespace pico {
         
         pico_message getOneMessage(pico_message picoMsg) {
            
+   
             std::shared_ptr<pico_collection> collectionPtr = collectionManager.getTheCollection(picoMsg.collection);
             
             pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
             mylogger<<"\n request_processor : record that is going to be fetched  from this : "<<firstrecord.toString()<<"offset of record is "<<firstrecord.offset_of_record;
+            
            
-            pico_message msg = collectionPtr->retrieveOneMessage(firstrecord.offset_of_record);
+            pico_message msg = collectionPtr->findThisKey(firstrecord);
             return msg;
             
         }

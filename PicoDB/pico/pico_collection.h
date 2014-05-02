@@ -181,10 +181,22 @@ namespace pico {
         //this function retrieves all the records of a message starting from the first one
         //until the next "first record" is found
         {
-            list<pico_record> all_records_for_this_message;
+              offsetType endOffset = getEndOfFileOffset(file);
             
+            if(offsetOfFirstRecordOfMessage>endOffset)
+            {
+                string error("offset in tree is wrong");
+            pico_message  msg =  pico_message::build_complete_message_from_string(error);
+            mylogger<<"\n retrieveOneMessage offset is  wrong "<<msg.toString();
+            return msg;
+            }
+            
+//            std::shared_ptr<list<pico_record>> all_records_for_this_message(new list<pico_record>());
+            //it should be shared ptr in the heap because list wont copy over to the next function nicely
+            
+             list<pico_record> all_records_for_this_message;
             offsetType nextOffset=offsetOfFirstRecordOfMessage;
-            offsetType endOffset = getEndOfFileOffset(file);
+          
             do
             {
                 
@@ -202,6 +214,20 @@ namespace pico {
             
         }
         
+        pico_message findThisKey(pico_record record)
+        {
+        
+            if(index.search(record)!=nullptr)
+            {
+                mylogger<<" findThisKey record.offset_of_record is "<<record.offset_of_record<<"\n";
+                return retrieveOneMessage(record.offset_of_record);
+            }
+            mylogger<<" findThisKey didnt find this record ";
+            string noDataFound("NODATAFOUND");
+            pico_message msg=pico_message::build_complete_message_from_string(noDataFound);
+            return msg;
+            
+        }
         //        list<pico_record> find(pico_record& firstRecordOfMessageToBeFound) {
         //
         //		list<pico_record> all_records;
@@ -499,8 +525,7 @@ namespace pico {
         collection->deletion_function(record);
         numberOfoutputs++;
         long  x = numberOfoutputs.load(std::memory_order_relaxed);
-        //        str.append();
-        //        str.append(convertToString<long>(x));
+
         mylogger<<" this is the num of deleted messages from collection : "<<x;
         
     }

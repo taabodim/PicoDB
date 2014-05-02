@@ -27,9 +27,9 @@ namespace pico {
             mylogger<<"ClientResponseProcessor : this is the message that is going to be processed by the client "<<messageFromServer;
             
             
-            pico_message picoMessage(messageFromServer);
+          //  pico_message picoMessage(messageFromServer);
  
-            mylogger<<"this response is for this request .."<<picoMessage.requestId<<"\n";
+           // mylogger<<"this response is for this request .."<<picoMessage.requestId<<"\n";
             //put the message in responseQueue, so the get method that checks it,
             //fetches the message
             

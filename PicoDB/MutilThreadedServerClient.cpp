@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <thread>
 #include <boost/thread.hpp>
-
+#include <PonocoRunnable.h>
 #include <memory>
 #include <utility>
 #include <array>
@@ -473,56 +473,7 @@ void forwarding_example()
 
 //std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
 
-void runPoncoClientProgram(PonocoDriverHelper* syncHelper) //this is the third party program that is going to put
-//messages in the request queue of the PonocoDriver
-{
-    std::shared_ptr<PonocoDriver> driverPtr (new PonocoDriver(syncHelper));
-   
-    pic::PonocoClient client(driverPtr);
-    client.currentTestCase();
-   
-    
-}
-void runPonocoDriver(DriverType* ptr,PonocoDriverHelper* syncHelper) {
-	try {
-        //	mylogger << "starting client" //<< std::endl;
-		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
-        
-        //std::string localhost{"localhost"};
-//        std::string localhost{"127.0.0.1"};
-        //only the local machine via a special interface only visible to programs running on the same compute
-		std::string port { "8877" };
-        
-		boost::asio::io_service io_service;
-        tcp::resolver r(io_service);
-        
-		socketType socket(new tcp::socket(io_service));
-       
-        ptr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
-        //		boost::thread shellThread(
-        //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
-        //and client sends to server
-        
-        
-        //        boost::thread hedgeThred(boost::bind(runPicoHedgeFundClient, ptr));
-        //        hedgeThred.detach();
-        
-		io_service.run();
-        std::cout << "Driver ending ..couldnt connect to the server...going out of scope" << std::endl;
-        
-        
-        
-	} catch (std::exception& e) {
-		std::cerr << "Exception: " << e.what() << "\n";
-        raise(SIGABRT);
 
-        
-	} catch (...) {
-		std::cerr << "Exception: unknown happened for client" << "\n";
-        raise(SIGABRT);
-
-	}
-}
 
 void clientServerExample() {
 	try {
@@ -531,22 +482,25 @@ void clientServerExample() {
         using namespace pico;
 
     //     std::shared_ptr<PonocoDriverHelper> sharedSyncHelper  (new PonocoDriverHelper);
-         PonocoDriverHelper* sharedSyncHelper  =new PonocoDriverHelper;
-//std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
-         DriverType* ptr = new DriverType(sharedSyncHelper);
-        std::thread serverThread(runServer);
+         PonocoDriverHelper* sharedSyncHelper  =new PonocoDriverHelper();
+std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
+//         DriverType* ptr = new DriverType(sharedSyncHelper);
+        boost::thread serverThread(runServer);
 		sleepViaBoost(4);
 
-         boost::bind(runPonocoDriver,_1, _2)(*ptr,sharedSyncHelper);
+        // boost::bind(runPonocoDriver,_1, _2)(*ptr,sharedSyncHelper);
 //auto func = std::bind(runPonocoDriver,_1, _2,ptr,sharedSyncHelper);
+       
+         PonocoRunnable driverThreadRunnable(ptr.get(),sharedSyncHelper);
        // boost::thread picoDriverThread(boost::bind(runPonocoDriver,_1, _2)(ptr,sharedSyncHelper));
+       boost::thread  poncoDriverThread(boost::bind(&PonocoRunnable::runPonocoDriver,driverThreadRunnable));
         sleepViaBoost(4);
         
         //bind(f, _2, _1)(x, y);
         
        // auto func1= std::bind(runPoncoClientProgram,_1, _2,ptr,sharedSyncHelper);
-        PonocoRunnable clientThreadRunnable(ptr,sharedSyncHelper);
-        boost::thread poncoClientThread(boost::bind(&PonocoRunnable::run,clientThreadRunnable));
+        PonocoRunnable clientThreadRunnable(ptr.get(),sharedSyncHelper);
+        boost::thread poncoClientThread(boost::bind(&PonocoRunnable::runPoncoClientProgram,clientThreadRunnable));
        
        
 //        poncoClientThread.detach();

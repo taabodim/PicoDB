@@ -139,12 +139,13 @@ namespace pico {
         }
         //this will mess up the end of value_ data !! ,, dangerous!!
         std::string getKeyAsString() {
-            std::string key(key_);
+            std::string key(key_,max_key_size);
             return key;
         }
         std::string getValueAsString() {
-             value_[max_value_size]='\0';
-            std::string val(value_);
+            //uses the constructor that takes char[]  and gives us
+            //the string properly
+            std::string val(value_,max_value_size);
             return val;
         }
         std::string toString() const {

@@ -132,6 +132,10 @@ namespace pico {
         const static int max_size = 248; //this should be more than 168 because the smallest message size that i send is 168
         const static int command_size = 24;
         char data_[max_size];
+        char key_[pico_message::max_key_size];
+        char value_[pico_message::max_value_size];
+        
+        return
     private:
         int arraySize;
         bool bufferBeingUsed;

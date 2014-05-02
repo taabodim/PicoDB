@@ -392,19 +392,22 @@ namespace pico {
             
             return raw_msg;
         }
-        static pico_message convertBuffersToMessage(list<pico_record> all_buffers) {
+        static pico_message convertBuffersToMessage(list<pico_record>& all_buffers
+                                                   // std::shared_ptr<list<pico_record>> all_buffers
+                                                    ) {
             string all_raw_msg;
-            
+            string key;
             while (!all_buffers.empty()) {
                 //get rid of all buffers that are not for this messageId
-                for (list<pico_record>::iterator it; it != all_buffers.end();
+                for (list<pico_record>::iterator it=all_buffers.begin(); it != all_buffers.end();
                      ++it)
                 {
-                        //mylogger<<"\nconvertBuffersToMessage : pico_buffer :  "<<*it;
-                        all_raw_msg.append((it->toString()));
+                    if(getTheKey){ it->get}
+                    std::cout<<"\nconvertBuffersToMessage : pico_buffer :  "<<it->toString();
+                        all_raw_msg.append(it->toString());
                     
                 }//for
-               // mylogger << "pico_message : convertBuffersToMessage : all_raw_msg is "<<all_raw_msg<<"\n";
+                std::cout << "pico_message : convertBuffersToMessage : all_raw_msg is "<<all_raw_msg<<"\n";
             }//while
         
             pico_message pico_msg(all_raw_msg);

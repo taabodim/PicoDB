@@ -26,8 +26,8 @@ namespace pico {
         typedef pico_message queueType;
     public:
         static string logFileName;
-        pico_session(socketType r_socket) :
-        writeOneBufferLock(sessionMutex) ,allowedToWriteLock(allowedToWriteLockMutext){
+        pico_session(socketType r_socket)
+         {
             socket_ = r_socket;
         }
         
@@ -66,9 +66,7 @@ namespace pico {
             //TODO put a lock here to make the all the buffers in a message go after each other.
             while(true)
             {
-            boost::interprocess::scoped_lock<boost::mutex> queueMessagesLock(queueMessagesMutext,boost::interprocess::try_to_lock);
-            if(queueMessagesLock)
-            {
+                std::unique_lock<std::mutex> queueMessagesLock(queueMessagesMutext);
             //put all the buffers in the message in the buffer queue
             while(!message.buffered_message.msg_in_buffers->empty())
             {
@@ -86,12 +84,12 @@ namespace pico {
             }
             
             }
-        }
         
         void writeOneBuffer()
         {
             
-            if(bufferQueue_.empty())
+            std::unique_lock<std::mutex> writeOneBufferLock(bufferQueueIsEmptyMutex);
+            while(bufferQueue_.empty())
             {
              //   cout<<"session : bufferQueue is empty..waiting ..."<<endl;
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
@@ -245,14 +243,15 @@ namespace pico {
         request_processor requestProcessor_;
         pico_concurrent_list<queueType> messageToClientQueue_;
         pico_concurrent_list<bufferTypePtr> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
-        boost::mutex sessionMutex;   // mutex for the condition variable
-        boost::mutex allowedToWriteLockMutext;
-        boost::mutex queueMessagesMutext;
-        boost::condition_variable bufferQueueIsEmpty;
+      
+        std::mutex sessionMutex;   // mutex for the condition variable
+        std::mutex bufferQueueIsEmptyMutex;
+        std::mutex queueMessagesMutext;
+        std::condition_variable bufferQueueIsEmpty;
         
-        boost::condition_variable clientIsAllowedToWrite;
-        boost::unique_lock<boost::mutex> allowedToWriteLock;
-        boost::unique_lock<boost::mutex> writeOneBufferLock;
+        std::condition_variable clientIsAllowedToWrite;
+        
+        
         string last_read_message;
         
         

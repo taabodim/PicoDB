@@ -24,34 +24,19 @@ namespace pico {
      
         typedef pico_message queueType;
         
-        PonocoDriverHelper():
-        bufferQueuePtr_(new pico_concurrent_list<bufferTypePtr>)
-        {
-            
-        }
-               std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
-        
+//        PonocoDriverHelper():
+//        bufferQueuePtr_(new pico_concurrent_list<bufferTypePtr>)
+//        {
+//            
+//        }
+         
         
         //this is the list that all the requests are buffered to
         // pico_concurrent_list<bufferTypePtr> bufferQueue_; //this is shared among all
         //the instances of PonocoDriver and PonocoClient, thats how they interact with each other
         //so I am going to use these two lists in the constructor and make them shared that way
         //as I am going to use one instance of it, i am going to use a std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
-        pico_concurrent_list <queueType> responseQueue_;
-
-        bool clientIsConnected;
-        boost::mutex writeOneBufferMutex;   // mutex for the condition variable
-        boost::mutex allowedToWriteLockMutex;
-        boost::mutex queueRequestMessagesMutex;
-        boost::mutex responseQueueMutex;
-        boost::mutex  waitForClientToConnectMutex;
-        
-        boost::condition_variable clientIsConnectedCV;
-        boost::condition_variable bufferQueueIsEmpty;
-        boost::condition_variable responseQueueIsEmpty;
-        boost::condition_variable clientIsAllowedToWrite;
-    
-        boost::unique_lock<boost::mutex> writeOneBufferLock;
+     
         
      //cv and mutex objects should be member variable
         //locks should be on stack
