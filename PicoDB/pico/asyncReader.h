@@ -8,11 +8,11 @@
 #ifndef ASYNCREADER_H_
 #define ASYNCREADER_H_
 
-#include <pico/pico_buffer.h>
+#include <pico/pico_record.h>
 #include <pico/writer_buffer_container.h> //for typedef only
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
-#include <pico/pico_buffered_message.h>
+//#include <pico/pico_recorded_message.h>
 
 #include  <pico_logger_wrapper.h>
 using namespace std;
@@ -30,7 +30,7 @@ public:
 	}
 //
 //	msgPtr getReadBuffer() {
-//		msgPtr bufferPtr(new pico_buffered_message());
+//		msgPtr bufferPtr(new pico_recorded_message());
 //		readerBufferList.push(bufferPtr);
 //		return bufferPtr;
 //	}

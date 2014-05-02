@@ -133,6 +133,25 @@ namespace pico {
             pico_message msg(output);
             return msg;
         }
+        static pico_message build_complete_message_from_key_value_pair(string key,string value) {
+            Json::Value root;   // will contains the root value after parsing.
+            root["key"] = key;
+            root["value"] = value;
+            root["oldvalue"] = "unknown";
+            root["db"] = "unknown";
+            root["user"] = "unknown";
+            root["collection"] = "unknown";
+            root["command"] = "unknown";
+            root["requestId"]= convertToString(calc_request_id());
+            root["hashCode"] = "unknown";
+            
+            Json::StyledWriter writer;
+            // Make a new JSON document for the configuration. Preserve original comments.
+            std::string output = writer.write(root);
+            pico_message msg(output);
+            return msg;
+        }
+
         pico_message operator=(pico_message& msg) {
             mylogger << ("pico_message copy operator being called.\n");
             this->user = msg.user;
@@ -388,29 +407,32 @@ namespace pico {
                 raw_msg[i] = *charOfMessage;
                 ++charOfMessage;
             }
-            //         mylogger<<("pico_message : convertMessageToArrayBuffer temp_data.getString() is  "<<(*temp_data.getString())<<endl;
+            
             
             return raw_msg;
         }
         static pico_message convertBuffersToMessage(list<pico_record>& all_buffers
                                                    // std::shared_ptr<list<pico_record>> all_buffers
                                                     ) {
+                                                        bool getTheKey=true;
             string all_raw_msg;
             string key;
-            while (!all_buffers.empty()) {
+                                                        string all_values;
+            if (!all_buffers.empty()) {
                 //get rid of all buffers that are not for this messageId
                 for (list<pico_record>::iterator it=all_buffers.begin(); it != all_buffers.end();
                      ++it)
                 {
-                    if(getTheKey){ it->get}
-                    std::cout<<"\nconvertBuffersToMessage : pico_buffer :  "<<it->toString();
-                        all_raw_msg.append(it->toString());
+                    if(getTheKey){ key= it->getKeyAsString();getTheKey=false;}
+                    std::cout<<"\nconvertBuffersToMessage : pico_buffer  getValueAsString :  "<<it->getValueAsString();
+                        all_values.append(it->value_);
                     
                 }//for
-                std::cout << "pico_message : convertBuffersToMessage : all_raw_msg is "<<all_raw_msg<<"\n";
-            }//while
+               
+            }//if
+                                                         std::cout << "pico_message : convertBuffersToMessage : all_values is "<<all_values<<"\n";
         
-            pico_message pico_msg(all_raw_msg);
+                                                        pico_message pico_msg = pico_message::build_complete_message_from_key_value_pair(key,all_values);
             return pico_msg;
             
         }
