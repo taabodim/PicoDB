@@ -14,10 +14,10 @@
 //
 //namespace pico {
 //    class pico_buffer;
-//    typedef pico_buffer bufferType;
-//    typedef std::shared_ptr<pico_buffer> bufferTypePtr;
-//    typedef std::unique_ptr<pico_buffer> bufferTypeUnqiuePtr;
-//    typedef std::shared_ptr<tcp::socket> socketType;
+//    typedef pico_buffer pico_record;
+//    typedef std::shared_ptr<pico_buffer> std::shared_ptr<pico_record>;
+//    typedef std::unique_ptr<pico_buffer> pico_recordUnqiuePtr;
+//    typedef std::shared_ptr<tcp::socket> std::shared_ptr<tcp::socket>;
 //    typedef tcp::acceptor acceptorType;
 //    
 //    class pico_buffer {

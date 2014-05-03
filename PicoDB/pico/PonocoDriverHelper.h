@@ -25,17 +25,17 @@ namespace pico {
         typedef pico_message queueType;
         
 //        PonocoDriverHelper():
-//        bufferQueuePtr_(new pico_concurrent_list<bufferTypePtr>)
+//        bufferQueuePtr_(new pico_concurrent_list<std::shared_ptr<pico_record>>)
 //        {
 //            
 //        }
          
         
         //this is the list that all the requests are buffered to
-        // pico_concurrent_list<bufferTypePtr> bufferQueue_; //this is shared among all
+        // pico_concurrent_list<std::shared_ptr<pico_record>> bufferQueue_; //this is shared among all
         //the instances of PonocoDriver and PonocoClient, thats how they interact with each other
         //so I am going to use these two lists in the constructor and make them shared that way
-        //as I am going to use one instance of it, i am going to use a std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
+        //as I am going to use one instance of it, i am going to use a std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_record>>> bufferQueuePtr_;
      
         
      //cv and mutex objects should be member variable

@@ -12,6 +12,7 @@
 #include <pico/writer_buffer_container.h> //for typedef only
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
+
 //#include <pico/pico_recorded_message.h>
 
 #include  <pico_logger_wrapper.h>
@@ -34,15 +35,15 @@ public:
 //		readerBufferList.push(bufferPtr);
 //		return bufferPtr;
 //	}
-	bufferTypePtr getOneBuffer() {
+        std::shared_ptr<pico_record> getOneBuffer() {
 
-		bufferTypePtr buf (new bufferType());
+		std::shared_ptr<pico_record> buf (new pico_record());
 		singleBufferList.push(buf);
 		return buf;
 	}
 
 //	pico_concurrent_list<msgPtr> readerBufferList;
-	pico_concurrent_list<bufferTypePtr> singleBufferList;
+	pico_concurrent_list<std::shared_ptr<pico_record>> singleBufferList;
 
 private:
 //none as of now

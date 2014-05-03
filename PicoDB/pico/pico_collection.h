@@ -11,7 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <pico/pico_record.h>
-#include <pico/pico_buffer.h>
+
 #include <pico/pico_index.h>
 #include <logger.h>
 #include <pico/pico_concurrent_list.h>
@@ -31,7 +31,8 @@ namespace pico {
         //thus i want to compare it against NULL
         const static int numberOfDeletionThreads =1;
         static std::unique_ptr<ThreadPool> delete_thread_pool;
-        boost::mutex writerMutex;
+        std::mutex writeMutex;
+        
         
     public:
         
@@ -193,23 +194,23 @@ namespace pico {
             
 //            std::shared_ptr<list<pico_record>> all_records_for_this_message(new list<pico_record>());
             //it should be shared ptr in the heap because list wont copy over to the next function nicely
-            
-             list<pico_record> all_records_for_this_message;
-            offsetType nextOffset=offsetOfFirstRecordOfMessage;
+            pico_buffered_message<pico_record> all_records_for_this_message;
+             offsetType nextOffset=offsetOfFirstRecordOfMessage;
           
             do
             {
                 
                 pico_record  nextRecord = retrieve(nextOffset);
-                all_records_for_this_message.push_back(nextRecord);
+                all_records_for_this_message.append(nextRecord);
                 
                 nextOffset +=  pico_record::max_size;
                 
             } while(nextOffset<=endOffset);
             
             
-            pico_message  msg =  pico_message::convertBuffersToMessage(all_records_for_this_message);
-            mylogger<<"\n retrieveOneMessage this is the whole message retrieved "<<msg.toString();
+            pico_message  msg;
+            //=  pico_message::convertBuffersToMessage(all_records_for_this_message);
+//            mylogger<<"\n retrieveOneMessage this is the whole message retrieved "<<msg;
             return msg;
             
         }
@@ -252,11 +253,8 @@ namespace pico {
             pico_record record_read_from_file;
             
             infileLocal.seekg(offset);
-            infileLocal.read((char*) record_read_from_file.key_,
-                             pico_record::max_key_size);
-            infileLocal.read((char*) record_read_from_file.value_,
-                             pico_record::max_value_size);
-            
+            infileLocal.read((char*) record_read_from_file.data_,
+                             pico_record::max_size);
             record_read_from_file.offset_of_record = offset;
             mylogger << "\n read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString();
             mylogger << "\n read_all_records : record_read_from_file.getValueAsString() " << record_read_from_file.getValueAsString();
@@ -448,14 +446,14 @@ namespace pico {
         }
         void overwrite(pico_record record,offsetType record_offset) { //this overwrites a file
             
-            //            mylogger << "overwriting  one record to collection at this offset record_offset : "<<record_offset<<" \n";
-            //            boost::interprocess::scoped_lock<boost::mutex> writerLock( writerMutex);
+            mylogger << "\noverwriting  one record to collection at this offset\n";
+
+            std::unique_lock<std::mutex> writeLock(writeMutex);
             do
             {
                 //this while loop will take care of multi threaded delete
                 file.seekp(record_offset);
-                file.write((char*) record.getkey(), record.max_key_size);
-                file.write((char*) record.getValue(), record.max_value_size);
+                file.write((char*) record.data_, pico_record::max_size);
                 file.flush();
                 pico_record  currentRecord =retrieve(record_offset);
                 if(currentRecord.getKeyAsString().compare(record
@@ -482,14 +480,16 @@ namespace pico {
         }
         void append_a_record(pico_record& record,offsetType record_offset)
         {
+            
             mylogger << "appending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
             mylogger << "appending  one record key is :  "<<record.getkey()<<" \n";
             mylogger << "appending one record value is :  "<<record.getValue()<<" \n";
             
             if(record_offset==-1) record_offset=0;
+            
+            std::unique_lock<std::mutex> writeLock(writeMutex);
             file.seekp(record_offset,ios_base::beg);
-            file.write((char*) record.getkey(), record.max_key_size);
-            file.write((char*) record.getValue(), record.max_value_size);
+            file.write((char*) record.data_, pico_record::max_size);
             file.flush();
             if(pico_record::recordStartsWithBEGKEY(record))
             {

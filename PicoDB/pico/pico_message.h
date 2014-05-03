@@ -14,6 +14,8 @@
 #include <logger.h>
 #include <pico_logger_wrapper.h>
 #include <pico/pico_utils.h>
+#include <pico/pico_buffered_message.h>
+#include <list>
 namespace pico {
     class pico_message : public pico_logger_wrapper{
     private:
@@ -33,13 +35,15 @@ namespace pico {
         std::string json_form_of_message;
         std::string json_key_value_pair;
         std::string uniqueMessageId;
-        pico_buffered_message<bufferType> buffered_message; //a container for all the buffers that make up this pico_message
+       
+        pico_buffered_message<pico_record> key_value_buffered_message;
+        ////key value pair that came with this message in record list to
+        //be saved in db
         
         pico_buffered_message<pico_record> recorded_message;//a container for all the records that make up the
-        //key value pair that came with this message
         
         long messageSize;
-        //logger mylogger;
+     
         pico_message() {
         }
         pico_message(const pico_message& msg) {
@@ -55,9 +59,10 @@ namespace pico {
             this->oldvalue= msg.oldvalue;
             this->json_form_of_message = msg.json_form_of_message;
             this->json_key_value_pair = msg.json_key_value_pair;
-            this->buffered_message = msg.buffered_message; //a container for all the buffers that make up this pico_message
+        
             this->uniqueMessageId=msg.uniqueMessageId;
             this->recorded_message = msg.recorded_message;
+            this->key_value_buffered_message= msg.key_value_buffered_message;
             
         }
         pico_message(const std::string message_from_client) {
@@ -69,8 +74,6 @@ namespace pico {
                 // report to the user the failure and their locations in the document.
 //                mylogger << "Failed to parse message :"<<message_from_client<<"\n"
   //              << reader.getFormattedErrorMessages();
-                
-                throw new pico_exception("failed to parse message from client");
             }
             this->json_form_of_message = message_from_client;
             this->command = root.get("command", "unknown").asString();
@@ -85,8 +88,8 @@ namespace pico {
             this->json_key_value_pair = createTheKeyValuePair();
             this->set_hash_code();
             this->convert_to_buffered_message();
-            this->convert_to_list_of_records();
-        }
+                this->convert_key_value_buffered_message();
+          }
         
         pico_message(const std::string message_from_client, bool simpleMessage) { //this is for processing shell commands
             this->json_form_of_message = message_from_client;
@@ -96,7 +99,7 @@ namespace pico {
             {
                 this->set_hash_code();
                 this->convert_to_buffered_message();
-                this->convert_to_list_of_records();
+                this->convert_key_value_buffered_message();
             }
         }
         std::string createTheKeyValuePair() {
@@ -164,12 +167,10 @@ namespace pico {
             this->value = msg.value;
             this->oldvalue = msg.oldvalue;
             this->json_form_of_message = msg.json_form_of_message;
-            this->buffered_message = msg.buffered_message; //a container for all the buffers that make up this pico_message
-            
-            this->json_key_value_pair = createTheKeyValuePair();
-            this->set_hash_code();
-            this->convert_to_buffered_message();
-            this->convert_to_list_of_records();
+            this->json_key_value_pair = msg.json_key_value_pair;
+            this->uniqueMessageId=msg.uniqueMessageId;
+            this->recorded_message=msg.recorded_message;
+            this->key_value_buffered_message = msg.key_value_buffered_message;
             return *this;
         }
         std::string convert_message_to_json() {
@@ -205,8 +206,7 @@ namespace pico {
             json_key_value_pair = createTheKeyValuePair();
             set_hash_code();
             convert_to_buffered_message();
-            convert_to_list_of_records();
-            
+            convert_key_value_buffered_message();
         }
         pico_message(std::string newKey,std::string old_value_arg, std::string newValue, std::string com,std::string database, std::string us, std::string col) {
             command = com;
@@ -222,8 +222,7 @@ namespace pico {
             json_key_value_pair = createTheKeyValuePair();
             set_hash_code();
             convert_to_buffered_message();
-            convert_to_list_of_records();
-            
+            convert_key_value_buffered_message();
         }
         
         void set_hash_code() {
@@ -247,20 +246,20 @@ namespace pico {
         std::string toKeyValuePairString() const {
             return json_key_value_pair;
         }
-        //        void addConMarkerToFirstRecord(pico_record& continuingRecord) //this argument has to be passed by ref
-        //        {
-        //
-        //                string keyMarker("CONKEY"); //its the key that marks the key of the continuing records
-        //                const char* keyArray = keyMarker.c_str();
-        //                int i=0;
-        //                while (*keyArray != 0) {
-        //                    continuingRecord.key_[i]=*keyArray;
-        //                    ++i;
-        //                    ++keyArray;
-        //                }//the key marker is put to first 6 letters of the first record
-        //
-        //        }
-        void convert_to_list_of_records() {
+                void addConMarkerToFirstRecord(pico_record& continuingRecord) //this argument has to be passed by ref
+                {
+        
+                        string keyMarker("CONKEY"); //its the key that marks the key of the continuing records
+                        const char* keyArray = keyMarker.c_str();
+                        int i=0;
+                        while (*keyArray != 0) {
+                            continuingRecord.data_[i]=*keyArray;
+                            ++i;
+                            ++keyArray;
+                    }//the key marker is put to first 6 letters of the first record
+        
+                }
+        void convert_key_value_buffered_message() {
             
             mylogger
           << "pico_message : convert_to_list_of_records : messageSize is "
@@ -278,51 +277,75 @@ namespace pico {
             const char* keyArray = key.c_str();
             int i=6;
             while (*keyArray != 0) {
-                firstRecord.key_[i]=*keyArray;
+                firstRecord.data_[i]=*keyArray;
                 ++i;
                 ++keyArray;
             }//the key is put to first record
+            for(int k=i;k<pico_record::max_key_size;k++)
+            {
+                firstRecord.data_[i] = 0;
+            }//put 0 after the key and before value
             
             const char* valueArray = value.c_str();
-            for(int j=i;j<pico_record::max_value_size;j++)
+            bool dataEnded =false;
+            for(int j=pico_record::max_key_size;j<pico_record::max_size-6;j++)
             {
                 if(*valueArray!=0)
                 {
-                    firstRecord.value_[j] = *valueArray;
+                    firstRecord.data_[j] = *valueArray;
                     ++valueArray;
                 }else{
+                    dataEnded = true;
                     break;
+                    
                 }
             }//the value of the first record is populated with values
             
-            recorded_message.append(firstRecord);
+            if(!dataEnded)
+            {//there is more data to be appended
+                addAppendMarkerToTheEnd(firstRecord);
+
+            }
+            bool moreThanOneRecord = false;
+            key_value_buffered_message.append(firstRecord);
 			while (*valueArray != 0) {
                 pico_record currentRecord;
                 
-                //   addConMarkerToFirstRecord(currentRecord);
+                
                 pico_record::replicateTheFirstRecordKeyToOtherRecords(firstRecord,currentRecord);
                 
-                for (int i = 0; i < pico_record::max_value_size ; i++) {
+                for (int i = 0; i < pico_record::max_size-6 ; i++) {
                     
                     if (*valueArray != 0) {
-                        currentRecord.value_[i] = *valueArray;
+                        currentRecord.data_[i] = *valueArray;
                     } else {
+                        dataEnded= true;
                         break;
                     }//adding the rest of values to the second and third and etc records
                     ++valueArray;
                 }
-                recorded_message.append(currentRecord);
+                
+                addAppendMarkerToTheEnd(currentRecord);
+                moreThanOneRecord = true;
+                key_value_buffered_message.append(currentRecord);
+            }
+            if(moreThanOneRecord)
+            {
+            removeTheAppendMarker(key_value_buffered_message.getLastBuffer());
             }
             
-            
         }
+        
+        
+        //this function converts all the message to a list of pico_records
+        //the whole message that passes between client and server
         void convert_to_buffered_message() {
             
 //            mylogger << "pico_message : converToBuffers : messageSize is "
           //  << messageSize << endl;
             bool appendAllExceptLastOne = false;
             
-            if (messageSize > pico_buffer::max_size - 6) {
+            if (messageSize > pico_record::max_size - 6) {
                 appendAllExceptLastOne = true;
             }
             
@@ -334,14 +357,14 @@ namespace pico {
             //mylogger<<("pico_message : message is too big , breaking down the huge string to a list of buffers ...... ");
             // mylogger<<"*temp_buffer_message  is "<<*temp_buffer_message <<endl;
             while (*temp_buffer_message != 0) {
-                bufferType currentBuffer;
+                pico_record currentBuffer;
                 currentBuffer.parentMessageId = uniqueMessageId;
                 
                 mylogger << "\npico_message : uniqureMessageId  "<< uniqueMessageId;
                 
                 
                 
-                for (int i = 0; i < pico_buffer::max_size - 6; i++) {
+                for (int i = 0; i < pico_record::max_size - 6; i++) {
                     currentBuffer.parentSequenceNumber = numberOfBuffer;
                     if (*temp_buffer_message != 0) {
                         currentBuffer.data_[i] = *temp_buffer_message;
@@ -352,21 +375,21 @@ namespace pico {
                 }
                 
                 mylogger<<("\npico_message : buffer pushed back to all_buffers ");
-                addTheEndingTagsToAllBuffers(currentBuffer); //add append at the last characters of all, except the last one which completes the message
+                addAppendMarkerToTheEnd(currentBuffer); //add append at the last characters of all, except the last one which completes the message
                 //throws buffer overflow
 //                mylogger
 //                << "pico_message : currentBuffer after append except the last one is "
 //                << currentBuffer.toString();
                 
-                buffered_message.append(currentBuffer);
+                recorded_message.append(currentBuffer);
                 
                 numberOfBuffer++;
             }
-            removeTheEndingTags(buffered_message.getLastBuffer());
+            removeTheAppendMarker(recorded_message.getLastBuffer());
             
         }
-        void removeTheEndingTags(list<bufferType>::iterator currentBuffer) {
-            int pos = pico_buffer::max_size - 1;
+        static void removeTheAppendMarker(list<pico_record>::iterator currentBuffer) {
+            int pos = pico_record::max_size - 1;
             currentBuffer->data_[pos] = '\0';
             currentBuffer->data_[--pos] = '\0';
             currentBuffer->data_[--pos] = '\0';
@@ -375,8 +398,8 @@ namespace pico {
             currentBuffer->data_[--pos] = '\0';
             
         }
-        static void removeTheEndingTags(bufferTypePtr currentBuffer) {
-            int pos = pico_buffer::max_size - 1;
+        static void removeTheAppendMarker(std::shared_ptr<pico_record> currentBuffer) {
+            int pos = pico_record::max_size - 1;
             currentBuffer->data_[pos] = '\0';
             currentBuffer->data_[--pos] = '\0';
             currentBuffer->data_[--pos] = '\0';
@@ -386,10 +409,10 @@ namespace pico {
             
         }
         
-        void addTheEndingTagsToAllBuffers(bufferType& currentBuffer)
+        void addAppendMarkerToTheEnd(pico_record& currentBuffer)
         
         {
-            int pos = pico_buffer::max_size - 1;
+            int pos = pico_record::max_size - 1;
             currentBuffer.data_[pos] = 'd';
             currentBuffer.data_[--pos] = 'n';
             currentBuffer.data_[--pos] = 'e';
@@ -411,29 +434,31 @@ namespace pico {
             
             return raw_msg;
         }
-        static pico_message convertBuffersToMessage(list<pico_record>& all_buffers
-                                                   // std::shared_ptr<list<pico_record>> all_buffers
-                                                    ) {
+        
+        
+//        std::shared_ptr<pico_concurrent_list<type>> msg_in_buffers
+        
+        static pico_message convertBuffersToMessage(pico_buffered_message<pico_record> all_buffers
+                                                  
+                                                    )
+        {
                                                         bool getTheKey=true;
             string all_raw_msg;
             string key;
                                                         string all_values;
-            if (!all_buffers.empty()) {
+            while (!all_buffers.msg_in_buffers->empty())
+            {
                 //get rid of all buffers that are not for this messageId
-                for (list<pico_record>::iterator it=all_buffers.begin(); it != all_buffers.end();
-                     ++it)
-                {
-                    if(getTheKey){ key= it->getKeyAsString();getTheKey=false;}
-                    std::cout<<"\nconvertBuffersToMessage : pico_buffer  getValueAsString :  "<<it->getValueAsString();
-                        all_values.append(it->value_);
-                    
+                pico_record buf =all_buffers.msg_in_buffers->pop();
+                string temp (buf.data_,buf.max_size);
+                all_raw_msg.append(temp);
                 }//for
                
-            }//if
-                                                         std::cout << "pico_message : convertBuffersToMessage : all_values is "<<all_values<<"\n";
+                             std::cout << "pico_message : convertBuffersToMessage : all_raw_msg is "<<all_raw_msg<<"\n";
         
-                                                        pico_message pico_msg = pico_message::build_complete_message_from_key_value_pair(key,all_values);
+            pico_message pico_msg (all_raw_msg);
             return pico_msg;
+            
             
         }
         void clear() {
@@ -447,7 +472,6 @@ namespace pico {
             value = "";
             oldvalue = "";
             json_form_of_message = "";
-            buffered_message.clear(); //a container for all the buffers that make up this pico_message
             messageSize = 0;
             
         }

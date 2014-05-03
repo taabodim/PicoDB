@@ -33,35 +33,26 @@ namespace pico {
             
         }
         
-        pico_message processRequest(const string messageFromClient) {
+        pico_message processRequest(pico_message picoMessage) {
             
-            mylogger<<"request_processor : this is the message that is going to be processed now "<<messageFromClient;
+            mylogger<<"request_processor : this is the message that is going to be processed now "<<picoMessage.toString();
             
-            
-            pico_message picoMessage(messageFromClient);
-            
-            mylogger<<"\nrequest_processor : this is the message was created "<<
-            picoMessage.toString();
-            
-           // cout << "session: processing request from client request: "
-           // << messageFromClient //<< std::endl;
-            
-            string str("message want processed");
+            string str("message wasn't processed");
             
             if (picoMessage.command.compare(insertCommand) == 0) {
-               // mylogger << "inserting one record per client request";
+                mylogger << "inserting one record per client request";
                 str = insertOneMessage(picoMessage);
             }
             else if (picoMessage.command.compare(deleteCommand) == 0) {
-              //  mylogger << "deleting one record per client request";
+                mylogger << "deleting one record per client request";
                 string str = deleteRecords(picoMessage);
                 
             } else if (picoMessage.command.compare(updateCommand) == 0) {
-                // mylogger << "updating one record per client request";
+                 mylogger << "updating one record per client request";
                 string str = updateRecords(picoMessage);
             } else if (picoMessage.command.compare(findCommand) == 0) {
                 mylogger << "finding records per client request";
-                //	string str = findRecords(picoMessage);
+                //string str = findRecords(picoMessage);
             }
             else if (picoMessage.command.compare(addUserToDBCommand) == 0) {
                 mylogger << "adding user per client request";
@@ -86,7 +77,7 @@ namespace pico {
             
             int i=0;
             std::shared_ptr<pico_collection> optionCollection = collectionManager.getTheCollection(picoMsg.collection);
-            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+            pico_record firstrecord = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
            
             offsetType whereToWriteThisRecord =-1;
             if (collectionManager.getTheCollection(picoMsg.collection)->ifRecordExists(firstrecord))
@@ -100,7 +91,7 @@ namespace pico {
            do {
                pico_record record;
                if(i!=0)
-                   record = picoMsg.recorded_message.msg_in_buffers->pop();
+                   record = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
                else
                    record = firstrecord;
                
@@ -119,7 +110,7 @@ namespace pico {
                    
                }
                 i++;
-           } while(!picoMsg.recorded_message.msg_in_buffers->empty());
+           } while(!picoMsg.key_value_buffered_message.msg_in_buffers->empty());
             string result("one message was added to database in ");
             result.append(convertToString(i));
             result.append(" seperate records");
@@ -133,7 +124,7 @@ namespace pico {
             //i am using collection pointer because, it should be passed to the
             //deleter thread , so it should be in heap
            
-            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+            pico_record firstrecord = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
             mylogger<<"\n request_processor : record that is going to be deleted from this : "<<firstrecord.toString();
 //            optionCollection.deleteRecord(firstrecord,collectionPtr);
             collectionPtr->deleteRecord(firstrecord);
@@ -143,7 +134,7 @@ namespace pico {
         }
         string updateRecords(pico_message picoMsg) {
             pico_collection optionCollection(picoMsg.collection);
-            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+            pico_record firstrecord = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
             if(optionCollection.ifRecordExists(firstrecord))
             {
                 //if the record is found
@@ -191,7 +182,7 @@ namespace pico {
    
             std::shared_ptr<pico_collection> collectionPtr = collectionManager.getTheCollection(picoMsg.collection);
             
-            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+            pico_record firstrecord = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
             mylogger<<"\n request_processor : record that is going to be fetched  from this : "<<firstrecord.toString()<<"offset of record is "<<firstrecord.offset_of_record;
             
            

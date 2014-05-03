@@ -25,7 +25,7 @@ namespace pico{
     
     
     //    template<>
-    //    struct is_unique_ptr<bufferTypeUnqiuePtr>{
+    //    struct is_unique_ptr<pico_recordUnqiuePtr>{
     //        static const bool value=true;
     //    };
     

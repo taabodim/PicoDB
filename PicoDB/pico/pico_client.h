@@ -22,7 +22,7 @@
 #include <array>
 #include "AsyncTcpClient.h"
 #include <boost/thread.hpp>
-#include <pico/pico_buffer.h>
+
 #include <pico/writer_buffer_container.h>
 #include <pico/asyncReader.h>
 #include <pico/pico_message.h>
@@ -51,13 +51,13 @@ namespace pico {
     //,//public  PonocoDriverHelper
     {
     private:
-        socketType socket_;
+        std::shared_ptr<tcp::socket> socket_;
         ClientResponseProcessor responseProcessor;
       //  typedef  std::shared_ptr<PonocoDriverHelper> helperType;
        typedef  PonocoDriverHelper* helperType;
       // helperType syncHelper;
         pico_concurrent_list <queueType> responseQueue_;
-        std::shared_ptr<pico_concurrent_list<bufferTypePtr>> bufferQueuePtr_;
+        std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_record>>> bufferQueuePtr_;
         
         bool clientIsConnected;
 
@@ -68,20 +68,17 @@ namespace pico {
         std::mutex responseQueueMutex;
         std::mutex  waitForClientToConnectMutex;
         
-         std::condition_variable clientIsConnectedCV;
+        std::condition_variable clientIsConnectedCV;
         std::condition_variable clientIsAllowedToWrite;
         std::condition_variable bufferQueueIsEmpty;
         std::condition_variable responseQueueIsEmpty;
-        
-      //  boost::unique_lock<std::mutex> writeOneBufferMutexLock(writeOneBufferMutex);
         
       
     public:
         PonocoDriver(helperType syncHelperArg )
        // syncHelper ( syncHelperArg),
-        :bufferQueuePtr_(new pico_concurrent_list<bufferTypePtr>)
-        //,writeOneBufferMutexLock(writeOneBufferMutex)
-        {
+        :bufferQueuePtr_(new pico_concurrent_list<std::shared_ptr<pico_record>>)
+          {
 //            syncHelper = syncHelperArg;
               boost::unique_lock<std::mutex> waitForClientToConnectLock(waitForClientToConnectMutex);
             //clientIsConnectedCV.wait(waitForClientToConnectLock);
@@ -100,7 +97,7 @@ namespace pico {
 //            
 //        }
         
-        void start_connect(socketType socket,tcp::resolver::iterator endpoint_iter) {
+        void start_connect(std::shared_ptr<tcp::socket> socket,tcp::resolver::iterator endpoint_iter) {
             try{
                  socket_ = socket;
                 mylogger<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
@@ -192,11 +189,11 @@ namespace pico {
             
             auto self(shared_from_this());
             // mylogger<<"client is trying to read one buffer\n" ;
-            bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
+            std::shared_ptr<pico_record> currentBuffer = asyncReader_.getOneBuffer();
             
             boost::asio::async_read(*socket_,
-                                    boost::asio::buffer(currentBuffer->getData(),
-                                                        pico_buffer::max_size),
+                                    boost::asio::buffer(currentBuffer->getDataForRead(),
+                                                        pico_record::max_size),
                                     [this,self,currentBuffer](const boost::system::error_code& error,
                                                               std::size_t t ) {
                                         
@@ -205,8 +202,8 @@ namespace pico {
             
         }
         
-        void processTheMessageJustRead(bufferTypePtr currentBuffer,std::size_t t){
-            
+        void processTheMessageJustRead(std::shared_ptr<pico_record> currentBuffer,std::size_t t){
+//            currentBuffer->loadTheKeyValueFromData();
             string str =currentBuffer->toString();
             
             mylogger<<"\n client : this is the message that client read just now "<<str;
@@ -216,20 +213,20 @@ namespace pico {
             else
                 if(pico_session::find_last_of_string(currentBuffer))
                 {
-                    mylogger<<("\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
-                    pico_message::removeTheEndingTags(currentBuffer);
+                    mylogger<<"\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n";
+                    pico_message::removeTheAppendMarker(currentBuffer);
                     string strWithoutJunk =currentBuffer->toString();
                     append_to_last_message(strWithoutJunk);
                     tellHimSendTheRestOfData();
                 }
                 else {
                     
-                    pico_message::removeTheEndingTags(currentBuffer);
+                    pico_message::removeTheAppendMarker(currentBuffer);
                     string strWithoutJunk =currentBuffer->toString();
                     append_to_last_message(strWithoutJunk);
                     
                     
-                    mylogger<<"\nthis is the complete message read from session :"<<last_read_message;
+                    mylogger<<"\nthis is the complete message read from session : "<<last_read_message;
                     
                     processDataFromOtherSide(last_read_message);
                     last_read_message.clear();
@@ -397,27 +394,14 @@ namespace pico {
                 
                 mylogger<<"client : bufferQueue is empty..waiting ...\n";
        
-                try{
-                   
                     bufferQueueIsEmpty.wait(writeOneBufferLock);
                     mylogger<<"client : bufferQueue waking up because there is some data in the queue ...\n";
-                    
-                }
-                   catch(std::exception& e)
-                {
-                std::cerr << "Exception writeOneBuffer : " << e.what() << "\n";
-                     raise(SIGABRT);
-                }
-                catch(...)
-                {
-                std::cerr << "Exception: writeOneBuffer : unknown thrown" << "\n";
-                raise(SIGABRT);
-                }
             }
-
+            
              mylogger<<"client : is going to send some data over ...\n";
-            bufferTypePtr currentBuffer =bufferQueuePtr_->pop();
-            char* data = currentBuffer->getData();
+            std::shared_ptr<pico_record> currentBuffer =bufferQueuePtr_->pop();
+            
+            char* data = currentBuffer->getDataForWrite();
             std::size_t dataSize = currentBuffer->getSize();
             
             auto self(shared_from_this());
@@ -427,7 +411,7 @@ namespace pico {
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
                                          
-                                         //                                         mylogger<<t<<" bytes to server "<<std::endl;
+                                                                                  mylogger<<t<<" bytes to server \n";
                                          if(error)
                                              mylogger<<"\n error msg : "<<error.message();
                                          
@@ -456,14 +440,14 @@ namespace pico {
             //TODO put a lock here to make the all the buffers in a message go after each other.
             try{
                     boost::unique_lock<std::mutex> writeOneBufferMutexLock(writeOneBufferMutex);
-                        while(!message.buffered_message.msg_in_buffers->empty())
+                        while(!message.recorded_message.msg_in_buffers->empty())
                         {
                             
                             mylogger<<"\nPonocoDriver : queueRequestMessages : : popping current Buffer \n";
-                            bufferType buf = message.buffered_message.msg_in_buffers->pop();
+                            pico_record buf = message.recorded_message.msg_in_buffers->pop();
                             mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
                             
-                            std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
+                            std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
                             bufferQueuePtr_->push(curBufPtr);
                         }
 

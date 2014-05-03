@@ -79,6 +79,7 @@
 		A591D0FD190AF72B00D9E066 /* pico_logger_wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_logger_wrapper.h; sourceTree = "<group>"; };
 		A591D0FE190F03A200D9E066 /* ClientResponseProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ClientResponseProcessor.h; sourceTree = "<group>"; };
 		A591D0FF190FE50D00D9E066 /* ShellClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShellClient.h; sourceTree = "<group>"; };
+		A5953EDE19148AEF0036EDDC /* pico_record_old_version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_record_old_version.h; sourceTree = "<group>"; };
 		A5DBC9F919007ADE00BBD159 /* pico_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_test.h; sourceTree = "<group>"; };
 		A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PicoHedgeFund.h; sourceTree = "<group>"; };
 		A5F887D6191152010092144B /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
@@ -179,6 +180,7 @@
 				A5F887D71911876D0092144B /* PonocoClient.h */,
 				A5F887D8191196F10092144B /* PonocoDriverHelper.h */,
 				A580501E1912F819008EA8E2 /* PonocoRunnable.h */,
+				A5953EDE19148AEF0036EDDC /* pico_record_old_version.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";

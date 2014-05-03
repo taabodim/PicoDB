@@ -21,7 +21,7 @@
 #include <array>
 #include <pico/pico_client.h>
 #include <boost/thread.hpp>
-#include <pico/pico_buffer.h>
+
 #include <pico/pico_session.h>
 #include <logger.h>
 #include <pico/pico_logger_wrapper.h>
@@ -39,10 +39,10 @@ typedef std::string messageType;
 public:
 
 	acceptorType acceptor_;
-	socketType socket;
+	std::shared_ptr<tcp::socket> socket;
     //logger mylogger;
 	pico_server(boost::asio::io_service& io_service, const tcp::endpoint& endpoint,
-			socketType mySocket) :
+			std::shared_ptr<tcp::socket> mySocket) :
 			acceptor_(io_service, endpoint), socket(mySocket) {
 		mylogger << "\nserver initializing ";
                 
@@ -72,7 +72,7 @@ public:
     
 	}
 
-	void initClientHandler(socketType socket) {
+	void initClientHandler(std::shared_ptr<tcp::socket> socket) {
 		mylogger<<"\nserver accepted a connection...going to start the session";
 		std::shared_ptr<pico_session> clientPtr (new pico_session (socket));
 		//add clients to a set
@@ -91,7 +91,7 @@ void runServer() {
 
 	tcp::endpoint endpoint(tcp::v4(), std::atoi(port.c_str()));
 
-	socketType socket(new tcp::socket(io_service));
+	std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service));
 
 	std::shared_ptr<pico_server> serverPtr (new pico_server (io_service, endpoint, socket));
 	servers.push_back(serverPtr);

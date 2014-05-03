@@ -61,7 +61,7 @@
 #include <pico/ThreadPool.h>
 #include <pico/pico_test.h>
 #include <pico/pico_server.h>
-#include <pico/pico_buffer.h>
+
 #include <pico/pico_record.h>
 #include <pico/pico_collection.h>
 #include <pico/pico_client.h>
@@ -401,7 +401,7 @@ void runPicoDriver(PonocoDriverHelper* syncHelper) {
 		boost::asio::io_service io_service;
         tcp::resolver r(io_service);
         
-		socketType socket(new tcp::socket(io_service));
+		std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service));
         std::shared_ptr<DriverType> ptr(new DriverType(syncHelper));
 		 ptr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
@@ -486,7 +486,7 @@ void clientServerExample() {
 std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
 //         DriverType* ptr = new DriverType(sharedSyncHelper);
         boost::thread serverThread(runServer);
-		sleepViaBoost(4);
+		sleepViaBoost(1);
 
         // boost::bind(runPonocoDriver,_1, _2)(*ptr,sharedSyncHelper);
 //auto func = std::bind(runPonocoDriver,_1, _2,ptr,sharedSyncHelper);
@@ -494,7 +494,7 @@ std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
          PonocoRunnable driverThreadRunnable(ptr.get(),sharedSyncHelper);
        // boost::thread picoDriverThread(boost::bind(runPonocoDriver,_1, _2)(ptr,sharedSyncHelper));
        boost::thread  poncoDriverThread(boost::bind(&PonocoRunnable::runPonocoDriver,driverThreadRunnable));
-        sleepViaBoost(4);
+        sleepViaBoost(1);
         
         //bind(f, _2, _1)(x, y);
         

@@ -8,7 +8,7 @@
 
 #ifndef PicoDB_pico_buffered_message_h
 #define PicoDB_pico_buffered_message_h
-#include <pico/pico_buffer.h>
+
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
 #include <logger.h>

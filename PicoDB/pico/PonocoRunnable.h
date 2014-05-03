@@ -52,7 +52,7 @@ namespace  pico  {
             boost::asio::io_service io_service;
             tcp::resolver r(io_service);
             
-            socketType socket(new tcp::socket(io_service));
+            std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service));
             
             driverPtr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
             //		boost::thread shellThread(
