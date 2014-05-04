@@ -94,11 +94,12 @@ namespace pico {
                    record = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
                else
                    record = firstrecord;
-               
+                pico_record::removeTheAppendMarkerNoPtr(record);
                 mylogger<<"\nrequest_processor : record that is going to be saved is this : "<<record.toString();
                if(whereToWriteThisRecord==-1)
                {
                    //this is the case that the record is unique
+                  
                 optionCollection->append(record); //append the
                }
                else
@@ -177,17 +178,22 @@ namespace pico {
         }
         
         
-        pico_message getOneMessage(pico_message picoMsg) {
+        pico_message getOneMessage(pico_message requestMessage) {
            
    
-            std::shared_ptr<pico_collection> collectionPtr = collectionManager.getTheCollection(picoMsg.collection);
+            std::shared_ptr<pico_collection> collectionPtr = collectionManager.getTheCollection(requestMessage.collection);
             
-            pico_record firstrecord = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
-            mylogger<<"\n request_processor : record that is going to be fetched  from this : "<<firstrecord.toString()<<"offset of record is "<<firstrecord.offset_of_record;
+            pico_record firstrecord = requestMessage.key_value_buffered_message.msg_in_buffers->pop();
+            mylogger<<"\n request_processor : record that is going to be fetched  from this : "<<firstrecord.toString()<<" \n offset of record is "<<firstrecord.offset_of_record;
             
            
-            pico_message msg = collectionPtr->findThisKey(firstrecord);
-            return msg;
+            pico_message responseMsg = collectionPtr->getMessageByKey(firstrecord);
+            mylogger<<"\n request_processor : record that is fetched  db : "<<responseMsg.toString();
+            
+            //setting the request messageId for the response messageId
+        
+            responseMsg.messageId=requestMessage.messageId;
+            return responseMsg;
             
         }
 

@@ -57,7 +57,7 @@ namespace pico
        
         if(myloggerPtr==NULL)
          {
-             myloggerPtr = new logger("gicapods");
+             myloggerPtr = new logger("gicapods");//to delete the file once
          }
     }
         

@@ -85,6 +85,7 @@
 		A5F887D6191152010092144B /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
 		A5F887D71911876D0092144B /* PonocoClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PonocoClient.h; sourceTree = "<group>"; };
 		A5F887D8191196F10092144B /* PonocoDriverHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PonocoDriverHelper.h; sourceTree = "<group>"; };
+		A5FF90A81915647100DF46D5 /* SqlParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SqlParser.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +139,7 @@
 				A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */,
 				A537010E18F4987500C1F898 /* countdown_latch.h */,
 				A556EB8019015C84005F4031 /* file_test.h */,
+				A5FF90A81915647100DF46D5 /* SqlParser.h */,
 			);
 			path = PicoDB;
 			sourceTree = "<group>";

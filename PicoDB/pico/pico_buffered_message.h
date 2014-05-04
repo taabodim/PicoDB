@@ -57,7 +57,10 @@ namespace pico
             msg_in_buffers->clear();
         }
         
-        
+        void print()
+        {
+            msg_in_buffers->printAll();
+        }
         string toString()
         {
             

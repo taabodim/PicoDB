@@ -47,8 +47,10 @@ public:
 		std::string ext(".log");
 		path.append(filename);
         path.append(ext);
+       
        outfile.open(path,
                      std::fstream::out | std::fstream::app | std::fstream::binary);
+
      }
    
         logger()=delete;

@@ -52,7 +52,7 @@ namespace pico {
     {
     private:
         std::shared_ptr<tcp::socket> socket_;
-        ClientResponseProcessor responseProcessor;
+        ResponseProcessor responseProcessor;
       //  typedef  std::shared_ptr<PonocoDriverHelper> helperType;
        typedef  PonocoDriverHelper* helperType;
       // helperType syncHelper;
@@ -211,25 +211,23 @@ namespace pico {
             if(sendmetherestofdata(str))
                 ignoreThisMessageAndWriterNextBuffer();
             else
-                if(pico_session::find_last_of_string(currentBuffer))
+                if(pico_record::find_last_of_string(currentBuffer))
                 {
-                    mylogger<<"\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n";
-                    pico_message::removeTheAppendMarker(currentBuffer);
-                    string strWithoutJunk =currentBuffer->toString();
-                    append_to_last_message(strWithoutJunk);
+                    mylogger<<"\Client : this buffer is an add on to the last message..dont process anything..read the next buffer\n";
+                    allBuffersReadFromTheOtherSide.append(*currentBuffer);
                     tellHimSendTheRestOfData();
                 }
                 else {
                     
-                    pico_message::removeTheAppendMarker(currentBuffer);
-                    string strWithoutJunk =currentBuffer->toString();
-                    append_to_last_message(strWithoutJunk);
+
+                    
+                    allBuffersReadFromTheOtherSide.append(*currentBuffer);
                     
                     
-                    mylogger<<"\nthis is the complete message read from session : "<<last_read_message;
-                    
+                    pico_message last_read_message = pico_message::convertBuffersToMessage(allBuffersReadFromTheOtherSide);
+                    mylogger<<"\nsever : this is the complete message read from server "<<last_read_message.toString();
                     processDataFromOtherSide(last_read_message);
-                    last_read_message.clear();
+                    allBuffersReadFromTheOtherSide.clear();
                     
                 }
         }
@@ -242,17 +240,17 @@ namespace pico {
                 return true;
             return false;
         }
-        void processDataFromOtherSide(std::string msg) {
+        void processDataFromOtherSide(pico_message messageFromOtherSide) {
             
             try {
-                mylogger<<"\nthis is the complete message from server : "<<msg;
+                mylogger<<"\nthis is the complete message from server : "<<messageFromOtherSide.toString();
                 //process the data from server and queue the right message or dont
                 
                 // TODO
-                responseProcessor.processResponse(msg);
-                queueTheResponse(msg);
+                responseProcessor.processResponse(messageFromOtherSide);
+                queueTheResponse(messageFromOtherSide);
               
-                  mylogger<<"\n after queueing response  : "<<msg;
+                  mylogger<<"\n after queueing response  : "<<messageFromOtherSide.toString();
                  writeOneBuffer();
                 
             } catch (std::exception &e) {
@@ -275,12 +273,9 @@ namespace pico {
                    std::size_t t,string& str)
         {
             mylogger<<"\nClient Received :  "<<t<<" bytes from server ";
-            //  if(error) mylogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------"<<std::endl;
+              if(error) mylogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------\n";
         }
-        void append_to_last_message(string str) {
-            last_read_message.append(str);
-            
-        }
+       
         //this is the driver function thats part of driver api
         void insert(std::string key,std::string value){
             
@@ -336,7 +331,7 @@ namespace pico {
             queueRequestMessages(msg);
             
             steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
-            mylogger<<"Client : waiting for our response from server !\n";
+            mylogger<<"Client : waiting for our response from server...msg.messageId = "<< msg.messageId<< " \n";
             std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
             while(true)
             {
@@ -346,13 +341,13 @@ namespace pico {
                     mylogger<<"Client : waiting for our responseQueue_ to be filled again 1 !\n";
                     responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
                 }
-                queueType response = responseQueue_.peek();
-                mylogger<<"Client : response.requestId"<<response.requestId<<"\n"<<
-                "msg.requestId is "<<msg.requestId<<"\n";
-                if(response.requestId==msg.requestId)
+                queueType response = responseQueue_.pop();
+                mylogger<<"Client : response.requestId"<<response.messageId<<"\n"<<
+                "msg.requestId is "<<response.messageId<<"\n";
+                if(response.messageId.compare(msg.messageId)==0)
                 {
                     //this is our response
-                    mylogger<<"Client : got our response"<<response.requestId<<"\n"<<
+                    mylogger<<"Client : got our response"<<response.messageId<<"\n"<<
                     "this is our response "<<response.value;
                    
                     return response.value;
@@ -366,8 +361,8 @@ namespace pico {
                     if(timeoutInSeconds>=userTimeOut)
                     {
                         //we ran out of time, get failed....
-                        mylogger<<"Client : get Operation TIMED OUT!!\n";
-                        break;
+                      //  mylogger<<"Client : get Operation TIMED OUT!!\n";
+//                        break; commented for now
                     }
                     else{
                         
@@ -423,15 +418,12 @@ namespace pico {
             
             
         }
-        void queueTheResponse(std::string message)
+        void queueTheResponse(pico_message msg)
         
         {
-            mylogger<<"client : putting the response in the queue\n";
-            
-            
-            pico_message msg = pico_message::build_complete_message_from_string(message);
+            mylogger<<"client : putting the response in the queue "<<msg.toString();
             responseQueue_.push(msg);
-            mylogger<<"client : response pushed to responseQUEUE \n";
+            mylogger<<"\n client : response pushed to responseQUEUE \n";
 
             responseQueueIsEmpty.notify_all();
             
@@ -453,12 +445,13 @@ namespace pico {
 
                 bufferQueueIsEmpty.notify_all();
             }catch (...) {
-                std::cerr << "Exception: queueRequestMessages(queueType message) : unknown thrown" << "\n";
+                std::cerr << "Exception: queueRequestMessages  message : unknown thrown" << "\n";
                 raise(SIGABRT);
             
             }
         }
-        string last_read_message;
+        pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
+        
         asyncReader asyncReader_;
     };//end of class
 } //end of namespace

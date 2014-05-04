@@ -41,7 +41,7 @@ namespace pico{
         
         pico_concurrent_list()
         {
-            mylogger<<("\npico_concurrent_list being constructed");
+       //     mylogger<<("\npico_concurrent_list being constructed");
         }
         
         queueType pop()//this method returns the end of queue and removes it from the end of queue
@@ -110,6 +110,7 @@ namespace pico{
         }
         void printAll()
         {
+            mylogger << "printAll being called \n";
             for (typename list<queueType>::iterator i = underlying_list.begin();
                  i != underlying_list.end(); ++i) {
                 mylogger << "list iterator ==> " << i->toString() << "\n";
@@ -175,7 +176,7 @@ namespace pico{
         }
         virtual ~pico_concurrent_list()
         {
-            mylogger<<("\npico_concurrent_list being destructed..\n");
+        //    mylogger<<("\npico_concurrent_list being destructed..\n");
         }
     };
 }

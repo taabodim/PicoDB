@@ -126,7 +126,14 @@ namespace pico {
             
             return *this;
         }
+        bool areRecordsEqual(pico_record& buffer)
+        {
         
+        if(areValuesEqual(buffer) && areKeysEqual(buffer))
+            return true;
+            
+            return false;
+        }
         bool areValuesEqual(pico_record&  buffer) {
             for (int i = max_key_size; i < max_size; i++) {
                 if(data_[i] !=buffer.data_[i])
@@ -159,33 +166,42 @@ namespace pico {
         
         
         char value_[max_value_size];//just for function below
-        char* getValue() {
-            for (int i = max_key_size; i < max_size; i++) {
-                this->value_[i] = this->data_[i-max_key_size] ;
-            }
-            return value_;
-        }
-        
+//        char* getValue() {
+//            for (int i = max_key_size; i < max_size; i++) {
+//                this->value_[i] = this->data_[i-max_key_size] ;
+//            }
+//            return value_;
+//        }
+//        
         char key_[max_key_size];//just for function below
-        char* getkey() {
-            for (int i = 0; i < max_key_size; i++) {
-                this->key_[i] = this->data_[i] ;
-            }
-            
-            return key_;
-        }
+//        char* getkey() {
+//            for (int i = 0; i < max_key_size; i++) {
+//                this->key_[i] = this->data_[i] ;
+//            }
+//            
+//            return key_;
+//        }
         //this will mess up the end of value_ data !! ,, dangerous!!
         std::string getKeyAsString() {
-            getkey();
-            std::string key(key_,max_key_size);
-            return key;
+            
+            std::string keyChopOff(data_,0,max_key_size);
+            strcpy (key_,keyChopOff.c_str());
+            string keyStr(key_);
+            mylogger<<"\n record says key is "<<keyStr;
+            return keyStr;
         }
         std::string getValueAsString() {
-            //uses the constructor that takes char[]  and gives us
-            //the string properly
-            getValue();
-            std::string val(value_,max_value_size);
-            return val;
+            for (int i = 0; i < max_value_size; i++) {
+                                this->value_[i] = this->data_[i+max_key_size] ;
+                            }
+
+            string keyStr(value_);
+            mylogger<<"\n record says value is "<<keyStr;
+            
+            return keyStr;
+            
+        
+
         }
         std::string getDataAsString()//to write to other side
         {
@@ -246,7 +262,69 @@ namespace pico {
             
             return false;
         }
+        static void addAppendMarkerToTheEnd(pico_record& currentBuffer)
         
+        {
+            int pos = pico_record::max_size - 1;
+            currentBuffer.data_[pos] = '9';
+            currentBuffer.data_[--pos] = '9';
+            currentBuffer.data_[--pos] = '9';
+            currentBuffer.data_[--pos] = '9';
+            currentBuffer.data_[--pos] = '9';
+            currentBuffer.data_[--pos] = '9';
+            
+        }
+        static bool find_last_of_string(std::shared_ptr<pico_record> currentBuffer)
+        {
+            
+            
+            int pos = pico_record::max_size-1;
+            if(currentBuffer->data_[pos] != '9' ||
+               currentBuffer->data_[--pos] != '9' ||
+               currentBuffer->data_[--pos] != '9' ||
+               currentBuffer->data_[--pos] != '9' ||
+               currentBuffer->data_[--pos] != '9' ||
+               currentBuffer->data_[--pos] != '9' )
+                return false;
+            
+            
+            return true;
+            
+        }
+        
+        static void removeTheAppendMarker(std::shared_ptr<pico_record> currentBuffer) {
+            int pos = pico_record::max_size - 1;
+            currentBuffer->data_[pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            
+        }
+        
+
+        static void removeTheAppendMarker(list<pico_record>::iterator currentBuffer) {
+            int pos = pico_record::max_size - 1;
+            currentBuffer->data_[pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            currentBuffer->data_[--pos] = '\0';
+            
+        }
+        static void removeTheAppendMarkerNoPtr(pico_record& currentBuffer) {
+            int pos = pico_record::max_size - 1;
+            currentBuffer.data_[pos] = '\0';
+            currentBuffer.data_[--pos] = '\0';
+            currentBuffer.data_[--pos] = '\0';
+            currentBuffer.data_[--pos] = '\0';
+            currentBuffer.data_[--pos] = '\0';
+            currentBuffer.data_[--pos] = '\0';
+            
+        }
+
         static bool recordIsEmpty(pico_record& currentRecord)//debugged
         {
             if(currentRecord.data_[0]=='\0' &&
@@ -259,7 +337,21 @@ namespace pico {
             
             return false;
         }
-        
+        static void removeTheKeyPart(pico_record& currentRecord)
+        {
+            for (int i = 0; i < max_key_size; i++) {
+                currentRecord.data_[i] = '\0' ;
+            }
+        }
+        static void removeTheKeyMarkers1asd(pico_record& currentRecord)//debugged
+        {
+            currentRecord.data_[0]='\0';
+               currentRecord.data_[1]='\0';
+               currentRecord.data_[2]='\0' ;
+               currentRecord.data_[3]='\0' ;
+               currentRecord.data_[4]='\0' ;
+               currentRecord.data_[5]='\0';
+        }
         static void replicateTheFirstRecordKeyToOtherRecords(pico_record& firstRecord,pico_record&  currentRecord)
         {
             //except the first six key that should be CONKEY

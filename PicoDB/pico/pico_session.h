@@ -143,13 +143,13 @@ namespace pico {
             ;
             
         }
-        void processDataFromClient(pico_message messageFromClient) {
+        void processDataFromOtherSide(pico_message messageFromOtherSide) {
             
             try {
                 
                 
-                pico_message reply = requestProcessor_.processRequest(messageFromClient);
-                
+                pico_message reply = requestProcessor_.processRequest(messageFromOtherSide);
+                mylogger<<"putting reply to the queue this is the message that server read just now"<<reply.toString();
                 queueMessages(reply);
                 
             } catch (std::exception &e) {
@@ -168,28 +168,24 @@ namespace pico {
                 ignoreThisMessageAndWriterNextBuffer();
             
             else
-                if(find_last_of_string(currentBuffer))
+                if(pico_record::find_last_of_string(currentBuffer))
             {
                 mylogger<<"\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n";
-//                pico_message::removeTheAppendMarker(currentBuffer);
-//                string strWithoutJunk =currentBuffer->toString();
-//                append_to_last_message(strWithoutJunk);
-                allBuffersReadFromClient.append(*currentBuffer);
+
+                allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 tellHimSendTheRestOfData();
             }
             else {
                 
-//                pico_message::removeTheAppendMarker(currentBuffer);
-//                string strWithoutJunk =currentBuffer->toString();
-//                append_to_last_message(strWithoutJunk);
-                  allBuffersReadFromClient.append(*currentBuffer);
+
+                  allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 
                 
-                    pico_message last_read_message = pico_message::convertBuffersToMessage(allBuffersReadFromClient);
+                    pico_message last_read_message = pico_message::convertBuffersToMessage(allBuffersReadFromTheOtherSide);
                 mylogger<<"\nsever : this is the complete message read from  "<<last_read_message.toString();
               
-                processDataFromClient(last_read_message);
-                
+                processDataFromOtherSide(last_read_message);
+                allBuffersReadFromTheOtherSide.clear();
             }
         }
         bool sendmetherestofdata(string comparedTo)
@@ -199,23 +195,6 @@ namespace pico {
             if(comparedTo.compare(ignore)==0 || comparedTo.empty())
                 return true;
             return false;
-        }
-        static bool find_last_of_string(std::shared_ptr<pico_record> currentBuffer)
-        {
-            
-            
-            int pos = pico_record::max_size-1;
-            if(currentBuffer->data_[pos] != 'd' ||
-               currentBuffer->data_[--pos] != 'n' ||
-               currentBuffer->data_[--pos] != 'e' ||
-               currentBuffer->data_[--pos] != 'p' ||
-               currentBuffer->data_[--pos] != 'p' ||
-               currentBuffer->data_[--pos] != 'a' )
-                return false;
-            
-            
-            return true;
-            
         }
         void tellHimSendTheRestOfData()
         {
@@ -256,7 +235,7 @@ namespace pico {
         std::condition_variable clientIsAllowedToWrite;
         
         
-        pico_buffered_message<pico_record> allBuffersReadFromClient;
+        pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
         
         
         

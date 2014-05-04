@@ -6,25 +6,25 @@
 //  Copyright (c) 2014 Mahmoud Taabodi. All rights reserved.
 //
 #include <pico/pico_logger_wrapper.h>
-
+#include <pico_message.h>
 #ifndef PicoDB_ClientResponseProcessor_h
 #define PicoDB_ClientResponseProcessor_h
 namespace pico {
 
-    class ClientResponseProcessor :  public pico_logger_wrapper {
+    class ResponseProcessor :  public pico_logger_wrapper {
         
         private :
         
         public :
         
-        ClientResponseProcessor(){
+        ResponseProcessor(){
         
         }
-        void processResponse(string messageFromServer)
+        void processResponse(pico_message messageFromOtherSide)
         {
         
             //convert the string to pico_message
-            mylogger<<"ClientResponseProcessor : this is the message that is going to be processed by the client "<<messageFromServer;
+            mylogger<<"ClientResponseProcessor : this is the message that is going to be processed by the client "<<messageFromOtherSide.toString();
             
             
           //  pico_message picoMessage(messageFromServer);
@@ -38,7 +38,7 @@ namespace pico {
             //the message has to have a specific 
             
         }
-        virtual ~ClientResponseProcessor(){
+        virtual ~ResponseProcessor(){
         
         }
     };

@@ -195,6 +195,7 @@ namespace pico {
 //            std::shared_ptr<list<pico_record>> all_records_for_this_message(new list<pico_record>());
             //it should be shared ptr in the heap because list wont copy over to the next function nicely
             pico_buffered_message<pico_record> all_records_for_this_message;
+            
              offsetType nextOffset=offsetOfFirstRecordOfMessage;
           
             do
@@ -208,22 +209,24 @@ namespace pico {
             } while(nextOffset<=endOffset);
             
             
-            pico_message  msg;
-            //=  pico_message::convertBuffersToMessage(all_records_for_this_message);
-//            mylogger<<"\n retrieveOneMessage this is the whole message retrieved "<<msg;
+            pico_message  msg= pico_message::convertBuffersToMessage(all_records_for_this_message);
+            mylogger<<"\n retrieveOneMessage this is the whole message retrieved "<<msg.toString();
             return msg;
             
         }
         
-        pico_message findThisKey(pico_record record)
+        pico_message getMessageByKey(pico_record record)
         {
         
             if(index.search(record)!=nullptr)
             {
-                mylogger<<" findThisKey record.offset_of_record is "<<record.offset_of_record<<"\n";
-                return retrieveOneMessage(record.offset_of_record);
+                mylogger<<" getMessageByKey record.offset_of_record is "<<record.offset_of_record<<"\n";
+                pico_message foundMessage =  retrieveOneMessage(record.offset_of_record);
+                mylogger<<"\n getMessageByKey this is the whole message found "<<foundMessage.toString();
+                return foundMessage;
             }
-            mylogger<<" findThisKey didnt find this record ";
+            mylogger<<" getMessageByKey didnt find this record ";
+          
             string noDataFound("NODATAFOUND");
             pico_message msg=pico_message::build_complete_message_from_string(noDataFound);
             return msg;
@@ -322,10 +325,10 @@ namespace pico {
                 for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
                      pico_record::max_size) {
                     
-                    mylogger << "\n read_all_records_offsets : reading one record from offset "<<offset;
+                   
                     
                     pico_record record_read_from_file = retrieve(offset);
-                    
+                     mylogger << "\n read_all_records_offsets : reading one record from offset "<<offset<<"\n the record read is "<<record_read_from_file.toString();
                     
                     if(pico_record::recordStartsWithBEGKEY(record_read_from_file))
                     {
@@ -456,10 +459,7 @@ namespace pico {
                 file.write((char*) record.data_, pico_record::max_size);
                 file.flush();
                 pico_record  currentRecord =retrieve(record_offset);
-                if(currentRecord.getKeyAsString().compare(record
-                                                          .getKeyAsString())==0
-                   && currentRecord.getValueAsString().compare(record
-                                                               .getValueAsString())==0)
+                if(currentRecord.areRecordsEqual(record))
                 {
                     break;
                 }
@@ -482,8 +482,8 @@ namespace pico {
         {
             
             mylogger << "appending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
-            mylogger << "appending  one record key is :  "<<record.getkey()<<" \n";
-            mylogger << "appending one record value is :  "<<record.getValue()<<" \n";
+            mylogger << "appending  one record key is :  "<<record.getKeyAsString()<<" \n";
+            mylogger << "appending one record value is :  "<<record.getValueAsString()<<" \n";
             
             if(record_offset==-1) record_offset=0;
             
