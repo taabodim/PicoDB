@@ -30,7 +30,7 @@
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_buffered_message.h>
 #include <logger.h>
-#include <pico/pico_session.h> //for the checking if appended function
+#include <pico/pico_session.h> //for the checking if appended function and sendmetherestofdata function
 #include <pico/pico_test.h>
 #include <pico/pico_logger_wrapper.h>
 #include <ClientResponseProcessor.h>
@@ -259,12 +259,12 @@ namespace pico {
                 cout << " this is the error : " << e.what() << endl;
             }
         }
-        void tellHimSendTheRestOfData()
+        void tellHimSendTheRestOfData(pico_message msgTheJustCame)
         {
-            mylogger<<"\nClient is telling send the rest of data\n";
+            mylogger<<"\nClient is telling send the rest of data for this message Id  "<<msgTheJustCame.messageId<<" \n";
             string msg("sendmetherestofdata");
             
-            pico_message reply = pico_message::build_message_from_string(msg);
+            pico_message reply = pico_message::build_message_from_string(msg,msgTheJustCame.messageId);
           	queueRequestMessages(reply);
             writeOneBuffer(); //go to writing mode
            
@@ -366,8 +366,9 @@ namespace pico {
                     if(timeoutInSeconds>=userTimeOut)
                     {
                         //we ran out of time, get failed....
-                      //  mylogger<<"Client : get Operation TIMED OUT!!\n";
-//                        break; commented for now
+                        mylogger<<"Client : get Operation TIMED OUT!!\n";
+                        break;
+                      
                     }
                     else{
                         

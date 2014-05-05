@@ -196,14 +196,17 @@ namespace pico {
                 return true;
             return false;
         }
-        void tellHimSendTheRestOfData()
+        void tellHimSendTheRestOfData(pico_message msgTheJustCame)
         {
+            mylogger<<"\nServer is telling send the rest of data for this message Id  "<<msgTheJustCame.messageId<<" \n";
             string msg("sendmetherestofdata");
             
-            pico_message reply = pico_message::build_message_from_string(msg);
-          	queueMessages(reply);
+            pico_message reply = pico_message::build_message_from_string(msg,msgTheJustCame.messageId);
+          	queueRequestMessages(reply);
+            writeOneBuffer(); //go to writing mode
             
         }
+
         void  ignoreThisMessageAndWriterNextBuffer()
         {
             writeOneBuffer();
