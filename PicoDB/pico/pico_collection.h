@@ -258,8 +258,12 @@ namespace pico {
             infileLocal.seekg(offset);
             infileLocal.read((char*) record_read_from_file.data_,
                              pico_record::max_size);
+           
             record_read_from_file.offset_of_record = offset;
+            mylogger << "\n read_all_records : record_read_from_file  " << record_read_from_file.toString();
+            
             mylogger << "\n read_all_records : record_read_from_file.getKeyAsString() " << record_read_from_file.getKeyAsString();
+            
             mylogger << "\n read_all_records : record_read_from_file.getValueAsString() " << record_read_from_file.getValueAsString();
             infileLocal.close();
             return record_read_from_file;
@@ -405,7 +409,8 @@ namespace pico {
             if(offsetOfToBeDeletedRecord==-1) return;
             
             string empty("");
-            pico_record empty_record(empty,empty);
+            pico_record empty_record;
+//            (empty,empty);
             pico_record current_record = retrieve(offsetOfToBeDeletedRecord);
             //        nodeType node = index.createANodeBasedOnOffset(offset);
             //		index.deleteNode(node);

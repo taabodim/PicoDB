@@ -348,9 +348,9 @@ void create100RecordsInCollection(){
         string key=random_string(10);
         string value = "valueForThisKey";
         value.append(key);
-        pico_record x1(key, value);
-        cout<<"pico_record is "<<x1.toString()<<std::endl;
-        optionCollection.insert(x1);
+//        pico_record x1(key, value);
+//        cout<<"pico_record is "<<x1.toString()<<std::endl;
+//        optionCollection.insert(x1);
 	}
     
 	cout << " number of records are : " << optionCollection.getNumberOfMessages()

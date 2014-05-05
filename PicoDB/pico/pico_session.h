@@ -124,14 +124,14 @@ namespace pico {
             string value1 = "valuefromvalue1";
             string key2 = "key2";
             string value2 = "value2";
-            pico_record x1(key1, value1);
-            
-            pico_record x2(key2, value2);
+//            pico_record x1(key1, value1);
+//            
+//            pico_record x2(key2, value2);
             pico_collection optionCollection("options-collection");
             
-            for (int i = 0; i < 10; i++) {
-                optionCollection.insert(x1);
-            }
+//            for (int i = 0; i < 10; i++) {
+//                optionCollection.insert(x1);
+//            }
             cout << " number of records are : "
             << optionCollection.getNumberOfMessages() << " \n";
 //            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";

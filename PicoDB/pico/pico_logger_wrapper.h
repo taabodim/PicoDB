@@ -23,29 +23,14 @@ namespace pico
     }
     
     template<>
-    logger& operator << (logger& wrapper,const std::string& str)
+    logger& operator << (logger& wrapper,const std::string str)
     {
         //std::cout<<str;
         wrapper.log(str);
         return wrapper;
     }
 
-//    template<typename T>
-//     logger* operator << (logger*  wrapper,T nonstr)
-//    {
-//        string str = boost::lexical_cast<std::string>(nonstr);
-//        // std::cout<<str;
-//        wrapper->log(str);
-//        return wrapper;
-//    }
-//    
-//    template<>
-//    logger*  operator << (logger*  wrapper,const std::string& str)
-//    {
-//        //std::cout<<str;
-//        wrapper->log(str);
-//        return wrapper;
-//    }
+
     class pico_logger_wrapper {
     
     public:
@@ -61,7 +46,7 @@ namespace pico
          }
     }
         
-        void log(const std::string& str){
+        void log(const std::string str){
             mylogger<<str;
         }
         

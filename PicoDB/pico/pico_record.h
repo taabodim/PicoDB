@@ -11,6 +11,8 @@
 #include <memory>
 #include <logger.h>
 #include <pico_logger_wrapper.h>
+#include <stdio.h>
+#include <string.h>
 using namespace std;
 namespace pico {
     class pico_record : public pico_logger_wrapper{
@@ -24,7 +26,10 @@ namespace pico {
         long previous_record_offset; //if its -1, it means that there is no parent, if its more than -1, it indicates that it is add on to previous record
         
         char data_[max_size];
-
+        char key_[max_size];//these are the same size as data because we want to
+        //do a safe strcpy(array2, array1);
+        char value_[max_size];//just for function below
+        
         
         
                 std::string parentMessageId; //this is the id of the parent that
@@ -34,25 +39,29 @@ namespace pico {
         offsetType previousRecordOffset;
         //logger mylogger;
         // Construct from a std::string.
-        void setValue(const std::string  realData) {
-            char value[max_value_size];
-            string data = realData.substr();
-            std::size_t length = data.copy(value,data.size(),0);
-            // data[length]='\0';
-            
-            //		strncpy(value_, data.c_str(), data.size());
-            value[data.size()] = '\0';
-            
-            for (size_t i = 0; i < max_value_size; i++) {
-                data_[i+max_key_size] = value[i];
-            }
-            
-        }
-//        
-        void setKeyValue(std::string  key, std::string  value) {
-            setKey(key);
-            setValue(value);
-        }
+//        void setValue(const std::string  realData) {
+//            char value[max_value_size];
+//            string data = realData.substr();
+//            std::size_t length = data.copy(value,data.size(),0);
+//            // data[length]='\0';
+//            
+//            //		strncpy(value_, data.c_str(), data.size());
+//            value[data.size()] = '\0';
+//            
+//            for (size_t i = 0; i < max_value_size; i++) {
+//                data_[i+max_key_size] = value[i];
+//            }
+//            for (size_t i = 0; i < max_value_size; i++) {
+//                value_[i] = value[i];
+//            }
+//            
+//            
+//        }
+////        
+//        void setKeyValue(std::string  key, std::string  value) {
+//            setKey(key);
+//            setValue(value);
+//        }
 //
 //        void setData(std::string  key,std::string  value) {
 //            
@@ -76,17 +85,25 @@ namespace pico {
             for (size_t i = 0; i < max_key_size; i++) {
                 data_[i] = key[i];
             }
-            
+            for (size_t i = 0; i < max_key_size; i++) {
+                key_[i] = key[i];
+            }
         }
-        
-        explicit pico_record(std::string key, std::string value) {
-            setKey(key);
-            setValue(value);
-            
-        }
+//
+//        explicit pico_record(std::string key, std::string value) {
+//            setKey(key);
+//            setValue(value);
+//            
+//        }
 
         pico_record() {
             
+            for (int i = 0; i < max_size; i++) {//initializng
+                key_[i] = '\0';
+            }
+            for (int i = 0; i < max_size; i++) {//initializng
+                value_[i] = '\0';
+            }
             for (int i = 0; i < max_size; i++) {
                 data_[i] = '\0';
             }
@@ -96,6 +113,11 @@ namespace pico {
             
             std::copy(std::begin(buffer.data_), std::end(buffer.data_),
                       std::begin(this->data_));
+            
+            std::copy(std::begin(buffer.key_), std::end(buffer.key_),
+                      std::begin(this->key_));
+            std::copy(std::begin(buffer.value_), std::end(buffer.value_),
+                      std::begin(this->value_));
             
             this->offset_of_record = buffer.offset_of_record;
             
@@ -112,6 +134,13 @@ namespace pico {
             std::copy(std::begin(buffer.data_), std::end(buffer.data_),
                       std::begin(this->data_));
             
+            
+            std::copy(std::begin(buffer.key_), std::end(buffer.key_),
+                      std::begin(this->key_));
+            std::copy(std::begin(buffer.value_), std::end(buffer.value_),
+                      std::begin(this->value_));
+            
+            
              this->offset_of_record = buffer.offset_of_record;
             
             return *this;
@@ -121,6 +150,12 @@ namespace pico {
             
             std::copy(std::begin(buffer.data_), std::end(buffer.data_),
                       std::begin(this->data_));
+            
+            
+            std::copy(std::begin(buffer.key_), std::end(buffer.key_),
+                      std::begin(this->key_));
+            std::copy(std::begin(buffer.value_), std::end(buffer.value_),
+                      std::begin(this->value_));
             
             this->offset_of_record = buffer.offset_of_record;
             
@@ -160,49 +195,61 @@ namespace pico {
         void clear() {
             
             for (int i = 0; i < max_size; i++) {
-                this->data_[i] = 0;
+                this->data_[i] = '\0';
+            }
+            for (int i = 0; i < max_size; i++) {
+                this->key_[i] = '\0';
+            }
+            for (int i = 0; i < max_size; i++) {
+                this->value_[i] = '\0';
             }
         }
         
-        
-        char value_[max_value_size];//just for function below
-//        char* getValue() {
-//            for (int i = max_key_size; i < max_size; i++) {
-//                this->value_[i] = this->data_[i-max_key_size] ;
-//            }
-//            return value_;
-//        }
-//        
-        char key_[max_key_size];//just for function below
-//        char* getkey() {
-//            for (int i = 0; i < max_key_size; i++) {
-//                this->key_[i] = this->data_[i] ;
-//            }
-//            
-//            return key_;
-//        }
-        //this will mess up the end of value_ data !! ,, dangerous!!
-        std::string getKeyAsString() {
-            
-            std::string keyChopOff(data_,0,max_key_size);
-            strcpy (key_,keyChopOff.c_str());
-            string keyStr(key_);
-            mylogger<<"\n record says key is "<<keyStr;
-            return keyStr;
+        char* getValue() {
+            for (int i = max_key_size; i < max_size; i++) {
+                this->value_[i-max_key_size] = this->data_[i] ;
+            }
+            return value_;
         }
-        std::string getValueAsString() {
-            for (int i = 0; i < max_value_size; i++) {
-                                this->value_[i] = this->data_[i+max_key_size] ;
-                            }
-
-            string keyStr(value_);
-            mylogger<<"\n record says value is "<<keyStr;
+//
+        char* getkey() {
+            for (int i = 0; i < max_key_size; i++) {
+                this->key_[i] = this->data_[i] ;
+            }
             
-            return keyStr;
-            
-        
-
+            return key_;
         }
+        
+        string key;
+         string getKeyAsString() {
+            memcpy(key_,data_,sizeof(data_));
+            
+             for (int i = 0;i<max_key_size;  i++) {
+                if(key_[i]!='\0')
+                {key.push_back(key_[i]);}
+                else{break;}
+             }
+            return key;
+        }
+        string value;
+        string getValueAsString() {
+//            value.clear();
+            memcpy(value_,data_,sizeof(data_));
+            
+            for (int i = 0; i < max_key_size; i++) {
+                this->value_[i] = '\0';
+            }
+            
+            for (int i = max_key_size; i < max_size; i++) {
+                if(value_[i]!='\0')
+                {
+                    value.push_back(value_[i]);
+                }
+                else{break;}
+
+            }
+            return value;
+             }
         std::string getDataAsString()//to write to other side
         {
             std::string data(data_,max_size);

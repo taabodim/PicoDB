@@ -317,11 +317,11 @@ namespace pico {
         }
         void build_tree(list<pico_record> all_pico_records) { //this method creates a tree structure
             //based on the pico records that it gets reads from a collection
-            // mylogger<<("tree is going to be build by "<<all_pico_records.size()<<" elements"<<std::endl;
+             mylogger<<"\ntree is going to be build by "<<all_pico_records.size()<<" elements\n";
             
             for (list<pico_record>::iterator it=all_pico_records.begin(); it != all_pico_records.end(); ++it) {
                 
-                //   mylogger<<("build_tree : offset is "<<it->offset_of_record<<endl;
+                   mylogger<<"\nbuild_tree : offset is "<<it->offset_of_record<<"\n";
                 nodeType  node = convert_pico_record_to_index_node(*it);
                 insert(node);
                 numberOfNodesInTree++;

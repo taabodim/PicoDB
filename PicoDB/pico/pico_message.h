@@ -381,8 +381,7 @@ namespace pico {
                 pico_record currentBuffer;
                 currentBuffer.parentMessageId = hashCodeOfMessage;
                 
-                mylogger << "\npico_message : uniqureMessageId  "<< hashCodeOfMessage;
-
+             
                 for (int i = 0; i < pico_record::max_size - 6; i++) {
                     currentBuffer.parentSequenceNumber = numberOfBuffer;
                     if (*temp_buffer_message != 0) {
@@ -473,15 +472,22 @@ namespace pico {
                 }else //its a message that passes between client and server and
                     //is not in db
                 {
+                    
                     pico_record::removeTheAppendMarkerNoPtr(buf);
 
                   string msgType (buf.data_);
                     temp= msgType;
-                    
+                    if(!temp.empty())
+                       {
                     std::cout<<"the msgType record as string is "<<temp<<std::endl;
                     
                     typeOfmessageIsRecord  = false;
                     allMessage.append(temp);
+                       }
+                       else {
+                           std::cout<<"the buffer is empty so we ignore it "<<temp<<std::endl;
+                           
+                       }
                 }
                 
                

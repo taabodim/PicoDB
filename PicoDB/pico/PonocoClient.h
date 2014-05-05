@@ -27,11 +27,11 @@ namespace pico{
         void insert1SmallKeyBigValue_And_GetIt()
         {
              std::string key(pico_test::smallKey0);
-//            for(int i=0;i<1;i++)
-//            {
-//           
-//            driverPtr->insert(key,pico_test::bigValue0);
-//            }
+            for(int i=0;i<1;i++)
+            {
+           
+           // driverPtr->insert(key,pico_test::bigValue0);
+            }
               driverPtr->get(key);
             //while(true){}//keep the thread forever
             
