@@ -7,7 +7,7 @@
 
 #ifndef PICO_MESSAGE_H_
 #define PICO_MESSAGE_H_
-
+//change
 #include "pico/pico_record.h"
 #include <third_party/json_cpp/json/json.h>
 #include <pico/pico_concurrent_list.h>
@@ -91,13 +91,13 @@ public:
 		this->convert_key_value_buffered_message();
 	}
 
-	pico_message(const std::string message_from_client, bool simpleMessage) {
+	pico_message(const std::string json_message_from_client, bool simpleMessage) {
 		//this is for processing shell commands
 
-		this->json_form_of_message = message_from_client;
+		this->json_form_of_message = json_message_from_client;
 		//this->json_key_value_pair = createTheKeyValuePair(); this line should always be commented because when the msg is simple
 		//it will mess up the parser
-		if (!message_from_client.empty()) {
+		if (!json_message_from_client.empty()) {
 			this->set_hash_code();
 			this->convert_to_buffered_message();
 			this->convert_key_value_buffered_message();
@@ -113,36 +113,37 @@ public:
 		std::string output = writer.write(root);
 		return output;
 	}
-	static pico_message build_message_from_string(const string value) {
+	static pico_message build_message_from_string(const string value,string messageId) {
 
 		pico_message msg(value, true);
+		msg.messageId = messageId;
 		return msg;
 	}
 
-	static pico_message build_complete_message_from_string(string value,
-			string messageId) {
-		Json::Value root;   // will contains the root value after parsing.
-		root["key"] = "simpleMessage";
-		root["value"] = value;
-		root["oldvalue"] = "unknown";
-		root["db"] = "unknown";
-		root["user"] = "unknown";
-		root["collection"] = "unknown";
-		root["command"] = "unknown";
-
-		if (messageId.comapre("unknown") == 0) {
-			root["messageId"] = convertToString(calc_request_id());
-		} else {
-			root["messageId"] = messageId;
-		}
-		root["hashCode"] = "unknown";
-
-		Json::StyledWriter writer;
-		// Make a new JSON document for the configuration. Preserve original comments.
-		std::string output = writer.write(root);
-		pico_message msg(output);
-		return msg;
-	}
+//	static pico_message build_complete_message_from_string(string value,
+//			string messageId) {
+//		Json::Value root;   // will contains the root value after parsing.
+//		root["key"] = "simpleMessage";
+//		root["value"] = value;
+//		root["oldvalue"] = "unknown";
+//		root["db"] = "unknown";
+//		root["user"] = "unknown";
+//		root["collection"] = "unknown";
+//		root["command"] = "unknown";
+//
+//		if (messageId.comapre("unknown") == 0) {
+//			root["messageId"] = convertToString(calc_request_id());
+//		} else {
+//			root["messageId"] = messageId;
+//		}
+//		root["hashCode"] = "unknown";
+//
+//		Json::StyledWriter writer;
+//		// Make a new JSON document for the configuration. Preserve original comments.
+//		std::string output = writer.write(root);
+//		pico_message msg(output);
+//		return msg;
+//	}
 	static pico_message build_complete_message_from_key_value_pair(string key,
 			string value) {
 		Json::Value root;   // will contains the root value after parsing.
@@ -383,9 +384,10 @@ public:
 
 		while (*temp_buffer_message != 0) {
 			pico_record currentBuffer;
-			currentBuffer.parentMessageId = hashCodeOfMessage;
 
-			for (int i = 0; i < pico_record::max_size - 6; i++) {
+			pico_record::setTheMessageIdInData(currentBuffer,messageId);
+
+			for (int i = 0; i < pico_record::max_size-pico_record::messageId_size - pico_record::appendMarkerSize; i++) {
 				currentBuffer.parentSequenceNumber = numberOfBuffer;
 				if (*temp_buffer_message != 0) {
 					currentBuffer.data_[i] = *temp_buffer_message;
@@ -409,18 +411,7 @@ public:
 		key_value_buffered_message.print();
 	}
 
-	char* convertMessageToArrayBuffer() {
 
-		char* raw_msg = new char[sizeof(json_form_of_message)];
-		mylogger << ("pico_message : convertMessageToArrayBuffer  ");
-		const char* charOfMessage = json_form_of_message.c_str();
-		for (long i = 0; i < sizeof(json_form_of_message); i++) {
-			raw_msg[i] = *charOfMessage;
-			++charOfMessage;
-		}
-
-		return raw_msg;
-	}
 
 //        std::shared_ptr<pico_concurrent_list<type>> msg_in_buffers
 	//this method is very important!! should be debugged and improved throughly
@@ -437,7 +428,8 @@ public:
 			//get rid of all buffers that are not for this messageId
 			pico_record buf = all_buffers.msg_in_buffers->pop();
 			//if buffer is begingin key
-			std::cout << "buffer poped is \n " << buf.toString() << std::endl;
+
+			std::cout << "buffer popped is \n " << buf.toString() << std::endl;
 			string temp;
 			if (pico_record::startWithSendMeTheRestOfData(buf)) {
 				string msgType(buf.data_);

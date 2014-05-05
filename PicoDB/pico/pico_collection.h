@@ -187,7 +187,8 @@ namespace pico {
             if(offsetOfFirstRecordOfMessage>endOffset)
             {
                 string error("offset in tree is wrong");
-            pico_message  msg =  pico_message::build_complete_message_from_string(error);
+                string messageId ("offsetIsWrong");
+            pico_message  msg =  pico_message::build_message_from_string(error,messageId);
             mylogger<<"\n retrieveOneMessage offset is  wrong "<<msg.toString();
             return msg;
             }
@@ -228,7 +229,8 @@ namespace pico {
             mylogger<<" getMessageByKey didnt find this record ";
           
             string noDataFound("NODATAFOUND");
-            pico_message msg=pico_message::build_complete_message_from_string(noDataFound);
+
+            pico_message msg=pico_message::build_message_from_string(noDataFound,record.getMessageIdAsString());
             return msg;
             
         }

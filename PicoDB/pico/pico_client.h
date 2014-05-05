@@ -215,7 +215,7 @@ namespace pico {
                 {
                     mylogger<<"\Client : this buffer is an add on to the last message..dont process anything..read the next buffer\n";
                     allBuffersReadFromTheOtherSide.append(*currentBuffer);
-                    tellHimSendTheRestOfData();
+                    tellHimSendTheRestOfData(currentBuffer->messageId);
                 }
                 else {
                     
@@ -259,12 +259,12 @@ namespace pico {
                 cout << " this is the error : " << e.what() << endl;
             }
         }
-        void tellHimSendTheRestOfData(pico_message msgTheJustCame)
+        void tellHimSendTheRestOfData(string messageId)
         {
-            mylogger<<"\nClient is telling send the rest of data for this message Id  "<<msgTheJustCame.messageId<<" \n";
+            mylogger<<"\nClient is telling send the rest of data for this message Id  "<<messageId<<" \n";
             string msg("sendmetherestofdata");
             
-            pico_message reply = pico_message::build_message_from_string(msg,msgTheJustCame.messageId);
+            pico_message reply = pico_message::build_message_from_string(msg,messageId);
           	queueRequestMessages(reply);
             writeOneBuffer(); //go to writing mode
            

@@ -69,7 +69,7 @@ namespace pico {
                 return retMsg;
             }
             
-            pico_message retMsg = pico_message::build_message_from_string(str);
+            pico_message retMsg = pico_message::build_message_from_string(str,picoMessage.messageId);
             return retMsg;
         }
         string insertOneMessage(pico_message picoMsg)

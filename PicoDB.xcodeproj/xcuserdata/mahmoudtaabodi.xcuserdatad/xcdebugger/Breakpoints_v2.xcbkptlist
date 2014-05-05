@@ -829,8 +829,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "123"
             endingLineNumber = "123"
-            landmarkName = "build_complete_message_from_string(string value)"
-            landmarkType = "5">
+            landmarkName = "class pico_message"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1049,7 +1049,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "196"
             endingLineNumber = "196"
-            landmarkName = "pico_message(std::string newKey, std::string newValue, std::string com, std::string database, std::string us, std::string col)"
+            landmarkName = "convert_message_to_json()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1065,7 +1065,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "213"
             endingLineNumber = "213"
-            landmarkName = "pico_message(std::string newKey,std::string old_value_arg, std::string newValue, std::string com,std::string database, std::string us, std::string col)"
+            landmarkName = "pico_message(std::string newKey, std::string newValue, std::string com, std::string database, std::string us, std::string col)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1268,7 +1268,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "505"
-            endingLineNumber = "505">
+            endingLineNumber = "505"
+            landmarkName = "append_a_record(pico_record&amp; record,offsetType record_offset)"
+            landmarkType = "7">
             <Locations>
                <Location
                   shouldBeEnabled = "Yes"
@@ -1361,7 +1363,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "470"
             endingLineNumber = "470"
-            landmarkName = "convertBuffersToMessage(pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1377,7 +1379,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "282"
             endingLineNumber = "282"
-            landmarkName = "convert_key_value_buffered_message()"
+            landmarkName = "addConMarkerToFirstRecord(pico_record&amp; continuingRecord)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1505,8 +1507,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "367"
             endingLineNumber = "367"
-            landmarkName = "convert_to_buffered_message()"
-            landmarkType = "5">
+            landmarkName = "class pico_message"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1537,7 +1539,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "511"
             endingLineNumber = "511"
-            landmarkName = "convertBuffersToMessage(pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1553,7 +1555,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "519"
             endingLineNumber = "519"
-            landmarkName = "convertBuffersToMessage(pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1569,7 +1571,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "485"
             endingLineNumber = "485"
-            landmarkName = "convertBuffersToMessage(pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1585,7 +1587,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "491"
             endingLineNumber = "491"
-            landmarkName = "convertBuffersToMessage(pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1617,7 +1619,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "462"
             endingLineNumber = "462"
-            landmarkName = "convertBuffersToMessage(pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1649,7 +1651,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "509"
             endingLineNumber = "509"
-            landmarkName = "convertBuffersToMessage(pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1665,7 +1667,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "438"
             endingLineNumber = "438"
-            landmarkName = "convertBuffersToMessage(pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

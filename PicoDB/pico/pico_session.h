@@ -173,7 +173,7 @@ namespace pico {
                 mylogger<<"\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n";
 
                 allBuffersReadFromTheOtherSide.append(*currentBuffer);
-                tellHimSendTheRestOfData();
+                tellHimSendTheRestOfData(currentBuffer->messageId);
             }
             else {
                 
@@ -196,13 +196,13 @@ namespace pico {
                 return true;
             return false;
         }
-        void tellHimSendTheRestOfData(pico_message msgTheJustCame)
+        void tellHimSendTheRestOfData(string messageId)
         {
-            mylogger<<"\nServer is telling send the rest of data for this message Id  "<<msgTheJustCame.messageId<<" \n";
+            mylogger<<"\nServer is telling send the rest of data for this message Id  "<<messageId<<" \n";
             string msg("sendmetherestofdata");
             
-            pico_message reply = pico_message::build_message_from_string(msg,msgTheJustCame.messageId);
-          	queueRequestMessages(reply);
+            pico_message reply = pico_message::build_message_from_string(msg,messageId);
+            queueMessages(reply);
             writeOneBuffer(); //go to writing mode
             
         }
