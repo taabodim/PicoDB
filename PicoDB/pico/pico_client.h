@@ -210,7 +210,7 @@ namespace pico {
             
             if(sendmetherestofdata(str))
                 ignoreThisMessageAndWriterNextBuffer();
-            else
+            else{
                 if(pico_record::find_last_of_string(currentBuffer))
                 {
                     mylogger<<"\Client : this buffer is an add on to the last message..dont process anything..read the next buffer\n";
@@ -230,6 +230,8 @@ namespace pico {
                     allBuffersReadFromTheOtherSide.clear();
                     
                 }
+                
+            }
         }
         
         bool sendmetherestofdata( string comparedTo)
@@ -259,10 +261,13 @@ namespace pico {
         }
         void tellHimSendTheRestOfData()
         {
+            mylogger<<"\nClient is telling send the rest of data\n";
             string msg("sendmetherestofdata");
             
             pico_message reply = pico_message::build_message_from_string(msg);
           	queueRequestMessages(reply);
+            writeOneBuffer(); //go to writing mode
+           
         }
         void  ignoreThisMessageAndWriterNextBuffer()
         {
@@ -431,6 +436,7 @@ namespace pico {
         void queueRequestMessages(queueType message) {
             //TODO put a lock here to make the all the buffers in a message go after each other.
             try{
+                
                     boost::unique_lock<std::mutex> writeOneBufferMutexLock(writeOneBufferMutex);
                         while(!message.recorded_message.msg_in_buffers->empty())
                         {

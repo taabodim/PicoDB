@@ -279,9 +279,7 @@ namespace pico {
         void convert_key_value_buffered_message() {
             //this function is used to save the key value in db
             //and not the transfer over network
-            mylogger
-          << "pico_message : convert_to_list_of_records : messageSize is "
-            << messageSize <<"\n";
+            mylogger  << "pico_message : convert_to_list_of_records \n";
          
             
             pico_record firstRecord;
