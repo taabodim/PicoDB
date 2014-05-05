@@ -123,7 +123,22 @@ namespace pico {
             
         }
         
+        static bool startWithSendMeTheRestOfData(pico_record&  b)
+        {
+            if(b.data_[0]=='s'
+               && b.data_[1]=='e'
+               && b.data_[2]=='n'
+               && b.data_[3]=='d'
+               && b.data_[4]=='m'
+               && b.data_[5]=='e'
+               && b.data_[6]=='t'
+               && b.data_[7]=='h'
+               ) return true;
+            else return false;
+
         
+        
+        }
         pico_record operator=(pico_record&  buffer) {
             
             

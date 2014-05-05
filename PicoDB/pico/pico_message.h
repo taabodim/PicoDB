@@ -420,7 +420,7 @@ namespace pico {
         
         
 //        std::shared_ptr<pico_concurrent_list<type>> msg_in_buffers
-        
+        //this method is very important!! should be debugged and improved throughly
         static pico_message convertBuffersToMessage(pico_buffered_message<pico_record> all_buffers
                                                   
                                                     )
@@ -437,6 +437,16 @@ namespace pico {
                 //if buffer is begingin key
                 std::cout<<"buffer poped is \n "<<buf.toString()<<std::endl;
                 string temp;
+                if(pico_record::startWithSendMeTheRestOfData(buf))
+                {
+                    string msgType (buf.data_);
+                    allMessage.append(msgType);
+                    std::cout << "pico_message : convertBuffersToMessage : allMessage is "<<allMessage<<"\n";
+                    pico_message pico_msg (allMessage);
+                    return pico_msg;
+
+                    
+                }
                 if(pico_record::recordStartsWithBEGKEY(buf))
                 {
                       pico_record::removeTheAppendMarkerNoPtr(buf);
@@ -475,7 +485,7 @@ namespace pico {
                     
                     pico_record::removeTheAppendMarkerNoPtr(buf);
 
-                  string msgType (buf.data_);
+                    string msgType (buf.data_);
                     temp= msgType;
                     if(!temp.empty())
                        {
