@@ -1,5 +1,10 @@
 #include <cstdlib>
 #include <list>
+#include <stdio.h>
+#include <execinfo.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <sstream>
 #include <memory>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -20,11 +25,11 @@
 #include <unordered_map>
 #include <thread>
 #include <boost/thread.hpp>
-#include <pico/ThreadPool.h>
+#include <PonocoRunnable.h>
 #include <memory>
 #include <utility>
 #include <array>
-#include <pico/pico_test.h>
+
 #include <file_test.h>
 
 #include <ctime>
@@ -41,21 +46,27 @@
 #include "ObjectPool.h"
 #include "Runnable.h"
 #include "ThreadWorker.h"
-#include "pico/pico_server.h"
+#include <pico_logger_wrapper.h>
 #include <iostream>
+#include <SimpleRunnable.h>
 
-
-#include <pico/pico_buffer.h>
-#include <pico/pico_record.h>
-#include <pico/pico_collection.h>
+#include <PonocoClient.h>
 #include <jsonCppExamples.h>
 #include <string>
 #include <vector>
 #include <PicoHedgeFund.h>
 #include <logger.h>
 #include <chat_server.h>
+
+#include <pico/ThreadPool.h>
+#include <pico/pico_test.h>
+#include <pico/pico_server.h>
+
+#include <pico/pico_record.h>
+#include <pico/pico_collection.h>
 #include <pico/pico_client.h>
 #include <pico/pico_index.h>
+#include <pico/pico_concurrent_list.h>
 
 using namespace pico;
 using namespace std;
@@ -94,12 +105,12 @@ void serilizeClassAndLoadItViaBoost() {
 	//	boost::archive::text_iarchive ia(ssFile);
 	//	Currency c2;
 	//	ia >> c2;
-	//	std::cout << c2.name << std::endl;
+	//	mylogger << c2.name //<< std::endl;
 
 }
 
 void timerHandler(const boost::system::error_code &ec) {
-	std::cout << " every 5 seconds, this is called ..." << std::endl;
+	//mylogger << " every 5 seconds, this is called ..." //<< std::endl;
 }
 struct MyException: public std::exception {
 	std::string s;
@@ -179,7 +190,7 @@ public:
 
 void fBindExample(int n1, int n2, int n3, const int& n4, int n5)
 {
-    std::cout << n1 << ' ' << n2 << ' ' << n3 << ' ' << n4 << ' ' << n5 << '\n';
+   // mylogger << n1 << ' ' << n2 << ' ' << n3 << ' ' << n4 << ' ' << n5 << '\n';
 }
 
 int g(int n1)
@@ -190,14 +201,16 @@ int g(int n1)
 struct Foo {
     void print_sum(int n1, int n2)
     {
-        std::cout << n1+n2 << '\n';
+      //  mylogger << n1+n2 << '\n';
     }
     int data = 10;
 };
 
 struct FooBind {
     FooBind(int num) : num_(num) {}
-    void print_add(int i) const { std::cout << num_+i << '\n'; }
+    void print_add(int i) const {
+        //mylogger << num_+i << '\n';
+    }
     int num_;
 };
 int stdBindExamples()
@@ -221,8 +234,8 @@ int stdBindExamples()
 //    std::uniform_int_distribution<> d(0, 10);
 //    std::function<int()> rnd = std::bind(d, e);
 //    for(int n=0; n<10; ++n)
-//        std::cout << rnd() << ' ';
-//    std::cout << '\n';
+//        mylogger << rnd() << ' ';
+//    mylogger << '\n';
 //    
 //    // bind to a member function
 //    Foo foo;
@@ -231,7 +244,7 @@ int stdBindExamples()
 //    
 //    // bind to member data
 //    auto f4 = std::bind(&FooBind::num_, _1);
-//    std::cout << f4(foo) << '\n';
+//    mylogger << f4(foo) << '\n';
     return 1;
 }
 
@@ -239,13 +252,13 @@ int stdBindExamples()
 
 void print_num(int i)
 {
-    std::cout << i << '\n';
+   // mylogger << i << '\n';
 }
 
 struct PrintNum {
     void operator()(int i) const
     {
-        std::cout << i << '\n';
+     //   mylogger << i << '\n';
     }
 };
 
@@ -284,7 +297,7 @@ int stdFunctionBindingExample()
 //class financialPackage<Stock<double>>{
 //	public :
 //	void printValue(Stock<double> f){
-//		std::cout<<("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
+//		mylogger<<("this is the special algo for calculating the value of stock : "<<f.calPrice()<<endl;
 //	}
 //
 //};
@@ -304,6 +317,8 @@ void lockExamples() {
 //	boost::mutex wokerMutext;
 //	boost::unique_lock<boost::mutex> workerLock(wokerMutext);
 //
+    
+//    boost::mutex wokerMutext; //dont ever use scoped_lock it works very bad under multi threading situations
 //				boost::interprocess::scoped_lock<boost::mutex> workerLock( wokerMutext);
 ////syntax exmaples
 //			boost::thread thrd(&ThreadWorker::runIndefinitely, &workerPtr);
@@ -312,30 +327,7 @@ void lockExamples() {
 
 }
 
-void runThreadPool() {
 
-	ThreadPool pool(3);
-//	std::shared_ptr<SimpleRunnable> r1 (new SimpleRunnable(124));
-//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
-//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
-//    std::shared_ptr<ThreadWorker> worker (new ThreadWorker());
-    auto r1 =  std::make_shared<SimpleRunnable> (124);
-    auto r2 =  std::make_shared<SimpleRunnable> ( 125);
-    auto r3 =  std::make_shared<SimpleRunnable> (  126);
-    auto r4 =  std::make_shared<SimpleRunnable> (  127);
-    auto r5 =  std::make_shared<SimpleRunnable> (128);
-    auto r6 =  std::make_shared<SimpleRunnable> (129);
-    
-   
-
-	pool.submitTask(r1)
-	.submitTask(r2).submitTask(r3).submitTask(r4).submitTask(
-			r5).submitTask(r6);
-	pool.start();
-
-	std::cout << "end of runThreadPool()" << std::endl;
-
-}
 std::string make_daytime_string() {
 	using namespace std;
 	// For time_t, time and ctime;
@@ -343,15 +335,7 @@ std::string make_daytime_string() {
 	return ctime(&now);
 }
 
-void testThreadPool() {
 
-	std::cout << "Running ten thread" << endl;
-	boost::thread threadPoolHandle(runThreadPool);
-
-	threadPoolHandle.join();
-	std::cout << "Thread pool is done." << std::endl;
-
-}
 
 
 
@@ -364,9 +348,9 @@ void create100RecordsInCollection(){
         string key=random_string(10);
         string value = "valueForThisKey";
         value.append(key);
-        pico_record x1(key, value);
-        cout<<"pico_record is "<<x1.toString()<<std::endl;
-        optionCollection.insert(x1);
+//        pico_record x1(key, value);
+//        cout<<"pico_record is "<<x1.toString()<<std::endl;
+//        optionCollection.insert(x1);
 	}
     
 	cout << " number of records are : " << optionCollection.getNumberOfMessages()
@@ -380,7 +364,7 @@ void create100RecordsInCollection(){
 //	
     //optionCollection.deleteRecord(x1);
     
-	std::cout <<std::endl<< "end of function create100RecordsInCollection() "<< std::endl;
+	//mylogger <<std::endl<< "end of function create100RecordsInCollection() "//<< std::endl;
 
 }
 void test_pico_binary_index_tree()
@@ -393,18 +377,23 @@ void createACollection() {
 void sleepViaBoost(int seconds)
 {
 boost::this_thread::sleep(boost::posix_time::seconds(seconds));
+    //this throws some weird exception
+    
+//    std::chrono::milliseconds dura( seconds*1000 );
+//    std::this_thread::sleep_for( dura );
+    
 }
-void runPicoHedgeFundClient(std::shared_ptr<clientType> ptr)
+void runPicoHedgeFundClient(std::shared_ptr<DriverType> ptr)
 {
     cout<<("hedge fund is starting...");
-    PicoHedgeFund hedgefund(ptr);
-    hedgefund.buy(1);
+    //PicoHedgeFund hedgefund(ptr);
+   // hedgefund.buy(1);
     cout<<("hedge fund finished buying currencies...");
     
 }
-void runClient() {
+void runPicoDriver(PonocoDriverHelper* syncHelper) {
 	try {
-		std::cout << "starting client" << std::endl;
+	//	mylogger << "starting PicoDriver" //<< std::endl;
 		std::string localhost { "0.0.0.0" };// #Symbolic name meaning all available interfaces
         //localhost{"localhost"} only the local machine via a special interface only visible to programs running on the same compute
 		std::string port { "8877" };
@@ -412,9 +401,9 @@ void runClient() {
 		boost::asio::io_service io_service;
         tcp::resolver r(io_service);
         
-		socketType socket(new tcp::socket(io_service));
-        std::shared_ptr<clientType> ptr(new clientType(socket));
-		 ptr->start_connect(r.resolve(tcp::resolver::query(localhost, port)));
+		std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service));
+        std::shared_ptr<DriverType> ptr(new DriverType(syncHelper));
+		 ptr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
         //and client sends to server
@@ -424,20 +413,26 @@ void runClient() {
 //        hedgeThred.detach();
         
 		io_service.run();
-		std::cout << "ptr to client going out of scope" << std::endl;
+	//	mylogger << "ptr to client going out of scope" //<< std::endl;
      
         
         
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";
+         raise(SIGABRT);
 	} catch (...) {
 		std::cerr << "Exception: unknown happened for client" << "\n";
+        raise(SIGABRT);
 	}
 }
 
 struct A {
-    A(int&& n) { std::cout << "rvalue overload, n=" << n << "\n"; }
-    A(int& n)  { std::cout << "lvalue overload, n=" << n << "\n"; }
+    A(int&& n) {
+        //mylogger << "rvalue overload, n=" << n << "\n";
+    }
+    A(int& n)  {
+        //mylogger << "lvalue overload, n=" << n << "\n";
+    }
 };
 
 class B {
@@ -472,31 +467,12 @@ void forwarding_example()
     int i = 1;
     auto p2 = make_unique1<A>(i); // lvalue
     
-    std::cout << "B\n";
+ //   mylogger << "B\n";
     auto t = make_unique<B>(2, i, 3);
 }
 
 //std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
 
-std::string DBClient::logFileName ("client");
-std::string pico_session::logFileName ("session");
-std::string request_processor::logFileName ("session");
-
-string pico_test::smallKey0 {"smallKey0"};
-string pico_test::smallKey1  ("smallKey1");
-string pico_test::smallKey2  ("smallKey2");
-string pico_test::smallKey3  ("smallKey3");
-
-
-string  pico_test::smallValue0  ("smallValue0");
-string  pico_test::smallValue1 ("smallValue1");
-string  pico_test::smallValue2 ("smallValue2");
-string  pico_test::smallValue3 ("smallValue3");
-
-
-string  pico_test::bigValue0("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it. They didn't use the word 'confirm.' So it could be that it's a real lead, but it could also not be. I think that, at the moment, everyone needs to wait for final, confirmed information.That view was echoed by Sarah Bajc, whose partner, Philip Wood, was among the passengers.Every time some official gives one of those absolute statements of 'We're sure it's the pings from the black boxes' or 'We're sure it's in the ocean,' we all crash, she told CNNs New Day.Our feet get knocked out from underneath us. But then it always ends up reversing itself, and they step back from it.She expressed skepticism about the way the investigation has been handled. The fox is very much in charge of the henhouse here, she told New Day. We've got a country leading the investigation who also has the primary liability in the case, and it makes us question every step that's taken.\" More cluesA senior Malaysian government official and another source involved in the investigation divulged new details about the flight to CNN on Thursday, including information about what radar detected, the last words from the cockpit and how high the plane was flying after it went off the grid.Malaysia Airlines Flight 370 disappeared from military radar for about 120 nautical miles after it crossed back over the Malay Peninsula, sources said. Based on available data, this means the plane must have dipped in altitude to between 4,000 and 5,000 feet, sources said.The dip could have been programmed into the computers controlling the plane as an emergency maneuver, said aviation expert David Soucie.The real issue here is it looks like -- more and more -- somebody in the cockpit was directing this plane and directing it away from land,said Peter Goelz, a CNN aviation analyst and former National Transportation Safety Board managing director.And it looks as though they were doing it to avoid any kind of detection.But former U.S. Department of Transportation Inspector General Mary Schiavo was not convinced. She said the reported dip could have occurred in response to a loss of pressure, to reach a level where pressurization was not needed and those aboard the plane would have been able to breathe without oxygen, or to get out of the way of commercial traffic123456endOfMessage");
-
-string  pico_test::bigValue1("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from ;radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it.endOfMessage");
 
 
 void clientServerExample() {
@@ -504,21 +480,49 @@ void clientServerExample() {
        
 	
         using namespace pico;
-	    
+
+    //     std::shared_ptr<PonocoDriverHelper> sharedSyncHelper  (new PonocoDriverHelper);
+         PonocoDriverHelper* sharedSyncHelper  =new PonocoDriverHelper();
+std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
+//         DriverType* ptr = new DriverType(sharedSyncHelper);
         boost::thread serverThread(runServer);
-		sleepViaBoost(4);
+		sleepViaBoost(1);
 
-
-		boost::thread clientThread(runClient);
-        sleepViaBoost(4);
+        // boost::bind(runPonocoDriver,_1, _2)(*ptr,sharedSyncHelper);
+//auto func = std::bind(runPonocoDriver,_1, _2,ptr,sharedSyncHelper);
+       
+         PonocoRunnable driverThreadRunnable(ptr.get(),sharedSyncHelper);
+       // boost::thread picoDriverThread(boost::bind(runPonocoDriver,_1, _2)(ptr,sharedSyncHelper));
+       boost::thread  poncoDriverThread(boost::bind(&PonocoRunnable::runPonocoDriver,driverThreadRunnable));
+        sleepViaBoost(1);
         
-         clientThread.join();
-        serverThread.join();
+        //bind(f, _2, _1)(x, y);
+        
+       // auto func1= std::bind(runPoncoClientProgram,_1, _2,ptr,sharedSyncHelper);
+        PonocoRunnable clientThreadRunnable(ptr.get(),sharedSyncHelper);
+        boost::thread poncoClientThread(boost::bind(&PonocoRunnable::runPoncoClientProgram,clientThreadRunnable));
+       
+       
+//        poncoClientThread.detach();
+//        picoDriverThread.detach();
+//        serverThread.detach();
+       
+        //a thread that is waiting on a condition variable, cannot be joined
+      
+        if(serverThread.joinable()) {serverThread.join();}
+//        if(poncoClientThread.joinable())
+//        {poncoClientThread.join();}
+//        if(picoDriverThread.joinable())
+//        {picoDriverThread.join();}
 		      
 	} catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n";
+        raise(SIGABRT);
+
 	} catch (...) {
 		std::cerr << "Exception: unknown thrown" << "\n";
+        raise(SIGABRT);
+
 	}
 }
 void performanceExample()
@@ -528,42 +532,42 @@ void performanceExample()
     
     steady_clock::time_point t1 = steady_clock::now();
     
-    std::cout << "printing out 1000 stars...\n";
-    for (int i=0; i<1000; ++i) std::cout << "*";
+   // mylogger << "printing out 1000 stars...\n";
+ //   for (int i=0; i<1000; ++i) mylogger << "*";
     std::cout << std::endl;
     
     steady_clock::time_point t2 = steady_clock::now();
     
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
     
-    std::cout << "It took me " << time_span.count() << " seconds.";
-    std::cout << std::endl;
+   // mylogger << "It took me " << time_span.count() << " seconds.";
+    //mylogger //<< std::endl;
     
 }
 void dateExample() {
 	boost::gregorian::date d(2010, 1, 30);
-	std::cout << "year is " << d.year() << std::endl;
-	std::cout << "month is " << d.month() << std::endl;
-	std::cout << "day is " << d.day() << std::endl;
-	std::cout << "day of week is " << d.day_of_week() << std::endl;
-	std::cout << "end of month is " << d.end_of_month() << std::endl;
+	//mylogger << "year is " << d.year() //<< std::endl;
+//	mylogger << "month is " << d.month() //<< std::endl;
+//	mylogger << "day is " << d.day() //<< std::endl;
+//	mylogger << "day of week is " << d.day_of_week() //<< std::endl;
+//	mylogger << "end of month is " << d.end_of_month() //<< std::endl;
 
 	boost::gregorian::date d1(2008, 1, 31);
 	boost::gregorian::date d2(2008, 8, 31);
 	boost::gregorian::date_duration dd = d2 - d1;
-	std::cout << "date difference is " << dd.days() << std::endl;
+//	mylogger << "date difference is " << dd.days() //<< std::endl;
 
 	boost::gregorian::date d3(2009, 3, 31);
 	boost::gregorian::months ms(1);
 	boost::gregorian::date d4 = d3 + ms;
-	std::cout << "adding month to date " << d4 << std::endl;
+//	mylogger << "adding month to date " << d4 //<< std::endl;
 	boost::gregorian::date d5 = d3 - ms;
-	std::cout << "substracting month from date " << d5 << std::endl;
+//	mylogger << "substracting month from date " << d5 //<< std::endl;
 
 	{
 		boost::gregorian::date d(2009, 1, 5);
 		boost::gregorian::day_iterator it(d);
-		std::cout << *++it << std::endl;
+	//	mylogger << *++it //<< std::endl;
 		std::cout
 				<< boost::date_time::next_weekday(*it,
 						boost::gregorian::greg_weekday(
@@ -573,10 +577,10 @@ void dateExample() {
 		boost::gregorian::date d1(2009, 1, 30);
 		boost::gregorian::date d2(2009, 10, 31);
 		boost::gregorian::date_period dp(d1, d2);
-		std::cout << "date exist in date period " << dp.contains(d1)
-				<< std::endl;
-		std::cout << "date exist in date period " << dp.contains(d2)
-				<< std::endl;
+	//	mylogger << "date exist in date period " << dp.contains(d1)
+				//<< std::endl;
+	//	mylogger << "date exist in date period " << dp.contains(d2)
+				//<< std::endl;
 	}
 	{
 
@@ -584,7 +588,7 @@ void dateExample() {
 		boost::gregorian::date d2(2009, 10, 31);
 		boost::gregorian::date_period dp(d1, d2);
 		boost::gregorian::date_duration dd = dp.length();
-		std::cout << "days in a date period " << dd.days() << std::endl;
+//		mylogger << "days in a date period " << dd.days() //<< std::endl;
 	}
 }
 
@@ -706,7 +710,7 @@ void chronoExamples() {
 	//	cout << "system clock is " << std::chrono::system_clock() << endl;
 	//	cout << "high_resolution_clock is " << std::chrono::high_resolution_clock()
 	//			<< endl;
-//    std::cout<<("steady_clock  is ",std::chrono::steady_clock());
+//    mylogger<<("steady_clock  is ",std::chrono::steady_clock());
 
 }
 
@@ -871,12 +875,103 @@ void test_pico_index()
     pico_binary_index_tree index;
     index.test_tree();
 }
+
+
+
+//void bar() { baz(); }
+//void foo() { bar(); }
+
+logger* pico_logger_wrapper::myloggerPtr=new logger("gicapods");
+void printStackTraceHandler(int sig) {
+    void *array[10];
+    size_t size;
+    
+    // get void*'s for all entries on the stack
+    size = backtrace(array, 10);
+    
+    // print out all the frames to stderr
+    fprintf(stderr, "Error: signal %d:\n", sig);
+    backtrace_symbols_fd(array, size, STDERR_FILENO);
+    
+    
+    pico_logger_wrapper::myloggerPtr->log("this is the stack trace :\n ");
+//    for(int i=0;i<10;i++)
+//    {
+//    std::string *sp = static_cast<std::string*>(array[i]);
+//    // You could use 'sp' directly, or this, which does a copy.
+//    std::string s = *sp;
+//    // Don't forget to destroy the memory that you've allocated.
+//  //  delete sp;
+//    
+//    pico_logger_wrapper::myloggerPtr->log(s);
+//    }
+    //realname = abi::__cxa_demangle(e.what(), 0, 0, &status);
+    //  std::cout << ti.name() << "\t=> " << realname << "\t: " << status << '\n';
+    
+    //exit(1);
+}
+
+void registerPrintStackHandlerForSignals() {
+    
+    signal(SIGSEGV, printStackTraceHandler);   // install our handler
+    
+	signal(SIGHUP, printStackTraceHandler);
+	signal(SIGINT, printStackTraceHandler);
+    signal(SIGQUIT, printStackTraceHandler);
+	signal(SIGILL, printStackTraceHandler);
+	signal(SIGTRAP, printStackTraceHandler);
+	signal(SIGABRT, printStackTraceHandler);
+    signal(SIGFPE, printStackTraceHandler);
+	signal(SIGKILL, printStackTraceHandler);
+    signal(SIGSEGV, printStackTraceHandler);
+    signal(SIGSYS, printStackTraceHandler);
+    signal(SIGTERM, printStackTraceHandler);
+    
+}
+
+std::unique_ptr<ThreadPool>  pico_collection::delete_thread_pool (new ThreadPool(numberOfDeletionThreads));
+    
+//    
+
+std::string pico_session::logFileName ("session");
+std::string request_processor::logFileName ("session");
+std::string SimpleRunnable::logFileName ("gicapods");
+std::string DeleteTaskRunnable::logFileName ("gicapods");
+
+string pico_test::smallKey0 {"smallKey0"};
+string pico_test::smallKey1  ("smallKey1");
+string pico_test::smallKey2  ("smallKey2");
+string pico_test::smallKey3  ("smallKey3");
+
+
+string  pico_test::smallValue0  ("smallValue0");
+string  pico_test::smallValue1 ("smallValue1");
+string  pico_test::smallValue2 ("smallValue2");
+string  pico_test::smallValue3 ("smallValue3");
+
+std::string request_processor::insertCommand("insert");
+std::string request_processor::deleteCommand("delete");
+std::string request_processor::updateCommand("update");
+std::string request_processor::findCommand("find");
+std::string request_processor::getCommand("get");
+std::string request_processor::addUserToDBCommand("adduser");
+std::string request_processor::deleteUserToDBCommand("deleteuser");
+
+
+string  pico_test::bigValue0("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it. They didn't use the word 'confirm.' So it could be that it's a real lead, but it could also not be. I think that, at the moment, everyone needs to wait for final, confirmed information.That view was echoed by Sarah Bajc, whose partner, Philip Wood, was among the passengers.Every time some official gives one of those absolute statements of 'We're sure it's the pings from the black boxes' or 'We're sure it's in the ocean,' we all crash, she told CNNs New Day.Our feet get knocked out from underneath us. But then it always ends up reversing itself, and they step back from it.She expressed skepticism about the way the investigation has been handled. The fox is very much in charge of the henhouse here, she told New Day. We've got a country leading the investigation who also has the primary liability in the case, and it makes us question every step that's taken.\" More cluesA senior Malaysian government official and another source involved in the investigation divulged new details about the flight to CNN on Thursday, including information about what radar detected, the last words from the cockpit and how high the plane was flying after it went off the grid.Malaysia Airlines Flight 370 disappeared from military radar for about 120 nautical miles after it crossed back over the Malay Peninsula, sources said. Based on available data, this means the plane must have dipped in altitude to between 4,000 and 5,000 feet, sources said.The dip could have been programmed into the computers controlling the plane as an emergency maneuver, said aviation expert David Soucie.The real issue here is it looks like -- more and more -- somebody in the cockpit was directing this plane and directing it away from land,said Peter Goelz, a CNN aviation analyst and former National Transportation Safety Board managing director.And it looks as though they were doing it to avoid any kind of detection.But former U.S. Department of Transportation Inspector General Mary Schiavo was not convinced. She said the reported dip could have occurred in response to a loss of pressure, to reach a level where pressurization was not needed and those aboard the plane would have been able to breathe without oxygen, or to get out of the way of commercial traffic123456endOfMessage");
+
+string  pico_test::bigValue1("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from ;radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it.endOfMessage");
 int main(int argc, char** argv) {
 	try {
+        if( remove( "/Users/mahmoudtaabodi/Documents/gicapods.log" ) != 0 )
+            perror( "Error deleting file" );
         
+        pico_logger_wrapper logger;//just to initialize the static pointer
+        registerPrintStackHandlerForSignals();
 		std::set_unexpected(myunexpected);
-        test_pico_index();
-      //  clientServerExample();
+//        test_pico_index();
+      //  testThreadPool();
+        clientServerExample();
        // runChatServer();
         //		readingAndWritingRecordData();
         //		jsonCPPexample() ;
@@ -885,8 +980,14 @@ int main(int argc, char** argv) {
         
 	} catch (const std::exception& e) {
 		cout << " exception : " << e.what() << endl;
-	} catch (...) {
+        raise(SIGABRT);
+
+	}
+    catch (...) {
 		cout << "<----->unknown exception thrown.<------>";
+        raise(SIGABRT);
+
 	}
 	return 0;
 }
+    

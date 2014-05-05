@@ -8,7 +8,12 @@
 
 #ifndef PicoDB_pico_configs_h
 #define PicoDB_pico_configs_h
+namespace pico
+{
+    
 
+
+}
 
 
 #endif

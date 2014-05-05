@@ -9,13 +9,14 @@
 #define PICO_UTILS_H_
 #include <boost/lexical_cast.hpp>
 #include <chrono>
+#include <pico_logger_wrapper.h>
 using namespace std;
 
 namespace pico{
     
     typedef long offsetType;
     typedef std::string messageType;
-    
+    bool log = true;
     enum class comMsg {STOP, SEND_ME_MORE, END_OF_MESSAGE};
     enum log_level {debug,trace,all,error,warning};
     
@@ -63,7 +64,7 @@ namespace pico{
             
             
             const char charset[] =
-            "0123456789";
+            "09182736455463728190";
             const size_t max_index = (sizeof(charset) - 1);
             
             steady_clock::time_point t2 = steady_clock::now();
@@ -76,7 +77,7 @@ namespace pico{
         std::generate_n( retStr.begin(), N, randchar );
         
         T num  = boost::lexical_cast<T>(retStr);
-        std::cout << "retStr : "<<retStr<<std::endl;
+       // mylogger << "retStr : "<<retStr<<std::endl;
         return num;
     }
     template<typename T>
@@ -85,7 +86,61 @@ namespace pico{
         std::string str = boost::lexical_cast<std::string>(i);
         return str;
     }
-}
+    template<typename T>
+    T calc_hash_code(T obj) {
+       
+        std::string objStr = boost::lexical_cast < string > (obj);
+        std::size_t hash_code = std::hash<std::string>()(objStr);
+        
+        return hash_code;
+        
+    }
+
+    std::size_t calc_hash_code(std::string obj) {
+        
+        std::size_t hash_code = std::hash<std::string>()(obj);
+        return hash_code;
+        
+    }
+    
+    bool openFileIfItDoesntExist(const std::string& name) {
+        std::fstream f;
+        f.open(name, std::fstream::in); //this will open file if it doesnt exist
+        if (f.good()) {
+            f.close();
+         //   mylogger<<"file does exist...\n";
+            return true;
+        } else {
+      //      mylogger<<"file does NOT exist,creating one now...\n";
+            FILE * pFile;
+            pFile = fopen (name.c_str(),"w");
+            fclose (pFile);
+            
+            f.close();
+            return false;
+        }
+    }
+    
+    offsetType getEndOfFileOffset(std::fstream& file) {//was debugged
+        
+        file.seekg(0, std::ifstream::end);
+//        mylogger<<" getEndOfFileOffset : filename is ";
+       // mylogger<<filename<<std::endl;
+      //  std::cout<<" \ngetEndOfFileOffset : file.tellg() :  "<<file.tellg();
+        
+        return file.tellg();
+        
+    }
+    
+    std::string calc_request_id()
+    {
+        return random_number<string>(10);
+    }
+   
+    
+       
+ 
+  }
 
 
 

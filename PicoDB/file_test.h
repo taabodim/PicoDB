@@ -12,17 +12,18 @@
 #include <fstream>
 #include <iostream>
 #include <boost/filesystem.hpp>
+#include <pico_logger_wrapper.h>
 using namespace boost::filesystem;
 using namespace pico;
 using namespace std;
 
-class file_test{
+class file_test : public pico_logger_wrapper{
     
 public:
     void writeToFileExample() {
         boost::filesystem::path p("text.txt");
         boost::filesystem::ofstream ofs(p);
-        ofs << "hello mahmoud taabodi" << std::endl;
+        ofs << "hello mahmoud taabodi" << endl;
         
     }
     
@@ -33,7 +34,7 @@ public:
     
     void getSizeOfFile() {
         
-        std::cout << "gmon.out  size is " << " " << file_size("gmon.out") << '\n';
+        mylogger << "gmon.out  size is " << " " << file_size("gmon.out") << '\n';
     }
     
     

@@ -7,28 +7,28 @@
 
 #ifndef CLIENTHANDLER_H_
 #define CLIENTHANDLER_H_
-#include "pico/pico_server.h"
+
 #include "pico/pico_record.h"
 #include "pico/pico_collection.h"
 #include "pico/writer_buffer_container.h"
 #include "pico/asyncReader.h"
 #include "pico/request_processor.h"
 #include <pico/pico_utils.h>
-#include <logger.h>
+#include <pico_logger_wrapper.h>
+#include <pico_buffered_message.h>
 using boost::asio::ip::tcp;
 using namespace std;
 namespace pico {
     
-    class pico_session: public std::enable_shared_from_this<pico_session> {
+    class pico_session: public std::enable_shared_from_this<pico_session> , public pico_logger_wrapper {
         
     private:
-        socketType socket_;
+        std::shared_ptr<tcp::socket> socket_;
         typedef pico_message queueType;
     public:
         static string logFileName;
-        logger mylogger;
-        pico_session(socketType r_socket) :
-        writeOneBufferLock(sessionMutex) ,allowedToWriteLock(allowedToWriteLockMutext),mylogger(logFileName){
+        pico_session(std::shared_ptr<tcp::socket> r_socket)
+         {
             socket_ = r_socket;
         }
         
@@ -41,18 +41,20 @@ namespace pico {
             } catch (const std::exception& e) {
                 cout << " exception : " << e.what() << endl;
             } catch (...) {
+                
                 cout << "<----->unknown exception thrown.<------>";
+                raise(SIGABRT);
             }
         }
         void readOneBuffer() {
             //we read until the whole message is read
             //then we write until the whole message is written
             auto self(shared_from_this());
-            cout << "session is trying to read messages" << endl;
-            bufferTypePtr currentBuffer = asyncReader_.getOneBuffer();
+          //  cout << "session is trying to read messages" << endl;
+            std::shared_ptr<pico_record> currentBuffer = asyncReader_.getOneBuffer();
             boost::asio::async_read(*socket_,
-                                    boost::asio::buffer(currentBuffer->getData(),
-                                                        pico_buffer::max_size),
+                                    boost::asio::buffer(currentBuffer->getDataForRead(),
+                                                        pico_record::max_size),
                                     [this,self,currentBuffer](const boost::system::error_code& error,
                                                               std::size_t t ) {
                                         
@@ -63,36 +65,41 @@ namespace pico {
         }
         void queueMessages(queueType message) {
             //TODO put a lock here to make the all the buffers in a message go after each other.
-            boost::interprocess::scoped_lock<boost::mutex> queueMessagesLock(queueMessagesMutext);
-            
+            while(true)
+            {
+                std::unique_lock<std::mutex> queueMessagesLock(queueMessagesMutext);
             //put all the buffers in the message in the buffer queue
-            while(!message.buffered_message.msg_in_buffers->empty())
+            while(!message.recorded_message.msg_in_buffers->empty())
             {
                 
-                std::cout<<"pico_session : popping current Buffer ";
-                bufferType buf = message.buffered_message.msg_in_buffers->pop();
-                //                    std::cout<<"pico_client : popping current Buffer this is current buffer ";
+                mylogger<<"pico_session : popping current Buffer ";
+                pico_record buf = message.recorded_message.msg_in_buffers->pop();
+                //                    mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
                 
-                std::shared_ptr<pico_buffer> curBufPtr(new pico_buffer(buf));
+                std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
                 bufferQueue_.push(curBufPtr);
                 
             }
             bufferQueueIsEmpty.notify_all();
-        }
+                break;
+            }
+            
+            }
         
         void writeOneBuffer()
         {
             
-            if(bufferQueue_.empty())
+            std::unique_lock<std::mutex> writeOneBufferLock(bufferQueueIsEmptyMutex);
+            while(bufferQueue_.empty())
             {
-                cout<<"session : bufferQueue is empty..waiting ..."<<endl;
+             //   cout<<"session : bufferQueue is empty..waiting ..."<<endl;
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
             }
             
             
-            bufferTypePtr currentBuffer = bufferQueue_.pop();
-            cout << " session is writing one buffer to client : " <<currentBuffer->toString()<< std::endl;
-            char* data = currentBuffer->getData();
+            std::shared_ptr<pico_record> currentBuffer = bufferQueue_.pop();
+           // cout << " session is writing one buffer to client : " <<currentBuffer->toString()//<< std::endl;
+            char* data = currentBuffer->getDataForWrite();
             std::size_t dataSize = currentBuffer->getSize();
             auto self(shared_from_this());
             
@@ -100,11 +107,10 @@ namespace pico {
                                      [this,self,currentBuffer](const boost::system::error_code& error,
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
-                                         std::cout << "Session Sent :  "<<std::endl;
-                                         std::cout<<t<<" bytes from Client "<<std::endl;
-                                         //                                         if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
-                                         //                                         std::cout<<" data sent to client is "<<str<<endl;
-                                         std::cout<<("-------------------------");
+                                         mylogger << "\nSession Sent :  "<<t<<" bytes from Client ";
+                                         //                                         if(error) mylogger<<" error msg : "<<error.message()<<std::endl;
+                                         //                                         mylogger<<" data sent to client is "<<str<<endl;
+                                         mylogger<<("-------------------------");
                                          
                                          readOneBuffer();
                                      });
@@ -118,14 +124,14 @@ namespace pico {
             string value1 = "valuefromvalue1";
             string key2 = "key2";
             string value2 = "value2";
-            pico_record x1(key1, value1);
-            
-            pico_record x2(key2, value2);
+//            pico_record x1(key1, value1);
+//            
+//            pico_record x2(key2, value2);
             pico_collection optionCollection("options-collection");
             
-            for (int i = 0; i < 10; i++) {
-                optionCollection.insert(x1);
-            }
+//            for (int i = 0; i < 10; i++) {
+//                optionCollection.insert(x1);
+//            }
             cout << " number of records are : "
             << optionCollection.getNumberOfMessages() << " \n";
 //            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
@@ -133,16 +139,17 @@ namespace pico {
 //            optionCollection.update(x1, x2);
             //optionCollection.deleteRecord(x1);
             
-            std::cout << "end of function readingAndWritingRecordData() "
-            << std::endl;
+            mylogger << "\nend of function readingAndWritingRecordData() "
+            ;
             
         }
-        void processDataFromClient(std::string messageFromClient) {
+        void processDataFromOtherSide(pico_message messageFromOtherSide) {
             
             try {
                 
-                pico_message reply = requestProcessor_.processRequest(messageFromClient);
                 
+                pico_message reply = requestProcessor_.processRequest(messageFromOtherSide);
+                mylogger<<"putting reply to the queue this is the message that server read just now"<<reply.toString();
                 queueMessages(reply);
                 
             } catch (std::exception &e) {
@@ -151,41 +158,34 @@ namespace pico {
             
         }
         
-        void processTheBufferJustRead(bufferTypePtr currentBuffer,std::size_t t){
-            
+        void processTheBufferJustRead(std::shared_ptr<pico_record> currentBuffer,std::size_t t){
+//            currentBuffer->loadTheKeyValueFromData();
             string str =currentBuffer->toString();
             
-            string logMsg("session : this is the message that server read just now ");
-            logMsg.append(str);
-            mylogger.log(logMsg);
+            mylogger<<"\nsession : this is the message that server read just now "<<str;
             
             if(sendmetherestofdata(str))
                 ignoreThisMessageAndWriterNextBuffer();
             
             else
-                if(find_last_of_string(currentBuffer))
+                if(pico_record::find_last_of_string(currentBuffer))
             {
-                std::cout<<("session: this buffer is an add on to the last message..dont process anything..read the next buffer\n");
-                pico_message::removeTheEndingTags(currentBuffer);
-                string strWithoutJunk =currentBuffer->toString();
-                append_to_last_message(strWithoutJunk);
+                mylogger<<"\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n";
+
+                allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 tellHimSendTheRestOfData();
             }
             else {
                 
-                pico_message::removeTheEndingTags(currentBuffer);
-                string strWithoutJunk =currentBuffer->toString();
-                append_to_last_message(strWithoutJunk);
+
+                  allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 
                 
-                string logMsg;
-                logMsg.append("this is the complete message read from session :");
-                logMsg.append(last_read_message);
-                mylogger.log(logMsg);
+                    pico_message last_read_message = pico_message::convertBuffersToMessage(allBuffersReadFromTheOtherSide);
+                mylogger<<"\nsever : this is the complete message read from  "<<last_read_message.toString();
               
-                processDataFromClient(last_read_message);
-                last_read_message.clear();
-                
+                processDataFromOtherSide(last_read_message);
+                allBuffersReadFromTheOtherSide.clear();
             }
         }
         bool sendmetherestofdata(string comparedTo)
@@ -196,31 +196,17 @@ namespace pico {
                 return true;
             return false;
         }
-        static bool find_last_of_string(bufferTypePtr currentBuffer)
+        void tellHimSendTheRestOfData(pico_message msgTheJustCame)
         {
-            
-            
-            int pos = pico_buffer::max_size-1;
-            if(currentBuffer->data_[pos] != 'd' ||
-               currentBuffer->data_[--pos] != 'n' ||
-               currentBuffer->data_[--pos] != 'e' ||
-               currentBuffer->data_[--pos] != 'p' ||
-               currentBuffer->data_[--pos] != 'p' ||
-               currentBuffer->data_[--pos] != 'a' )
-                return false;
-            
-            
-            return true;
-            
-        }
-        void tellHimSendTheRestOfData()
-        {
+            mylogger<<"\nServer is telling send the rest of data for this message Id  "<<msgTheJustCame.messageId<<" \n";
             string msg("sendmetherestofdata");
             
-            pico_message reply = pico_message::build_message_from_string(msg);
-          	queueMessages(reply);
+            pico_message reply = pico_message::build_message_from_string(msg,msgTheJustCame.messageId);
+          	queueRequestMessages(reply);
+            writeOneBuffer(); //go to writing mode
             
         }
+
         void  ignoreThisMessageAndWriterNextBuffer()
         {
             writeOneBuffer();
@@ -229,33 +215,30 @@ namespace pico {
        
         void print(const boost::system::error_code& error,std::size_t t,string& str)
         {
-            if(error) std::cout<<" error msg : "<<error.message()<<std::endl;
-            std::cout << "Server received "<<std::endl;
-            std::cout<<t<<" bytes read from Client "<<std::endl;
-            std::cout<<(" data read from client is ")<<endl;
-            std::cout<<(str)<<endl;
-            std::cout<<("-------------------------")<<endl;
+          //  if(error) mylogger<<" error msg : "<<error.message()<<std::endl;
+            mylogger << "\nServer received "<<t<<" bytes read from Client  data read from client is "<<str;
             
         }
-        void append_to_last_message(string str) {
-            last_read_message.append(str);
-            
-        }
+//        void append_to_last_message(string str) {
+//            last_read_message.append(str);
+//            
+//        }
         
         //        writer_buffer_container writer_buffer_container_;
         asyncReader asyncReader_;
         request_processor requestProcessor_;
         pico_concurrent_list<queueType> messageToClientQueue_;
-        pico_concurrent_list<bufferTypePtr> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
-        boost::mutex sessionMutex;   // mutex for the condition variable
-        boost::mutex allowedToWriteLockMutext;
-        boost::mutex queueMessagesMutext;
-        boost::condition_variable bufferQueueIsEmpty;
+        pico_concurrent_list<std::shared_ptr<pico_record>> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
+      
+        std::mutex sessionMutex;   // mutex for the condition variable
+        std::mutex bufferQueueIsEmptyMutex;
+        std::mutex queueMessagesMutext;
+        std::condition_variable bufferQueueIsEmpty;
         
-        boost::condition_variable clientIsAllowedToWrite;
-        boost::unique_lock<boost::mutex> allowedToWriteLock;
-        boost::unique_lock<boost::mutex> writeOneBufferLock;
-        string last_read_message;
+        std::condition_variable clientIsAllowedToWrite;
+        
+        
+        pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
         
         
         
@@ -269,8 +252,8 @@ namespace pico {
         //                cout << "server recienved insert message from client" << endl;
         //                //insertData to client
         //
-        //                std::cout << "server reading message : " << msgFromClient
-        //                << std::endl;
+        //                mylogger << "server reading message : " << msgFromClient
+        //                //<< std::endl;
         //                write_messages_sync();
         //                boost::this_thread::sleep(boost::posix_time::seconds(4));
         //            }
@@ -284,8 +267,8 @@ namespace pico {
         //            //		char* data = buffer.getData();
         //            //		std::size_t dataSize = buffer.getSize();
         //            //
-        //            //		std::cout << "data to send is : " << data << std::endl;
-        //            //		std::cout << "dataSize to send is : " << dataSize << std::endl;
+        //            //		mylogger << "data to send is : " << data //<< std::endl;
+        //            //		mylogger << "dataSize to send is : " << dataSize //<< std::endl;
         //            //
         //            //		boost::array<char, 128> buf;
         //            //		boost::system::error_code error;
@@ -314,11 +297,11 @@ namespace pico {
         //						std::size_t t) {
         //
         //					string str = currentBuffer->getString();
-        //					std::cout << "Server sent "<<std::endl;
-        //					std::cout<<(t<<" bytes sent to client "<<std::endl;
-        //					if(error) std::cout<<(" error msg : "<<error.message()<<std::endl;
-        //					std::cout<<( " data sent to client is "<<str<<std::endl;
-        //					std::cout << "-------------------------"<<std::endl;
+        //					mylogger << "Server sent "<<std::endl;
+        //					mylogger<<(t<<" bytes sent to client "<<std::endl;
+        //					if(error) mylogger<<(" error msg : "<<error.message()<<std::endl;
+        //					mylogger<<( " data sent to client is "<<str<<std::endl;
+        //					mylogger << "-------------------------"<<std::endl;
         //					read_messages();
         //				});
         

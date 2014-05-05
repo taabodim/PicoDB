@@ -8,7 +8,7 @@
 
 #ifndef PicoDB_pico_buffered_message_h
 #define PicoDB_pico_buffered_message_h
-#include <pico/pico_buffer.h>
+
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
 #include <logger.h>
@@ -22,19 +22,18 @@ namespace pico
     template <typename type>
     class pico_buffered_message{
     public:
-        //logger mylogger;
         pico_buffered_message():msg_in_buffers(new pico_concurrent_list<type>())
         {
-            //    std::cout<<("empty pico_buffered_message being constructed.....\n");
+            //    mylogger<<("empty pico_buffered_message being constructed.....\n");
             
         }
         pico_buffered_message(std::shared_ptr<pico_concurrent_list<type>> list):msg_in_buffers(new pico_concurrent_list<type>()){
-            //     std::cout<<("pico_buffered_message being constructed....\n");
+            //     mylogger<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
             
         }
         pico_buffered_message(const pico_buffered_message& copy){
-            //std::cout<<("pico_buffered_message copy constructed....\n");
+            //mylogger<<("pico_buffered_message copy constructed....\n");
             msg_in_buffers = copy.msg_in_buffers;
             
         }
@@ -44,7 +43,7 @@ namespace pico
         }
         virtual ~pico_buffered_message()
         {
-            // std::cout<<("pico_buffered_message being desstructed....\n");
+            // mylogger<<("pico_buffered_message being desstructed....\n");
             
         }
         void append(type buf)
@@ -58,7 +57,10 @@ namespace pico
             msg_in_buffers->clear();
         }
         
-        
+        void print()
+        {
+            msg_in_buffers->printAll();
+        }
         string toString()
         {
             

@@ -8,40 +8,42 @@
 #ifndef ASYNCREADER_H_
 #define ASYNCREADER_H_
 
-#include <pico/pico_buffer.h>
+#include <pico/pico_record.h>
 #include <pico/writer_buffer_container.h> //for typedef only
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
-#include <pico/pico_buffered_message.h>
-#include <logger.h>
+
+//#include <pico/pico_recorded_message.h>
+
+#include  <pico_logger_wrapper.h>
 using namespace std;
 namespace pico {
 
-class asyncReader {
+    class asyncReader : public pico_logger_wrapper{
 
 public:
-       //logger mylogger;
+    
 	asyncReader() {
-		std::cout<<"asyncReader is being constructed....\n";
+		mylogger<<"asyncReader is being constructed....\n";
 	}
 	virtual ~asyncReader() {
-		std::cout<<("asyncReader is being destructed....\n");
+		mylogger<<("asyncReader is being destructed....\n");
 	}
-
+//
 //	msgPtr getReadBuffer() {
-//		msgPtr bufferPtr(new pico_buffered_message());
+//		msgPtr bufferPtr(new pico_recorded_message());
 //		readerBufferList.push(bufferPtr);
 //		return bufferPtr;
 //	}
-	bufferTypePtr getOneBuffer() {
+        std::shared_ptr<pico_record> getOneBuffer() {
 
-		bufferTypePtr buf (new bufferType());
+		std::shared_ptr<pico_record> buf (new pico_record());
 		singleBufferList.push(buf);
 		return buf;
 	}
 
 //	pico_concurrent_list<msgPtr> readerBufferList;
-	pico_concurrent_list<bufferTypePtr> singleBufferList;
+	pico_concurrent_list<std::shared_ptr<pico_record>> singleBufferList;
 
 private:
 //none as of now

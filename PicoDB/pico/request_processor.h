@@ -9,63 +9,64 @@
 #define REQUESTPROCESSOR_H_
 #include <pico/pico_message.h>
 #include <pico/pico_utils.h>
-#include <logger.h>
+#include <pico/collection_manager.h>
+#include <pico_logger_wrapper.h>
 using namespace std;
 namespace pico {
-    class request_processor {
+    class request_processor : public pico_logger_wrapper{
     private:
-        std::string insertCommand;
-        std::string deleteCommand;
-        std::string updateCommand;
-        std::string findCommand;
-        std::string addUserToDBCommand;
-        std::string deleteUserToDBCommand;
-        logger mylogger;
+        collection_manager collectionManager;
+        
+         static std::string insertCommand;
+         static std::string deleteCommand;
+         static std::string updateCommand;
+         static std::string findCommand;
+         static std::string getCommand;
+         static std::string addUserToDBCommand;
+         static std::string deleteUserToDBCommand;
         
     public:
         static string logFileName;
         
-        pico_message processRequest(const string messageFromClient) {
+        request_processor()
+        {
             
-            string logMsg("request_processor : this is the message that is going to be processed now ");
-            logMsg.append(messageFromClient);
-            mylogger.log(logMsg);
+        }
+        
+        pico_message processRequest(pico_message picoMessage) {
             
-            pico_message picoMessage(messageFromClient);
+            mylogger<<"request_processor : this is the message that is going to be processed now "<<picoMessage.toString();
             
-            logMsg.clear();
-            logMsg.append("request_processor : this is the message was created ");
-            logMsg.append(picoMessage.toString());
-            mylogger.log(logMsg);
-            
-            cout << "session: processing request from client request: "
-            << messageFromClient << std::endl;
-            
-            string str("message want processed");
+            string str("message wasn't processed");
             
             if (picoMessage.command.compare(insertCommand) == 0) {
-                cout << "inserting one record per client request";
+                mylogger << "inserting one record per client request";
                 str = insertOneMessage(picoMessage);
             }
             else if (picoMessage.command.compare(deleteCommand) == 0) {
-                cout << "deleting one record per client request";
+                mylogger << "deleting one record per client request";
                 string str = deleteRecords(picoMessage);
                 
             } else if (picoMessage.command.compare(updateCommand) == 0) {
-                cout << "updating one record per client request";
+                 mylogger << "updating one record per client request";
                 string str = updateRecords(picoMessage);
             } else if (picoMessage.command.compare(findCommand) == 0) {
-                cout << "finding records per client request";
-                //	string str = findRecords(picoMessage);
+                mylogger << "finding records per client request";
+                //string str = findRecords(picoMessage);
             }
             else if (picoMessage.command.compare(addUserToDBCommand) == 0) {
-                cout << "adding user per client request";
+                mylogger << "adding user per client request";
                 //	string str = addUser(picoMessage);
                 //return str;
             } else if (picoMessage.command.compare(deleteUserToDBCommand) == 0) {
-                cout << "deleting user per client request";
+                mylogger << "deleting user per client request";
                 //	string str = deleteUser(picoMessage);
                 //	return str;
+            }else if (picoMessage.command.compare(getCommand)==0)
+            {
+                mylogger<<" getting a record per client request\n";
+            	 pico_message retMsg= getOneMessage(picoMessage);
+                return retMsg;
             }
             
             pico_message retMsg = pico_message::build_message_from_string(str);
@@ -75,41 +76,42 @@ namespace pico {
         {
             
             int i=0;
-            pico_collection optionCollection(picoMsg.collection);
-            
-            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+            std::shared_ptr<pico_collection> optionCollection = collectionManager.getTheCollection(picoMsg.collection);
+            pico_record firstrecord = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
            
             offsetType whereToWriteThisRecord =-1;
-            if (optionCollection.ifRecordExists(firstrecord))
+            if (collectionManager.getTheCollection(picoMsg.collection)->ifRecordExists(firstrecord))
             {
-                 whereToWriteThisRecord =  optionCollection.get_offset_of_this_record(firstrecord);
-
+                 optionCollection->index.search(firstrecord);
+                 whereToWriteThisRecord =firstrecord.offset_of_record;
+                
             }
            
                 
            do {
                pico_record record;
                if(i!=0)
-                   record = picoMsg.recorded_message.msg_in_buffers->pop();
+                   record = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
                else
                    record = firstrecord;
-               
-                std::cout<<"request_processor : record that is going to be saved is this : "<<record.toString()<<std::endl;
+                pico_record::removeTheAppendMarkerNoPtr(record);
+                mylogger<<"\nrequest_processor : record that is going to be saved is this : "<<record.toString();
                if(whereToWriteThisRecord==-1)
                {
                    //this is the case that the record is unique
-                optionCollection.append(record); //append the
+                  
+                optionCollection->append(record); //append the
                }
                else
                {
                //this is the case that we have the offset of the first record of this message
                //that should be replaced...
-                   optionCollection.overwrite(record,whereToWriteThisRecord);
+                   optionCollection->overwrite(record,whereToWriteThisRecord);
                    whereToWriteThisRecord+= pico_record::max_size;
                    
                }
                 i++;
-           } while(!picoMsg.recorded_message.msg_in_buffers->empty());
+           } while(!picoMsg.key_value_buffered_message.msg_in_buffers->empty());
             string result("one message was added to database in ");
             result.append(convertToString(i));
             result.append(" seperate records");
@@ -117,20 +119,23 @@ namespace pico {
         }
         
         string deleteRecords(pico_message picoMsg) {
-            
-            pico_collection optionCollection(picoMsg.collection);
-            
-            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
-            std::cout<<"request_processor : record that is going to be deleted from this : "<<firstrecord.toString()<<std::endl;
-            optionCollection.deleteRecord(firstrecord);
-            
+             std::shared_ptr<pico_collection> collectionPtr = collectionManager.getTheCollection(picoMsg.collection);
+           
+
+            //i am using collection pointer because, it should be passed to the
+            //deleter thread , so it should be in heap
+           
+            pico_record firstrecord = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
+            mylogger<<"\n request_processor : record that is going to be deleted from this : "<<firstrecord.toString();
+//            optionCollection.deleteRecord(firstrecord,collectionPtr);
+            collectionPtr->deleteRecord(firstrecord);
             string result("one message was deleted from database in unknown(todo)");
             result.append(" seperate records");
             return result;
         }
         string updateRecords(pico_message picoMsg) {
             pico_collection optionCollection(picoMsg.collection);
-            pico_record firstrecord = picoMsg.recorded_message.msg_in_buffers->pop();
+            pico_record firstrecord = picoMsg.key_value_buffered_message.msg_in_buffers->pop();
             if(optionCollection.ifRecordExists(firstrecord))
             {
                 //if the record is found
@@ -171,14 +176,35 @@ namespace pico {
             return result;
             
         }
-        string findRecords(const std::string collection, pico_record record) {
-            pico_collection optionCollection(collection);
-            list<pico_record> all_records = optionCollection.find(record);
-            //TODO convert all_records to json string and return it to the client
-            //		return convertToJsonString(all_records);
-            string msg("records were found");
-            return msg;
+        
+        
+        pico_message getOneMessage(pico_message requestMessage) {
+           
+   
+            std::shared_ptr<pico_collection> collectionPtr = collectionManager.getTheCollection(requestMessage.collection);
+            
+            pico_record firstrecord = requestMessage.key_value_buffered_message.msg_in_buffers->pop();
+            mylogger<<"\n request_processor : record that is going to be fetched  from this : "<<firstrecord.toString()<<" \n offset of record is "<<firstrecord.offset_of_record;
+            
+           
+            pico_message responseMsg = collectionPtr->getMessageByKey(firstrecord);
+            mylogger<<"\n request_processor : record that is fetched  db : "<<responseMsg.toString();
+            
+            //setting the request messageId for the response messageId
+        
+            responseMsg.messageId=requestMessage.messageId;
+            return responseMsg;
+            
         }
+
+//        string findRecords(const std::string collection, pico_record record) {
+//            pico_collection optionCollection(collection);
+//            list<pico_record> all_records = optionCollection.find(record);
+//            //TODO convert all_records to json string and return it to the client
+//            //		return convertToJsonString(all_records);
+//            string msg("records were found");
+//            return msg;
+//        }
         std::string getSuccessMessage() {
             string msg;
             msg.append("{ key : ");
@@ -186,12 +212,8 @@ namespace pico {
             
             return msg;
         }
-        request_processor() :
-        insertCommand("insert"), deleteCommand("delete"), updateCommand(
-                                                                        "update"), findCommand("find"), addUserToDBCommand(
-                                                                                                                           "adduser"), deleteUserToDBCommand("deleteuser"),mylogger(logFileName) {
-            
-        }
+        
+       
         ~request_processor() {
         }
     };

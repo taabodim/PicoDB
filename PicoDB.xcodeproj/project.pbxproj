@@ -63,6 +63,7 @@
 		A53700F718F3166600C1F898 /* chat_server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_server.h; sourceTree = "<group>"; };
 		A537010D18F3193400C1F898 /* chat_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_message.h; sourceTree = "<group>"; };
 		A537010E18F4987500C1F898 /* countdown_latch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = countdown_latch.h; sourceTree = "<group>"; };
+		A54270EB19083EBE0019DBF9 /* DeleteTaskRunnable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeleteTaskRunnable.h; sourceTree = "<group>"; };
 		A556BD6A1906A69F000D3AFA /* ThreadPool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThreadPool.h; sourceTree = "<group>"; };
 		A556EB8019015C84005F4031 /* file_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_test.h; sourceTree = "<group>"; };
 		A556EB8119016396005F4031 /* BoosFileExample.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoosFileExample.h; sourceTree = "<group>"; };
@@ -72,11 +73,19 @@
 		A578407C1905F30E00F4914D /* pico_heart_beat_sender.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_heart_beat_sender.h; sourceTree = "<group>"; };
 		A578407D1905F33900F4914D /* pico_configs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_configs.h; sourceTree = "<group>"; };
 		A57BE9F218EFC45000915B0E /* writer_buffer_container.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = writer_buffer_container.h; sourceTree = "<group>"; };
+		A580501E1912F819008EA8E2 /* PonocoRunnable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PonocoRunnable.h; sourceTree = "<group>"; };
 		A589B0AE18E645480031AD25 /* pico_concurrent_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_concurrent_list.h; sourceTree = "<group>"; };
 		A58D6DA418E6D89D00D9102D /* pico_buffered_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_buffered_message.h; sourceTree = "<group>"; };
-		A598208818ECBE1F00FFB6AE /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = logger.h; path = ../logger.h; sourceTree = "<group>"; };
+		A591D0FD190AF72B00D9E066 /* pico_logger_wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_logger_wrapper.h; sourceTree = "<group>"; };
+		A591D0FE190F03A200D9E066 /* ClientResponseProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ClientResponseProcessor.h; sourceTree = "<group>"; };
+		A591D0FF190FE50D00D9E066 /* ShellClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShellClient.h; sourceTree = "<group>"; };
+		A5953EDE19148AEF0036EDDC /* pico_record_old_version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_record_old_version.h; sourceTree = "<group>"; };
 		A5DBC9F919007ADE00BBD159 /* pico_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_test.h; sourceTree = "<group>"; };
 		A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PicoHedgeFund.h; sourceTree = "<group>"; };
+		A5F887D6191152010092144B /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
+		A5F887D71911876D0092144B /* PonocoClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PonocoClient.h; sourceTree = "<group>"; };
+		A5F887D8191196F10092144B /* PonocoDriverHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PonocoDriverHelper.h; sourceTree = "<group>"; };
+		A5FF90A81915647100DF46D5 /* SqlParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SqlParser.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +139,7 @@
 				A5EF8D5418E4AB8100F016C7 /* PicoHedgeFund.h */,
 				A537010E18F4987500C1F898 /* countdown_latch.h */,
 				A556EB8019015C84005F4031 /* file_test.h */,
+				A5FF90A81915647100DF46D5 /* SqlParser.h */,
 			);
 			path = PicoDB;
 			sourceTree = "<group>";
@@ -137,7 +147,7 @@
 		A511D65B18E3628700628059 /* pico */ = {
 			isa = PBXGroup;
 			children = (
-				A598208818ECBE1F00FFB6AE /* logger.h */,
+				A5F887D6191152010092144B /* logger.h */,
 				A511D65C18E3628700628059 /* asyncReader.h */,
 				A511D65D18E3628700628059 /* AsyncTcpClient.h */,
 				A511D65F18E3628700628059 /* collection_manager.h */,
@@ -165,6 +175,14 @@
 				A511D67018E3628700628059 /* Runnable.h */,
 				A578407D1905F33900F4914D /* pico_configs.h */,
 				A556BD6A1906A69F000D3AFA /* ThreadPool.h */,
+				A54270EB19083EBE0019DBF9 /* DeleteTaskRunnable.h */,
+				A591D0FD190AF72B00D9E066 /* pico_logger_wrapper.h */,
+				A591D0FE190F03A200D9E066 /* ClientResponseProcessor.h */,
+				A591D0FF190FE50D00D9E066 /* ShellClient.h */,
+				A5F887D71911876D0092144B /* PonocoClient.h */,
+				A5F887D8191196F10092144B /* PonocoDriverHelper.h */,
+				A580501E1912F819008EA8E2 /* PonocoRunnable.h */,
+				A5953EDE19148AEF0036EDDC /* pico_record_old_version.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";

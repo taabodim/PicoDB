@@ -47,7 +47,7 @@
 #include <iostream>
 #include <fstream>
 #include <boost/filesystem.hpp>
-#include <pico/pico_buffer.h>
+
 #include <pico/pico_record.h>
 #include <pico/pico_collection.h>
 #include <jsonCppExamples.h>
@@ -99,39 +99,39 @@ void boostFileLSExample() {
 	unsigned long err_count = 0;
     
 	if (!fs::exists(p)) {
-		std::cout << "\nNot found: " << p << std::endl;
+		mylogger << "\nNot found: " << p //<< std::endl;
 		return;
 	}
     
 	if (fs::is_directory(p)) {
-		std::cout << "\nIn directory: " << p << "\n\n";
+		mylogger << "\nIn directory: " << p << "\n\n";
 		fs::directory_iterator end_iter;
 		for (fs::directory_iterator dir_itr(p); dir_itr != end_iter;
              ++dir_itr) {
 			try {
 				if (fs::is_directory(dir_itr->status())) {
 					++dir_count;
-					std::cout << dir_itr->path().filename() << " [directory]\n";
+					mylogger << dir_itr->path().filename() << " [directory]\n";
 				} else if (fs::is_regular_file(dir_itr->status())) {
 					++file_count;
-					std::cout << dir_itr->path().filename() << "\n";
+					mylogger << dir_itr->path().filename() << "\n";
 				} else {
 					++other_count;
-					std::cout << dir_itr->path().filename() << " [other]\n";
+					mylogger << dir_itr->path().filename() << " [other]\n";
 				}
                 
 			} catch (const std::exception & ex) {
 				++err_count;
-				std::cout << dir_itr->path().filename() << " " << ex.what()
-                << std::endl;
+				mylogger << dir_itr->path().filename() << " " << ex.what()
+                //<< std::endl;
 			}
 		}
-		std::cout << "\n" << file_count << " files\n" << dir_count
+		mylogger << "\n" << file_count << " files\n" << dir_count
         << " directories\n" << other_count << " others\n" << err_count
         << " errors\n";
 	} else // must be a file
 	{
-		std::cout << "\nFound: " << p << "\n";
+		mylogger << "\nFound: " << p << "\n";
 	}
 }
 
@@ -173,32 +173,32 @@ double multiplyObject(T first, T second) {
 
 
 void templateFunctionExample() {
-	std::cout << " area of triangle is " << triangleArea<int>(2, 50)
-    << std::endl;
-	std::cout << " area of triangle is " << triangleArea<double>(2.12, 50)
-    << std::endl;
-	std::cout << " area of triangle is " << triangleArea<float>(2.12, 50)
-    << std::endl;
+	mylogger << " area of triangle is " << triangleArea<int>(2, 50)
+    //<< std::endl;
+	mylogger << " area of triangle is " << triangleArea<double>(2.12, 50)
+    //<< std::endl;
+	mylogger << " area of triangle is " << triangleArea<float>(2.12, 50)
+    //<< std::endl;
     
 	Currency c1, c2;
 	c1.price = "11";
 	c2.price = "13";
-	std::cout << " multiplication of currencies prices are  " << c1 * c2
-    << std::endl;
-	std::cout << " multiplyObject(c1 * c2) :   "
-    << multiplyObject<Currency>(c1, c2) << std::endl;
+	mylogger << " multiplication of currencies prices are  " << c1 * c2
+    //<< std::endl;
+	mylogger << " multiplyObject(c1 * c2) :   "
+    << multiplyObject<Currency>(c1, c2) //<< std::endl;
     
 }
 void templateClassExample() {
 	bag<Currency> curBag;
 	Currency c1;
 	curBag.insert(c1);
-	std::cout << "size of bag is " << curBag.size();
+	mylogger << "size of bag is " << curBag.size();
 }
 void BoostBindExample() {
 	struct XClass {
 		bool printVariable(int a) {
-			std::cout << " function is bound , parameter is " << a << std::endl;
+			mylogger << " function is bound , parameter is " << a //<< std::endl;
 			return true;
 		}
 	};
@@ -253,7 +253,7 @@ void readingAndWritingComplexData() {
 	writeToFile("text.txt", x);
 	appendToFile("text.txt", x1);
     
-	std::cout << "file was written to" << std::endl;
+	mylogger << "file was written to" //<< std::endl;
     
 	char x_key[x.max_size];
 	char x_value[x.max_size];
@@ -269,10 +269,10 @@ void readingAndWritingComplexData() {
 	data1X.setData(x_key, x.max_size);
 	data2X.setData(x_value, x.max_size);
     
-	std::cout << " data1 :  " << data1X.getString() << " " << std::endl;
-	std::cout << " data2 :  " << data2X.getString() << " " << std::endl;
+	mylogger << " data1 :  " << data1X.getString() << " " //<< std::endl;
+	mylogger << " data2 :  " << data2X.getString() << " " //<< std::endl;
     
-	std::cout << "file was read from " << std::endl;
+	mylogger << "file was read from " //<< std::endl;
 	myFile.close();
 }
 

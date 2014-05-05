@@ -49,10 +49,10 @@ public:
 //		while (serverShutdown == false) {
 //			iostream stream;
 //			acceptor.accept(*stream.rdbuf());
-//			std::cout << "data received from client " << stream.rdbuf()
-//					<< std::endl;
+//			mylogger << "data received from client " << stream.rdbuf()
+//					//<< std::endl;
 //			if (!stream) {
-//				std::cout << "Error: " << stream.error().message() << "\n";
+//				mylogger << "Error: " << stream.error().message() << "\n";
 //			}
 //		}
 	}
@@ -130,7 +130,7 @@ void runClient() {
 //    tcp::resolver resolver(io_service);
 //    boost::asio::connect(s, resolver.resolve({argv[1], argv[2]}));
 //
-//    std::cout << "Enter message: ";
+//    mylogger << "Enter message: ";
 //    char request[max_length];
 ////    std::cin.getline(request, max_length);
 //    string message = " hi, this is the message";
@@ -142,9 +142,9 @@ void runClient() {
 //    char reply[max_length];
 //    size_t reply_length = boost::asio::read(s,
 //        boost::asio::buffer(reply, request_length));
-//    std::cout << "Reply is: ";
-//    std::cout.write(reply, reply_length);
-//    std::cout << "\n";
+//    mylogger << "Reply is: ";
+//    mylogger.write(reply, reply_length);
+//    mylogger << "\n";
 //  }
 //  catch (std::exception& e)
 //  {

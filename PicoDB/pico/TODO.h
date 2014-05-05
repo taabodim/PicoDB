@@ -15,10 +15,10 @@
 
 
 //create a method to convert pico_record to
-//a list of pico_buffers each 128 bytes
+//a list of pico_buffers each 128 bytes (done)
 
 //create a method to convert a list of pico_buffers
-//to a pico_record which is 16 mg or more
+//to a pico_record which is 16 mg or more (done)
 
 
 ////
@@ -32,18 +32,18 @@
 
 //create a index btree for collection and index it on the key of the
 //data , and each record should have the unique id for the pico_record
-//and the offset of its pico_record in databases file
+//and the offset of its pico_record in databases file (done)
 
 //whenever you add or change something, make the change in the index
 //tree too
 
-//create a thread-safe list class and use it every where
+//create a thread-safe list class and use it every where (done)
 
 //create a thread-safe set and map wrapper and use it every where
 
 //create a replicator engine
 
-//send acknowledge when you recieve a data fine
+//send acknowledge when you recieve a data fine (to be completed)
 //specially when you are sending huge data
 
 //create jms provider

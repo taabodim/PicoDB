@@ -6,8 +6,12 @@
 //  Copyright (c) 2014 Mahmoud Taabodi. All rights reserved.
 //
 
+
 #ifndef PicoDB_pico_test_h
 #define PicoDB_pico_test_h
+
+
+
  namespace pico
 {
     class pico_test{
@@ -35,14 +39,14 @@
 //                
 //                char * buffer = new char [length];
 //                
-//                std::cout << "Reading " << length << " characters... ";
+//                mylogger << "Reading " << length << " characters... ";
 //                // read data as a block:
 //                is.read (buffer,length);
 //                
 //                if (is)
-//                    std::cout << "all characters read successfully.";
+//                    mylogger << "all characters read successfully.";
 //                else
-//                    std::cout << "error: only " << is.gcount() << " could be read";
+//                    mylogger << "error: only " << is.gcount() << " could be read";
 //                is.close();
 //                
 //                // ...buffer contains the entire file...
@@ -50,9 +54,16 @@
 //                delete[] buffer;
 //            }
 //        }
-
+        
+        
+      
     };
+    
+    
+   
 }
+
+
 
 
 #endif

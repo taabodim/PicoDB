@@ -51,7 +51,7 @@ namespace pico {
 //		setTaskDone(true);
 //	}
 //	virtual ~Runnable() {
-//		std::cout << "Runnable object deleted by destructor." << std::endl;
+//		mylogger << "Runnable object deleted by destructor." //<< std::endl;
 //	}
 //};
 
@@ -62,6 +62,10 @@ namespace pico {
         bool taskDone;
        
     public:
+        Runnable() {
+            taskId = -2;
+            taskDone = false;
+        }
         Runnable(int id) {
             taskId = id;
         }
@@ -84,12 +88,7 @@ namespace pico {
             taskDone = done;
         }
         virtual void run() =0;
-//        {
-//            runnable->run();
-//            setTaskDone(true);
-//        }
         virtual ~Runnable() {
-            std::cout << "Runnable object deleted by destructor." << std::endl;
         }
     };
     typedef std::shared_ptr<Runnable> taskType;
