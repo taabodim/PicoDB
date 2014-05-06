@@ -180,8 +180,8 @@ namespace pico {
 
                   allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 
-                
-                    pico_message last_read_message = pico_message::convertBuffersToMessage(allBuffersReadFromTheOtherSide);
+                pico_message util;
+                    pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide);
                 mylogger<<"\nsever : this is the complete message read from  "<<last_read_message.toString();
               
                 processDataFromOtherSide(last_read_message);

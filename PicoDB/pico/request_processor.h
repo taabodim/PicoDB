@@ -40,26 +40,26 @@ namespace pico {
             string str("message wasn't processed");
             
             if (picoMessage.command.compare(insertCommand) == 0) {
-                mylogger << "inserting one record per client request";
+                mylogger << "\ninserting one record per client request";
                 str = insertOneMessage(picoMessage);
             }
             else if (picoMessage.command.compare(deleteCommand) == 0) {
-                mylogger << "deleting one record per client request";
+                mylogger << "\ndeleting one record per client request";
                 string str = deleteRecords(picoMessage);
                 
             } else if (picoMessage.command.compare(updateCommand) == 0) {
-                 mylogger << "updating one record per client request";
+                 mylogger << "\nupdating one record per client request";
                 string str = updateRecords(picoMessage);
             } else if (picoMessage.command.compare(findCommand) == 0) {
-                mylogger << "finding records per client request";
+                mylogger << "\nfinding records per client request";
                 //string str = findRecords(picoMessage);
             }
             else if (picoMessage.command.compare(addUserToDBCommand) == 0) {
-                mylogger << "adding user per client request";
+                mylogger << "\nadding user per client request";
                 //	string str = addUser(picoMessage);
                 //return str;
             } else if (picoMessage.command.compare(deleteUserToDBCommand) == 0) {
-                mylogger << "deleting user per client request";
+                mylogger << "\ndeleting user per client request";
                 //	string str = deleteUser(picoMessage);
                 //	return str;
             }else if (picoMessage.command.compare(getCommand)==0)

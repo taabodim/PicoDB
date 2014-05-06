@@ -210,7 +210,8 @@ namespace pico {
             } while(nextOffset<=endOffset);
             
             
-            pico_message  msg= pico_message::convertBuffersToMessage(all_records_for_this_message);
+            pico_message  util;
+            pico_message msg= util.convertBuffersToMessage(all_records_for_this_message);
             mylogger<<"\n retrieveOneMessage this is the whole message retrieved "<<msg.toString();
             return msg;
             
@@ -488,7 +489,7 @@ namespace pico {
         void append_a_record(pico_record& record,offsetType record_offset)
         {
             
-            mylogger << "appending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
+            mylogger << "\nappending  one record to collection at this offset record_offset : "<<record_offset<<" \n";
             mylogger << "appending  one record key is :  "<<record.getKeyAsString()<<" \n";
             mylogger << "appending one record value is :  "<<record.getValueAsString()<<" \n";
             

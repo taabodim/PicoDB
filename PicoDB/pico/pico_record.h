@@ -61,7 +61,7 @@ public:
 	long previous_record_offset; //if its -1, it means that there is no parent, if its more than -1, it indicates that it is add on to previous record
 
 	char data_[max_size];
-
+	char data_copy[max_size];
 	
 	offsetType offset_of_record; //this is the offset in the file and the index
 	offsetType previousRecordOffset;
@@ -244,72 +244,86 @@ public:
 
 	string key; //the string form of key
 	string getKeyAsString() {
-//		memcpy(key_, data_, sizeof(data_));
+		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
+		//by copying into the other string or assigning to other
 
 		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
-			if (data_[i] != '\0') {
-				key.push_back(data_[i]);
+			if (data_copy[i] != '\0') {
+				key.push_back(data_copy[i]);
 			} else {
 				break;
 			}
 		}
-        
-        mylogger << " \n pico_record : getKeyAsString   is "
-        << key;
-		return key;
+       return key;
 	}
 	string value;//the string form of value
 	string getValueAsString() {
 
-//		memcpy(value_, data_, sizeof(data_));
+		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
+		//by copying into the other string or assigning to other
 
         for (int i = beg_of_value_index; i < end_of_value_index; i++) {
-			if (data_[i] != '\0') {
-				value.push_back(data_[i]);
+			if (data_copy[i] != '\0') {
+				value.push_back(data_copy[i]);
 			} else {
 				break;
 			}
         }
-        mylogger << " \n pico_record : getValueAsString   is "
-        << value;
-		return value;
+      	return value;
 	}
 	string messageId;//the string form of messageId
 	string getMessageIdAsString() {
+		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
+				//by copying into the other string or assigning to other
 
 		for (int i = beg_of_messageId_index; i < end_of_messageId_index; i++) {
-			if (data_[i] != '\0') {
-				messageId.push_back(data_[i]);
+			if (data_copy[i] != '\0') {
+				messageId.push_back(data_copy[i]);
 			} else {
 				break;
 			}
 		}
-		mylogger << " \n pico_record : getMessageIdAsString  messageId is "
-				<< messageId;
+
 		return messageId;
 	}
     
 	std::string getDataAsString() //to write to other side
 	{
-		std::string data(data_, max_size);
+		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
+						//by copying into the other string or assigning to other
+		std::string data(data_copy, max_size);
+
 		return data;
 	}
 	std::string toJson() {
+
+		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
+								//by copying into the other string or assigning to other
+				std::string data(data_copy, max_size);
+
 		string str;
 		std::string keyStr("{ ");
-		std::string data("data : ");
-		std::string dataValue(data_, max_size);
+		std::string dataStr("data : ");
+		std::string dataValue(data_copy, max_size);
 
 		std::string end(" }");
 
 		str.append(keyStr);
-		str.append(data);
+		str.append(dataStr);
 		str.append(dataValue);
 		str.append(end);
 		return str;
 	}
-	std::string toString() const {
-		std::string str(data_, max_size);
+	std::string toString()  {
+        
+		memcpy(data_copy, data_, sizeof(data_));
+        
+        //get a fresh copy of data to make sure its not touched
+										//by copying into the other string or assigning to other
+
+
+		std::string str(data_copy, max_size);
+
 		return str;
 	}
     
@@ -362,12 +376,13 @@ public:
 		return true;
 
 	}
-    static void setTheValueInData(pico_record& currentBuffer,const char * temp_buffer_message)
+    static void setTheValueInData(pico_record& currentBuffer,string  values)
     {
     
-        string value.;
-        while(temp_buffer_message!=0)
-        for (int i = pico_record::beg_of_value_index; i < pico_record::end_of_value_index; i++) { //putting everything in the value part of data_ in pico_record , so retrieving it is easier
+        const char* temp_buffer_message =  values.c_str();
+        for (int i = pico_record::beg_of_value_index; i < pico_record::end_of_value_index; i++)
+        {
+        	//putting everything in the value part of data_ in pico_record , so retrieving it is easier
             
             if (*temp_buffer_message != 0) {
                 currentBuffer.data_[i] = *temp_buffer_message;
@@ -379,6 +394,27 @@ public:
 
     
    }
+    
+    static void setTheMessageIdInData(pico_record& currentBuffer,
+                                      string messageId) {
+        (*myloggerPtr)<<"\nsetTheMessageIdInData going to set this messageId : "<<messageId;
+        const char* messageIdInChars = messageId.c_str();
+        
+        for (int i = pico_record::beg_of_messageId_index; i < pico_record::end_of_messageId_index; i++)
+        {
+            
+            if (*messageIdInChars != 0) {
+                currentBuffer.data_[i] = *messageIdInChars;
+            } else {
+                break;
+            }
+            ++messageIdInChars;
+        }
+        
+        
+		
+	}
+
 	static void removeTheAppendMarker(
 			std::shared_ptr<pico_record> currentBuffer) {
 		for(int i=beg_of_appendMarker_index;i<end_of_appendMarker_index;i++)
@@ -450,30 +486,6 @@ public:
 		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
 			currentRecord.data_[i] = firstRecord.data_[i];
 		}
-	}
-	static void setTheMessageIdInData(pico_record& currentBuffer,
-			string messageId) {
-		
-        const char* messageIdInChars = messageId.c_str();
-        
-//		while (*messageIdInChars != 0) {
-
-			for (int i = beg_of_messageId_index; i < end_of_messageId_index;
-					i++) {
-				if (*messageIdInChars != 0) {
-					currentBuffer.data_[i] = *messageIdInChars;
-				}
-                else {
-                	currentBuffer.data_[i] = '\0';
-                    
-                }
-        	++messageIdInChars;
-                
-			}
-
-//            break; //this should be here....
-//		}
-
 	}
 
 	static void addKeyMarkerToFirstRecord(pico_record& firstRecord) //this argument has to be passed by ref

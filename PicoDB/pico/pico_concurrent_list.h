@@ -100,7 +100,7 @@ namespace pico{
             {
                 
                 boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_,boost::interprocess::try_to_lock);//throws bad access
-                mylogger<<("pushing pico msg to the front");
+                mylogger<<"\pushing pico msg to the front";
                 if(lock_)
                 {
                     underlying_list.push_front(msg);

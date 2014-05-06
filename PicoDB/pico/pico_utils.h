@@ -10,6 +10,7 @@
 #include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <pico_logger_wrapper.h>
+
 using namespace std;
 
 namespace pico{
@@ -140,9 +141,9 @@ namespace pico{
         
     }
     
-    long calc_request_id()
+    string calc_request_id()
     {
-        return random_number<long>(10);
+        return random_number<string>(32);
     }
    
     
