@@ -52,7 +52,7 @@ public:
                      pico_record::max_key_size) {
                     
                         infileLocal.seekg(offset);
-                        infileLocal.read((char*) collection_read_from_file.key_,
+                        infileLocal.read((char*) collection_read_from_file.getKeyAsString().c_str(),
                          pico_record::max_key_size);
                     
                     if(!collection_read_from_file.getKeyAsString().empty())

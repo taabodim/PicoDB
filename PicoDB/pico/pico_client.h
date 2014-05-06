@@ -349,7 +349,7 @@ namespace pico {
                 queueType response = responseQueue_.pop();
                 mylogger<<"Client : response.requestId"<<response.messageId<<"\n"<<
                 "msg.requestId is "<<response.messageId<<"\n";
-                if(response.messageId.compare(msg.messageId)==0)
+                if(response.messageId==msg.messageId)
                 {
                     //this is our response
                     mylogger<<"Client : got our response"<<response.messageId<<"\n"<<

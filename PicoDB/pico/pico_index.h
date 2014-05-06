@@ -216,8 +216,9 @@ namespace pico {
         }
         nodeType search(nodeType node, nodeType leaf) {
             offsetType key = node->key;
+              mylogger<<" pico_index : the record that we want to find in tree has this key  "<<node->key<<"\n";
             if (leaf != nullptr && leaf !=NULL) {
-                mylogger<<" pico_index : leaf->key is "<<leaf->key<<"\n";
+                mylogger<<" pico_index : the record that exists in tree has this key  "<<leaf->key<<"\n";
                 if (key == leaf->key)
                     return leaf;
                 if (key < leaf->key)
@@ -225,7 +226,11 @@ namespace pico {
                 else
                     return search(node, leaf->right);
             } else
+            {
+                mylogger<<" pico_index : end of searching for node, no key found in tree  "<<key<<"\n";
+                
                 return nullptr;
+            }
         }
         
         void insert(nodeType node) {
@@ -307,8 +312,8 @@ namespace pico {
             }
         }
         void add_to_tree(pico_record& it) { //this method creates a tree structure
-            //based on the pico records that it gets reads from a collection
-            mylogger<<("adding record to tree ");
+            //based on the pico records that it reads from a collection
+            mylogger<<"pico_index: adding this record to index "<<it.toString();
             
             nodeType  node = convert_pico_record_to_index_node(it);
             insert(node);
@@ -341,7 +346,7 @@ namespace pico {
                 int offset = random_number<int>(3);
                 pico_record record;
                 record.offset_of_record = offset;
-                record.setKey(random_string(key,5));
+                //record.setKey(random_string(key,5));
                 allNodesInsertedInTree[i]=convert_pico_record_to_index_node(record);
                 allRecordsInsertedInTree[i]=&record;
                 insert(allNodesInsertedInTree[i]);

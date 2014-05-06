@@ -77,8 +77,8 @@ namespace pico {
             }
             this->json_form_of_message = message_from_client;
             this->command = root.get("command", "unknown").asString();
-            this->messageId = root.get("messageId", "couldntparseit").asString();
-            this->collection = root.get("collection", "unknown").asString();
+           
+            this->messageId = root.get("messageId", "couldntparseit").asString();            this->collection = root.get("collection", "unknown").asString();
             this->db = root.get("db", "unknown").asString();
             this->user = root.get("user", "unknown").asString();
             this->key = root.get("key", "unknown").asString();
@@ -365,37 +365,23 @@ namespace pico {
             
         }
         
-        //this function converts all the message to a list of pico_records
+        //this function converts all the message to a list of pico_records , and
+        //puts the all the message in the value part of records only
+        //and set the messageId and append marker in the related parts in the data_ array in the records
         //the whole message that passes between client and server
         void convert_to_buffered_message() {
-            mylogger
-            << " this is the key_value_buffered_message at begin of convert_to_buffered_message\n ";
-            key_value_buffered_message.print();
-            
-            bool appendAllExceptLastOne = false;
-            
-            if (messageSize > pico_record::max_size - 6) {
-                appendAllExceptLastOne = true;
-            }
+           
             
             long numberOfBuffer = 0;
             string copyOfjson_form_of_message = json_form_of_message.substr(0);
-            const char* temp_buffer_message = copyOfjson_form_of_message.c_str();
             
+            const char* temp_buffer_message = copyOfjson_form_of_message.c_str();
+            typedef const char* consCharPtr;
             while (*temp_buffer_message != 0) {
                 pico_record currentBuffer;
                 
                 pico_record::setTheMessageIdInData(currentBuffer,messageId);
-                
-                for (int i = 0; i < pico_record::max_size-pico_record::messageId_size - pico_record::appendMarkerSize; i++) {
-                    currentBuffer.parentSequenceNumber = numberOfBuffer;
-                    if (*temp_buffer_message != 0) {
-                        currentBuffer.data_[i] = *temp_buffer_message;
-                    } else {
-                        break;
-                    }
-                    ++temp_buffer_message;
-                }
+                pico_record::setTheValueInData(currentBuffer,temp_buffer_message);
                 pico_record::addAppendMarkerToTheEnd(currentBuffer); //add append
                 mylogger
                 << "\npico_message : buffer pushed back to recorded_message  "
@@ -404,7 +390,8 @@ namespace pico {
                 
                 numberOfBuffer++;
             }
-            pico_record::removeTheAppendMarker(recorded_message.getLastBuffer());
+            
+            pico_record::removeTheAppendMarker(recorded_message.getLastBuffer());//removes the append marker from the last record
             
             mylogger
             << " this is the key_value_buffered_message at end  of convert_to_buffered_message\n ";
@@ -429,10 +416,12 @@ namespace pico {
                 pico_record buf = all_buffers.msg_in_buffers->pop();
                 //if buffer is begingin key
                 
+                
                 std::cout << "buffer popped is \n " << buf.toString() << std::endl;
+               
                 string temp;
-                if (pico_record::startWithSendMeTheRestOfData(buf)) {
-                    string msgType(buf.data_);
+                if (pico_record::ifTheRecordIsSendMeTheRestOfData(buf)) {
+                    string msgType(buf.getValueAsString());
                     allMessage.append(msgType);
                     std::cout
                     << "pico_message : convertBuffersToMessage : allMessage is "
@@ -442,14 +431,8 @@ namespace pico {
                     
                 }
                 if (pico_record::recordStartsWithBEGKEY(buf)) {
-                    pico_record::removeTheAppendMarkerNoPtr(buf);
-                    //conver the record to string
-                    //get the key
-                    //remove the key parts from the string
-                    //                     string temp (buf.data_);
-                    string keyWithBegKey = buf.getKeyAsString();
-                    //temp.substr(6,pico_record::max_key_size-6);
-                    key = keyWithBegKey.substr(6);
+                    
+                        string key = buf.getKeyAsString();
                     std::cout << "key extracted from key record as string is "
                     << key << std::endl;
                     
@@ -464,11 +447,9 @@ namespace pico {
                 //if buffer is continuing key
                 else if (pico_record::recordStartsWithConKEY(buf)) {
                     //remove the marker
-                    pico_record::removeTheAppendMarkerNoPtr(buf);
-                    string rawValue(buf.data_);
-                    string valueWithoutConkey = rawValue.substr(6);
                     
-                    string valueIncomplete = valueWithoutConkey;
+                    string valueIncomplete = buf.getValueAsString();
+                    
                     
                     std::cout
                     << "the incomplete value part of contining record as string is "
@@ -479,9 +460,7 @@ namespace pico {
                     //is not in db
                 {
                     
-                    pico_record::removeTheAppendMarkerNoPtr(buf);
-                    
-                    string msgType(buf.data_);
+                    string msgType(buf.getValueAsString());
                     temp = msgType;
                     if (!temp.empty()) {
                         std::cout << "the msgType record as string is " << temp

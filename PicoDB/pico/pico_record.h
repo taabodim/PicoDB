@@ -21,13 +21,16 @@ public:
 	const static int appendMarkerSize = 6; //this is the size of the last few characters that determine if a record is the end of message
 	//or message is going to be continued
 
-
-	const static int beg_of_key_index = 0;
+    const static int beg_key_type_index  = 0;
+    const static int max_key_type_index=6; //it could be BEGKEY or CONKEY
+    const static int end_key_type_index  = max_key_type_index+beg_key_type_index;
+    
+	const static int beg_of_key_index = end_key_type_index;
 	const static int max_key_size = 32;
-	const static int end_of_key_index = max_key_size;
+	const static int end_of_key_index = max_key_size+beg_of_key_index;
 
 
-	const static int beg_of_value_index = max_key_size;
+	const static int beg_of_value_index = end_of_key_index;
 	const static int max_value_size = 256; //should be more than 168 as the smallest message is that
 	const static int end_of_value_index = max_value_size+beg_of_value_index;
 
@@ -43,7 +46,7 @@ public:
 
     
     const static int beg_of_appendMarker_index = end_of_sequenceInMessage_index;
-	const static int appendMarker = 10;
+	const static int appendMarker = 6; //it could be append or anything else
 	const static int end_of_appendMarker_index = beg_of_appendMarker_index+appendMarker;
     
     
@@ -57,11 +60,7 @@ public:
 
 	long previous_record_offset; //if its -1, it means that there is no parent, if its more than -1, it indicates that it is add on to previous record
 
-	char messageId_[messageId_size];
 	char data_[max_size];
-	char key_[max_size]; //these are the same size as data because we want to
-	//do a safe strcpy(array2, array1);
-	char value_[max_size];        //just for function below
 
 	
 	offsetType offset_of_record; //this is the offset in the file and the index
@@ -102,22 +101,22 @@ public:
 //            }
 //            
 //        }
-	void setKey(const std::string realData) {
-		char key[max_key_size];
-
-		string data = realData.substr();
-		data.copy(key, data.size(), 0);
-		//  data[length]='\0';
-		//strncpy(key_, data.c_str(), data.size());
-		key[data.size()] = '\0';
-
-		for (size_t i = 0; i < max_key_size; i++) {
-			data_[i] = key[i];
-		}
-		for (size_t i = 0; i < max_key_size; i++) {
-			key_[i] = key[i];
-		}
-	}
+//	void setKey(const std::string realData) {
+//		char key[max_key_size];
+//
+//		string data = realData.substr();
+//		data.copy(key, data.size(), 0);
+//		//  data[length]='\0';
+//		//strncpy(key_, data.c_str(), data.size());
+//		key[data.size()] = '\0';
+//
+//		for (size_t i = 0; i < max_key_size; i++) {
+//			data_[i] = key[i];
+//		}
+//		for (size_t i = 0; i < max_key_size; i++) {
+//			key_[i] = key[i];
+//		}
+//	}
 //
 //        explicit pico_record(std::string key, std::string value) {
 //            setKey(key);
@@ -126,19 +125,20 @@ public:
 //        }
 
 	pico_record() {
-
-		for (int i = 0; i < max_size; i++) {            //initializng
-			key_[i] = '\0';
-		}
-		for (int i = 0; i < max_size; i++) {            //initializng
-			value_[i] = '\0';
-		}
-		for (int i = 0; i < max_size; i++) {		//initializng
+        for (int i = 0; i < max_size; i++) {		//initializng
 			data_[i] = '\0';
 		}
-		for (int i = 0; i < messageId_size; i++) { //initializng
-			messageId_[i] = '\0';
-		}
+        
+//		for (int i = 0; i < max_size; i++) {            //initializng
+//			key_[i] = '\0';
+//		}
+//		for (int i = 0; i < max_size; i++) {            //initializng
+//			value_[i] = '\0';
+//		}
+//		
+//		for (int i = 0; i < messageId_size; i++) { //initializng
+//			messageId_[i] = '\0';
+//		}
 
 	}
 
@@ -146,10 +146,10 @@ public:
 		copyOver(buffer);
 	}
 
-	static bool startWithSendMeTheRestOfData(pico_record& b) {
-		if (b.data_[0] == 's' && b.data_[1] == 'e' && b.data_[2] == 'n'
-				&& b.data_[3] == 'd' && b.data_[4] == 'm' && b.data_[5] == 'e'
-				&& b.data_[6] == 't' && b.data_[7] == 'h')
+	static bool ifTheRecordIsSendMeTheRestOfData(pico_record& b) {
+		if (b.data_[beg_of_value_index] == 's' && b.data_[beg_of_value_index+1] == 'e' && b.data_[beg_of_value_index+2] == 'n'
+				&& b.data_[beg_of_value_index+3] == 'd' && b.data_[beg_of_value_index+4] == 'm' && b.data_[beg_of_value_index+5] == 'e'
+				&& b.data_[beg_of_value_index+6] == 't' && b.data_[beg_of_value_index+7] == 'h')
 			return true;
 		else
 			return false;
@@ -160,13 +160,13 @@ public:
 		std::copy(std::begin(buffer.data_), std::end(buffer.data_),
 				std::begin(this->data_));
 
-		std::copy(std::begin(buffer.key_), std::end(buffer.key_),
-				std::begin(this->key_));
-		std::copy(std::begin(buffer.value_), std::end(buffer.value_),
-				std::begin(this->value_));
-
-		std::copy(std::begin(buffer.messageId_), std::end(buffer.messageId_),
-				std::begin(this->messageId_));
+//		std::copy(std::begin(buffer.key_), std::end(buffer.key_),
+//				std::begin(this->key_));
+//		std::copy(std::begin(buffer.value_), std::end(buffer.value_),
+//				std::begin(this->value_));
+//
+//		std::copy(std::begin(buffer.messageId_), std::end(buffer.messageId_),
+//				std::begin(this->messageId_));
 
 		this->offset_of_record = buffer.offset_of_record;
 	}
@@ -192,7 +192,7 @@ public:
 		return false;
 	}
 	bool areValuesEqual(pico_record& buffer) {
-		for (int i = max_key_size; i < max_size; i++) {
+		for (int i = beg_of_value_index; i < end_of_value_index; i++) {
 			if (data_[i] != buffer.data_[i]) {
 				return false;
 			}
@@ -202,7 +202,7 @@ public:
 
 	}
 	bool areKeysEqual(pico_record& buffer) {
-		for (int i = 0; i < max_key_size; i++) {
+		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
 			if (data_[i] != buffer.data_[i]) {
 				return false;
 			}
@@ -216,68 +216,68 @@ public:
 		for (int i = 0; i < max_size; i++) {
 			this->data_[i] = '\0';
 		}
-		for (int i = 0; i < max_size; i++) {
-			this->key_[i] = '\0';
-		}
-		for (int i = 0; i < max_size; i++) {
-			this->value_[i] = '\0';
-		}
-		for (int i = 0; i < messageId_size; i++) {
-			this->messageId_[i] = '\0';
-		}
+//		for (int i = 0; i < max_size; i++) {
+//			this->key_[i] = '\0';
+//		}
+//		for (int i = 0; i < max_size; i++) {
+//			this->value_[i] = '\0';
+//		}
+//		for (int i = 0; i < messageId_size; i++) {
+//			this->messageId_[i] = '\0';
+//		}
 	}
 
-	char* getValue() {
-		for (int i = max_key_size; i < max_size; i++) {
-			this->value_[i - max_key_size] = this->data_[i];
-		}
-		return value_;
-	}
+//	char* getValue() {
+//		for (int i = beg_of_value_index; i < end_of_value_index; i++) {
+//			this->value_[i - max_key_size] = this->data_[i];
+//		}
+//		return value_;
+//	}
+//
+//	char* getkey() {
+//		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
+//			this->key_[i] = this->data_[i];
+//		}
+//
+//		return key_;
+//	}
 
-	char* getkey() {
-		for (int i = 0; i < max_key_size; i++) {
-			this->key_[i] = this->data_[i];
-		}
-
-		return key_;
-	}
-
-	string key;
+	string key; //the string form of key
 	string getKeyAsString() {
-		memcpy(key_, data_, sizeof(data_));
+//		memcpy(key_, data_, sizeof(data_));
 
-		for (int i = 0; i < max_key_size; i++) {
-			if (key_[i] != '\0') {
-				key.push_back(key_[i]);
+		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
+			if (data_[i] != '\0') {
+				key.push_back(data_[i]);
 			} else {
 				break;
 			}
 		}
+        
+        mylogger << " \n pico_record : getKeyAsString   is "
+        << key;
 		return key;
 	}
-	string value;
+	string value;//the string form of value
 	string getValueAsString() {
 
-		memcpy(value_, data_, sizeof(data_));
+//		memcpy(value_, data_, sizeof(data_));
 
-		for (int i = 0; i < max_key_size; i++) {
-			this->value_[i] = '\0';
-		}
-
-		for (int i = max_key_size; i < max_size; i++) {
-			if (value_[i] != '\0') {
-				value.push_back(value_[i]);
+        for (int i = beg_of_value_index; i < end_of_value_index; i++) {
+			if (data_[i] != '\0') {
+				value.push_back(data_[i]);
 			} else {
 				break;
 			}
-
-		}
+        }
+        mylogger << " \n pico_record : getValueAsString   is "
+        << value;
 		return value;
 	}
-	string messageId;
+	string messageId;//the string form of messageId
 	string getMessageIdAsString() {
 
-		for (int i = max_size - messageId_size; i < max_size; i++) {
+		for (int i = beg_of_messageId_index; i < end_of_messageId_index; i++) {
 			if (data_[i] != '\0') {
 				messageId.push_back(data_[i]);
 			} else {
@@ -288,6 +288,7 @@ public:
 				<< messageId;
 		return messageId;
 	}
+    
 	std::string getDataAsString() //to write to other side
 	{
 		std::string data(data_, max_size);
@@ -311,14 +312,14 @@ public:
 		std::string str(data_, max_size);
 		return str;
 	}
-
+    
 	static bool recordStartsWithBEGKEY(pico_record& currentRecord) //was debugged
 			{
-		if (currentRecord.data_[0] == 'B' && currentRecord.data_[1] == 'E'
-				&& currentRecord.data_[2] == 'G'
-				&& currentRecord.data_[3] == 'K'
-				&& currentRecord.data_[4] == 'E'
-				&& currentRecord.data_[5] == 'Y')
+		if (currentRecord.data_[beg_key_type_index] == 'B' && currentRecord.data_[beg_key_type_index+1] == 'E'
+				&& currentRecord.data_[beg_key_type_index+2] == 'G'
+				&& currentRecord.data_[beg_key_type_index+3] == 'K'
+				&& currentRecord.data_[beg_key_type_index+4] == 'E'
+				&& currentRecord.data_[beg_key_type_index+5] == 'Y')
 			return true;
 
 		return false;
@@ -326,11 +327,11 @@ public:
 
 	static bool recordStartsWithConKEY(pico_record& currentRecord) //debugged
 			{
-		if (currentRecord.data_[0] == 'C' && currentRecord.data_[1] == 'O'
-				&& currentRecord.data_[2] == 'N'
-				&& currentRecord.data_[3] == 'K'
-				&& currentRecord.data_[4] == 'E'
-				&& currentRecord.data_[5] == 'Y')
+		if (currentRecord.data_[beg_key_type_index] == 'C' && currentRecord.data_[1] == 'O'
+				&& currentRecord.data_[beg_key_type_index+2] == 'N'
+				&& currentRecord.data_[beg_key_type_index+3] == 'K'
+				&& currentRecord.data_[beg_key_type_index+4] == 'E'
+				&& currentRecord.data_[beg_key_type_index+5] == 'Y')
 			return true;
 
 		return false;
@@ -338,41 +339,54 @@ public:
 	static void addAppendMarkerToTheEnd(pico_record& currentBuffer)
 
 	{
-		int pos = pico_record::max_size - 1;
-		currentBuffer.data_[pos] = '9';
-		currentBuffer.data_[--pos] = '9';
-		currentBuffer.data_[--pos] = '9';
-		currentBuffer.data_[--pos] = '9';
-		currentBuffer.data_[--pos] = '9';
-		currentBuffer.data_[--pos] = '9';
+		currentBuffer.data_[beg_of_appendMarker_index] = '9';
+		currentBuffer.data_[beg_of_appendMarker_index+1] = '9';
+		currentBuffer.data_[beg_of_appendMarker_index+2] = '9';
+		currentBuffer.data_[beg_of_appendMarker_index+3] = '9';
+		currentBuffer.data_[beg_of_appendMarker_index+4] = '9';
+		currentBuffer.data_[beg_of_appendMarker_index+6] = '9';
 
 	}
 	static bool find_last_of_string(
 			std::shared_ptr<pico_record> currentBuffer) {
 
-		int pos = pico_record::max_size - 1;
-		if (currentBuffer->data_[pos] != '9'
-				|| currentBuffer->data_[--pos] != '9'
-				|| currentBuffer->data_[--pos] != '9'
-				|| currentBuffer->data_[--pos] != '9'
-				|| currentBuffer->data_[--pos] != '9'
-				|| currentBuffer->data_[--pos] != '9')
+		
+		if (currentBuffer->data_[beg_of_appendMarker_index+1] != '9'
+				|| currentBuffer->data_[beg_of_appendMarker_index+2] != '9'
+				|| currentBuffer->data_[beg_of_appendMarker_index+3] != '9'
+				|| currentBuffer->data_[beg_of_appendMarker_index+4] != '9'
+				|| currentBuffer->data_[beg_of_appendMarker_index+5] != '9'
+				|| currentBuffer->data_[beg_of_appendMarker_index+6] != '9')
 			return false;
 
 		return true;
 
 	}
+    static void setTheValueInData(pico_record& currentBuffer,const char * temp_buffer_message)
+    {
+    
+        string value.;
+        while(temp_buffer_message!=0)
+        for (int i = pico_record::beg_of_value_index; i < pico_record::end_of_value_index; i++) { //putting everything in the value part of data_ in pico_record , so retrieving it is easier
+            
+            if (*temp_buffer_message != 0) {
+                currentBuffer.data_[i] = *temp_buffer_message;
+            } else {
+                break;
+            }
+            ++temp_buffer_message;
+        }
 
+    
+   }
 	static void removeTheAppendMarker(
 			std::shared_ptr<pico_record> currentBuffer) {
-		int pos = pico_record::max_size - 1;
-		currentBuffer->data_[pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-
+		for(int i=beg_of_appendMarker_index;i<end_of_appendMarker_index;i++)
+        {
+            currentBuffer->data_[i] = '\0';
+            
+        }
+        
 	}
     void dissectTheBufferToItsComponents(pico_record& buffer)
     {//this message is supposed to get all the components, keys, values, messageId and etc  from the buffer, after calling this method, all the arrays that
@@ -384,37 +398,31 @@ public:
     }
 	static void removeTheAppendMarker(
 			list<pico_record>::iterator currentBuffer) {
-		int pos = pico_record::max_size - 1;
-		currentBuffer->data_[pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-		currentBuffer->data_[--pos] = '\0';
-
+		for(int i=beg_of_appendMarker_index;i<end_of_appendMarker_index;i++)
+        {
+            currentBuffer->data_[i] = '\0';
+            
+        }
 	}
 	static void removeTheAppendMarkerNoPtr(pico_record& currentBuffer) {
-		int pos = pico_record::max_size - 1;
-		currentBuffer.data_[pos] = '\0';
-		currentBuffer.data_[--pos] = '\0';
-		currentBuffer.data_[--pos] = '\0';
-		currentBuffer.data_[--pos] = '\0';
-		currentBuffer.data_[--pos] = '\0';
-		currentBuffer.data_[--pos] = '\0';
-
+		for(int i=beg_of_appendMarker_index;i<end_of_appendMarker_index;i++)
+        {
+            currentBuffer.data_[i] = '\0';
+            
+        }
 	}
 
-	static bool recordIsEmpty(pico_record& currentRecord) //debugged
-			{
-		if (currentRecord.data_[0] == '\0' && currentRecord.data_[1] == '\0'
-				&& currentRecord.data_[2] == '\0'
-				&& currentRecord.data_[3] == '\0'
-				&& currentRecord.data_[4] == '\0'
-				&& currentRecord.data_[5] == '\0')
-			return true;
-
-		return false;
-	}
+//	static bool recordIsEmpty(pico_record& currentRecord) //debugged
+//			{
+//		if (currentRecord.data_[0] == '\0' && currentRecord.data_[1] == '\0'
+//				&& currentRecord.data_[2] == '\0'
+//				&& currentRecord.data_[3] == '\0'
+//				&& currentRecord.data_[4] == '\0'
+//				&& currentRecord.data_[5] == '\0')
+//			return true;
+//
+//		return false;
+//	}
 	static void removeTheKeyPart(pico_record& currentRecord) {
 		for (int i = 0; i < max_key_size; i++) {
 			currentRecord.data_[i] = '\0';
@@ -432,30 +440,39 @@ public:
 	static void replicateTheFirstRecordKeyToOtherRecords(
 			pico_record& firstRecord, pico_record& currentRecord) {
 		//except the first six key that should be CONKEY
-		currentRecord.data_[0] = 'C';
-		currentRecord.data_[1] = 'O';
-		currentRecord.data_[2] = 'N';
-		currentRecord.data_[3] = 'K';
-		currentRecord.data_[4] = 'E';
-		currentRecord.data_[5] = 'Y';
+		currentRecord.data_[beg_key_type_index] = 'C';
+		currentRecord.data_[beg_key_type_index+1] = 'O';
+		currentRecord.data_[beg_key_type_index+2] = 'N';
+		currentRecord.data_[beg_key_type_index+3] = 'K';
+		currentRecord.data_[beg_key_type_index+4] = 'E';
+		currentRecord.data_[beg_key_type_index+5] = 'Y';
 
-		for (int i = 6; i < pico_record::max_key_size; i++) {
+		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
 			currentRecord.data_[i] = firstRecord.data_[i];
 		}
 	}
 	static void setTheMessageIdInData(pico_record& currentBuffer,
 			string messageId) {
-		const char* messageIdInChars = messageId.c_str();
-		while (*messageIdInChars != 0) {
+		
+        const char* messageIdInChars = messageId.c_str();
+        
+//		while (*messageIdInChars != 0) {
 
-			for (int i = pico_record::messageId_size; i < pico_record::max_size;
+			for (int i = beg_of_messageId_index; i < end_of_messageId_index;
 					i++) {
 				if (*messageIdInChars != 0) {
 					currentBuffer.data_[i] = *messageIdInChars;
 				}
+                else {
+                	currentBuffer.data_[i] = '\0';
+                    
+                }
+        	++messageIdInChars;
+                
 			}
-			++messageIdInChars;
-		}
+
+//            break; //this should be here....
+//		}
 
 	}
 
@@ -463,7 +480,7 @@ public:
 			{
 		string keyMarker("BEGKEY"); //its the key that marks the key of the first record
 		const char* keyArray = keyMarker.c_str();
-		int i = 0;
+		int i = beg_key_type_index;
 		while (*keyArray != 0) {
 			firstRecord.data_[i] = *keyArray;
 			++i;

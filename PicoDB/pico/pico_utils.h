@@ -86,6 +86,14 @@ namespace pico{
         std::string str = boost::lexical_cast<std::string>(i);
         return str;
     }
+    
+    template<typename T>
+    T convertToSomething(std::string sth)
+    {
+        T str = boost::lexical_cast<T>(sth);
+        return str;
+        
+    }
     template<typename T>
     T calc_hash_code(T obj) {
        
@@ -132,9 +140,9 @@ namespace pico{
         
     }
     
-    std::string calc_request_id()
+    long calc_request_id()
     {
-        return random_number<string>(10);
+        return random_number<long>(10);
     }
    
     
