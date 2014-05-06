@@ -29,14 +29,26 @@ public:
 
 	const static int beg_of_value_index = max_key_size;
 	const static int max_value_size = 256; //should be more than 168 as the smallest message is that
-	const static int end_of_value_index = max_value_size+max_key_size;
+	const static int end_of_value_index = max_value_size+beg_of_value_index;
 
-	const static int beg_of_messageId_index = max_value_size;
-	const static int messageId_size = 20;
-	const static int end_of_messageId_index = max_value_size+messageId_size;
+    
+	const static int beg_of_messageId_index = end_of_value_index;
+	const static int messageId_size = 32;
+	const static int end_of_messageId_index = beg_of_messageId_index+messageId_size;
 
+    
+    const static int beg_of_sequenceInMessage_index = end_of_messageId_index;
+	const static int sequenceInMessage = 4;
+	const static int end_of_sequenceInMessage_index = beg_of_sequenceInMessage_index+sequenceInMessage;
 
-	const static int max_size = max_key_size + max_value_size + messageId_size;
+    
+    const static int beg_of_appendMarker_index = end_of_sequenceInMessage_index;
+	const static int appendMarker = 10;
+	const static int end_of_appendMarker_index = beg_of_appendMarker_index+appendMarker;
+    
+    
+    
+	const static int max_size = end_of_appendMarker_index;
 
 
 
@@ -51,9 +63,7 @@ public:
 	//do a safe strcpy(array2, array1);
 	char value_[max_size];        //just for function below
 
-	std::string parentMessageId; //this is the id of the parent that
-	//        //this buffer belongs to
-	long parentSequenceNumber; //this is the number ,that defines
+	
 	offsetType offset_of_record; //this is the offset in the file and the index
 	offsetType previousRecordOffset;
 
@@ -364,7 +374,14 @@ public:
 		currentBuffer->data_[--pos] = '\0';
 
 	}
-
+    void dissectTheBufferToItsComponents(pico_record& buffer)
+    {//this message is supposed to get all the components, keys, values, messageId and etc  from the buffer, after calling this method, all the arrays that
+        //hold the data are filled..and you can get them back as string
+        
+        
+        
+    
+    }
 	static void removeTheAppendMarker(
 			list<pico_record>::iterator currentBuffer) {
 		int pos = pico_record::max_size - 1;

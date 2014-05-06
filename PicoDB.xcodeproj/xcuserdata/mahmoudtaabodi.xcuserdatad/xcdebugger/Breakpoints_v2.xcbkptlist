@@ -86,13 +86,13 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::request_processor::processRequest(pico::pico_message)"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "421002784.215331"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
+                  timestampString = "420944299.817288"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "61"
                   endingLineNumber = "61"
-                  offsetFromSymbolStart = "9285">
+                  offsetFromSymbolStart = "8845">
                </Location>
                <Location
                   shouldBeEnabled = "Yes"
@@ -100,13 +100,13 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::request_processor::processRequest(pico::pico_message)"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
-                  timestampString = "421002784.215739"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
+                  timestampString = "420944299.817567"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "61"
                   endingLineNumber = "61"
-                  offsetFromSymbolStart = "9297">
+                  offsetFromSymbolStart = "10237">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -125,6 +125,36 @@
             endingLineNumber = "125"
             landmarkName = "deleteRecords(pico_message picoMsg)"
             landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "pico::request_processor::deleteRecords(pico::pico_message)"
+                  moduleName = "PicoDB"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
+                  timestampString = "420944299.817921"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "128"
+                  endingLineNumber = "128"
+                  offsetFromSymbolStart = "166">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "pico::request_processor::deleteRecords(pico::pico_message)"
+                  moduleName = "PicoDB"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/request_processor.h"
+                  timestampString = "420944299.818262"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "128"
+                  endingLineNumber = "128"
+                  offsetFromSymbolStart = "198">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -205,6 +235,36 @@
             endingLineNumber = "82"
             landmarkName = "shutDownAfterWorkers()"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "pico::ThreadPool::shutDownAfterWorkers()"
+                  moduleName = "PicoDB"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/ThreadPool.h"
+                  timestampString = "420944299.819197"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "82"
+                  endingLineNumber = "82"
+                  offsetFromSymbolStart = "16">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "pico::ThreadPool::shutDownAfterWorkers()"
+                  moduleName = "PicoDB"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/ThreadPool.h"
+                  timestampString = "420944299.819508"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "82"
+                  endingLineNumber = "82"
+                  offsetFromSymbolStart = "166">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -242,8 +302,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::DeleteTaskRunnable::DeleteTaskRunnable(std::__1::shared_ptr&lt;pico::pico_collection&gt;, pico::pico_record)"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/DeleteTaskRunnable.h"
-                  timestampString = "421002784.22169"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/DeleteTaskRunnable.h"
+                  timestampString = "420944299.820271"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "35"
@@ -256,13 +316,27 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::DeleteTaskRunnable::DeleteTaskRunnable(std::__1::shared_ptr&lt;pico::pico_collection&gt;, pico::pico_record)"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/DeleteTaskRunnable.h"
-                  timestampString = "421002784.222121"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/DeleteTaskRunnable.h"
+                  timestampString = "420944299.820623"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "32"
                   endingLineNumber = "32"
-                  offsetFromSymbolStart = "35">
+                  offsetFromSymbolStart = "32">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "pico::DeleteTaskRunnable::DeleteTaskRunnable(std::__1::shared_ptr&lt;pico::pico_collection&gt;, pico::pico_record)"
+                  moduleName = "PicoDB"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/DeleteTaskRunnable.h"
+                  timestampString = "420944299.82098"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "32"
+                  endingLineNumber = "32"
+                  offsetFromSymbolStart = "254">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -394,8 +468,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "boost::detail::thread_data&lt;boost::_bi::bind_t&lt;void, boost::_mfi::mf0&lt;void, pico::PonocoRunnable&gt;, boost::_bi::list1&lt;boost::_bi::value&lt;pico::PonocoRunnable&gt; &gt; &gt; &gt;::~thread_data()"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.227381"
+                  urlString = "file:///usr/local/include/boost/thread/detail/thread.hpp"
+                  timestampString = "420944299.822383"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "91"
@@ -408,22 +482,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "boost::detail::thread_data&lt;boost::_bi::bind_t&lt;void, boost::_mfi::mf0&lt;void, pico::PonocoRunnable&gt;, boost::_bi::list1&lt;boost::_bi::value&lt;pico::PonocoRunnable&gt; &gt; &gt; &gt;::~thread_data()"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.227813"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "91"
-                  endingLineNumber = "91"
-                  offsetFromSymbolStart = "16">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "boost::detail::thread_data&lt;boost::_bi::bind_t&lt;void, boost::_mfi::mf0&lt;void, pico::PonocoRunnable&gt;, boost::_bi::list1&lt;boost::_bi::value&lt;pico::PonocoRunnable&gt; &gt; &gt; &gt;::~thread_data()"
-                  moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.228203"
+                  urlString = "file:///usr/local/include/boost/thread/detail/thread.hpp"
+                  timestampString = "420944299.822693"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "91"
@@ -436,8 +496,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "boost::detail::thread_data&lt;void (*)()&gt;::~thread_data()"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.228588"
+                  urlString = "file:///usr/local/include/boost/thread/detail/thread.hpp"
+                  timestampString = "420944299.822999"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "91"
@@ -450,22 +510,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "boost::detail::thread_data&lt;void (*)()&gt;::~thread_data()"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.22897"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "91"
-                  endingLineNumber = "91"
-                  offsetFromSymbolStart = "16">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "boost::detail::thread_data&lt;void (*)()&gt;::~thread_data()"
-                  moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.22937"
+                  urlString = "file:///usr/local/include/boost/thread/detail/thread.hpp"
+                  timestampString = "420944299.823297"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "91"
@@ -478,8 +524,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "boost::detail::thread_data&lt;boost::function&lt;void ()&gt; &gt;::~thread_data()"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.229764"
+                  urlString = "file:///usr/local/include/boost/thread/detail/thread.hpp"
+                  timestampString = "420944299.823596"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "91"
@@ -492,22 +538,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "boost::detail::thread_data&lt;boost::function&lt;void ()&gt; &gt;::~thread_data()"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.230159"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "91"
-                  endingLineNumber = "91"
-                  offsetFromSymbolStart = "16">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "boost::detail::thread_data&lt;boost::function&lt;void ()&gt; &gt;::~thread_data()"
-                  moduleName = "PicoDB"
-                  urlString = "file://localhost/usr/local/include/boost/thread/detail/thread.hpp"
-                  timestampString = "421002784.230553"
+                  urlString = "file:///usr/local/include/boost/thread/detail/thread.hpp"
+                  timestampString = "420944299.826147"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "91"
@@ -540,11 +572,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "291"
-            endingLineNumber = "291"
+            startingLineNumber = "286"
+            endingLineNumber = "286"
             landmarkName = "insert(std::string key,std::string value)"
             landmarkType = "7">
          </BreakpointContent>
@@ -556,11 +588,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "394"
-            endingLineNumber = "394"
+            startingLineNumber = "389"
+            endingLineNumber = "389"
             landmarkName = "writeOneBuffer()"
             landmarkType = "7">
          </BreakpointContent>
@@ -588,11 +620,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "451"
-            endingLineNumber = "451"
+            startingLineNumber = "445"
+            endingLineNumber = "445"
             landmarkName = "queueRequestMessages(queueType message)"
             landmarkType = "7">
          </BreakpointContent>
@@ -604,11 +636,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "401"
-            endingLineNumber = "401"
+            startingLineNumber = "396"
+            endingLineNumber = "396"
             landmarkName = "writeOneBuffer()"
             landmarkType = "7">
          </BreakpointContent>
@@ -641,36 +673,6 @@
             endingLineNumber = "68"
             landmarkName = "runPonocoDriver()"
             landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::PonocoRunnable::runPonocoDriver()"
-                  moduleName = "PicoDB"
-                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/PonocoRunnable.h"
-                  timestampString = "421002784.235591"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "71"
-                  endingLineNumber = "71"
-                  offsetFromSymbolStart = "809">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::PonocoRunnable::runPonocoDriver()"
-                  moduleName = "PicoDB"
-                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/PonocoRunnable.h"
-                  timestampString = "421002784.236055"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "71"
-                  endingLineNumber = "71"
-                  offsetFromSymbolStart = "821">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -696,11 +698,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "388"
-            endingLineNumber = "388"
+            startingLineNumber = "383"
+            endingLineNumber = "383"
             landmarkName = "writeOneBuffer()"
             landmarkType = "7">
          </BreakpointContent>
@@ -760,11 +762,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "400"
-            endingLineNumber = "400"
+            startingLineNumber = "395"
+            endingLineNumber = "395"
             landmarkName = "writeOneBuffer()"
             landmarkType = "7">
          </BreakpointContent>
@@ -776,11 +778,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "246"
-            endingLineNumber = "246"
+            startingLineNumber = "244"
+            endingLineNumber = "244"
             landmarkName = "processDataFromOtherSide(pico_message messageFromOtherSide)"
             landmarkType = "7">
          </BreakpointContent>
@@ -808,29 +810,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "255"
-            endingLineNumber = "255"
+            startingLineNumber = "253"
+            endingLineNumber = "253"
             landmarkName = "processDataFromOtherSide(pico_message messageFromOtherSide)"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "420782246.147176"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "123"
-            endingLineNumber = "123"
-            landmarkName = "class pico_message"
-            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -916,11 +902,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "341"
-            endingLineNumber = "341"
+            startingLineNumber = "336"
+            endingLineNumber = "336"
             landmarkName = "get(std::string key,double userTimeOut=10)"
             landmarkType = "7">
          </BreakpointContent>
@@ -948,11 +934,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "430"
-            endingLineNumber = "430"
+            startingLineNumber = "425"
+            endingLineNumber = "425"
             landmarkName = "queueTheResponse(pico_message msg)"
             landmarkType = "7">
          </BreakpointContent>
@@ -964,11 +950,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420896331.100436"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "329"
-            endingLineNumber = "329"
+            startingLineNumber = "324"
+            endingLineNumber = "324"
             landmarkName = "get(std::string key,double userTimeOut=10)"
             landmarkType = "7">
          </BreakpointContent>
@@ -980,11 +966,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_client.h"
-            timestampString = "421002783.885361"
+            timestampString = "420894070.502932"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "398"
-            endingLineNumber = "398"
+            startingLineNumber = "393"
+            endingLineNumber = "393"
             landmarkName = "writeOneBuffer()"
             landmarkType = "7">
          </BreakpointContent>
@@ -1027,54 +1013,6 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "397"
-            endingLineNumber = "397"
-            landmarkName = "convert_to_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "420782246.147176"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "196"
-            endingLineNumber = "196"
-            landmarkName = "convert_message_to_json()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "420782246.147176"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "213"
-            endingLineNumber = "213"
-            landmarkName = "pico_message(std::string newKey, std::string newValue, std::string com, std::string database, std::string us, std::string col)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
             timestampString = "420939085.796846"
             startingColumnNumber = "9223372036854775807"
@@ -1098,116 +1036,6 @@
             startingLineNumber = "79"
             endingLineNumber = "79"
             landmarkName = "insertOneMessage(pico_message picoMsg)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "302"
-            endingLineNumber = "302"
-            landmarkName = "convert_key_value_buffered_message()"
-            landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::pico_message::convert_key_value_buffered_message()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/pico_message.h"
-                  timestampString = "420913798.382135"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "304"
-                  endingLineNumber = "304"
-                  offsetFromSymbolStart = "580">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "pico::pico_message::convert_key_value_buffered_message()"
-                  moduleName = "PicoDB"
-                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/pico_message.h"
-                  timestampString = "420913798.383557"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "304"
-                  endingLineNumber = "304"
-                  offsetFromSymbolStart = "768">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "324"
-            endingLineNumber = "324"
-            landmarkName = "convert_key_value_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "350"
-            endingLineNumber = "350"
-            landmarkName = "convert_key_value_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "344"
-            endingLineNumber = "344"
-            landmarkName = "convert_key_value_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "354"
-            endingLineNumber = "354"
-            landmarkName = "convert_key_value_buffered_message()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1268,9 +1096,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "505"
-            endingLineNumber = "505"
-            landmarkName = "append_a_record(pico_record&amp; record,offsetType record_offset)"
-            landmarkType = "7">
+            endingLineNumber = "505">
             <Locations>
                <Location
                   shouldBeEnabled = "Yes"
@@ -1278,8 +1104,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::pico_collection::~pico_collection()"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/pico_collection.h"
-                  timestampString = "421002784.239247"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/pico_collection.h"
+                  timestampString = "420944299.827632"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "506"
@@ -1292,8 +1118,8 @@
                   continueAfterRunningActions = "No"
                   symbolName = "pico::pico_collection::~pico_collection()"
                   moduleName = "PicoDB"
-                  urlString = "file://localhost/Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/pico_collection.h"
-                  timestampString = "421002784.239699"
+                  urlString = "file:///Users/mahmoudtaabodi/Documents/PicoDB/PicoDB/pico/pico_collection.h"
+                  timestampString = "420944299.82795"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "510"
@@ -1325,22 +1151,6 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "420895896.376438"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "69"
-            endingLineNumber = "69"
-            landmarkName = "pico_message(const std::string message_from_client)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "PicoDB/pico/pico_collection.h"
             timestampString = "420900936.780915"
             startingColumnNumber = "9223372036854775807"
@@ -1349,38 +1159,6 @@
             endingLineNumber = "197"
             landmarkName = "retrieveOneMessage(offsetType offsetOfFirstRecordOfMessage)"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "470"
-            endingLineNumber = "470"
-            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "420912649.378799"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "282"
-            endingLineNumber = "282"
-            landmarkName = "addConMarkerToFirstRecord(pico_record&amp; continuingRecord)"
-            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1418,182 +1196,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "344"
-            endingLineNumber = "344"
-            landmarkName = "convert_key_value_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "319"
-            endingLineNumber = "319"
-            landmarkName = "convert_key_value_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "377"
-            endingLineNumber = "377"
-            landmarkName = "convert_to_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "392"
-            endingLineNumber = "392"
-            landmarkName = "convert_to_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "349"
-            endingLineNumber = "349"
-            landmarkName = "convert_key_value_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "367"
-            endingLineNumber = "367"
-            landmarkName = "class pico_message"
-            landmarkType = "3">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "399"
-            endingLineNumber = "399"
-            landmarkName = "convert_to_buffered_message()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "511"
-            endingLineNumber = "511"
-            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "519"
-            endingLineNumber = "519"
-            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "485"
-            endingLineNumber = "485"
-            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "491"
-            endingLineNumber = "491"
-            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -1605,22 +1207,6 @@
             endingLineNumber = "211"
             landmarkName = "retrieveOneMessage(offsetType offsetOfFirstRecordOfMessage)"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "462"
-            endingLineNumber = "462"
-            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
-            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1642,32 +1228,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "509"
-            endingLineNumber = "509"
-            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "PicoDB/pico/pico_message.h"
-            timestampString = "421002231.908585"
+            filePath = "PicoDB/pico/pico_record.h"
+            timestampString = "420943463.460358"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "438"
-            endingLineNumber = "438"
-            landmarkName = "convertBuffersToMessage( pico_buffered_message&lt;pico_record&gt; all_buffers )"
+            startingLineNumber = "237"
+            endingLineNumber = "237"
+            landmarkName = "getKeyAsString()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
