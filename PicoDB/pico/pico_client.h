@@ -445,7 +445,7 @@ namespace pico {
                             
                             mylogger<<"\nPonocoDriver : queueRequestMessages : : popping current Buffer \n";
                             pico_record buf = message.recorded_message.msg_in_buffers->pop();
-                            mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
+                            mylogger<<"PonocoDriver : popping current Buffer this is current buffer a and pushing it to the bufferQueue to send \n "<<buf.toString();
                             
                             std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
                             bufferQueuePtr_->push(curBufPtr);

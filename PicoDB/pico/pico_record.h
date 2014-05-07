@@ -358,19 +358,19 @@ public:
 		currentBuffer.data_[beg_of_appendMarker_index+2] = '9';
 		currentBuffer.data_[beg_of_appendMarker_index+3] = '9';
 		currentBuffer.data_[beg_of_appendMarker_index+4] = '9';
-		currentBuffer.data_[beg_of_appendMarker_index+6] = '9';
+		currentBuffer.data_[beg_of_appendMarker_index+5] = '9';
 
 	}
 	static bool find_last_of_string(
 			std::shared_ptr<pico_record> currentBuffer) {
 
 		
-		if (currentBuffer->data_[beg_of_appendMarker_index+1] != '9'
+		if (currentBuffer->data_[beg_of_appendMarker_index] != '9'
+				|| currentBuffer->data_[beg_of_appendMarker_index+1] != '9'
 				|| currentBuffer->data_[beg_of_appendMarker_index+2] != '9'
 				|| currentBuffer->data_[beg_of_appendMarker_index+3] != '9'
 				|| currentBuffer->data_[beg_of_appendMarker_index+4] != '9'
-				|| currentBuffer->data_[beg_of_appendMarker_index+5] != '9'
-				|| currentBuffer->data_[beg_of_appendMarker_index+6] != '9')
+				|| currentBuffer->data_[beg_of_appendMarker_index+5] != '9')
 			return false;
 
 		return true;
