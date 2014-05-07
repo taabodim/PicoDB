@@ -30,9 +30,10 @@ namespace pico{
             for(int i=0;i<1;i++)
             {
            
-            driverPtr->insert(key,pico_test::bigValue0);
+           // driverPtr->insert(key,pico_test::bigValue0);
+            driverPtr->get(key);
             }
-              driverPtr->get(key);
+            
             //while(true){}//keep the thread forever
             
         }

@@ -48,6 +48,7 @@ public:
 	}
 	pico_message(const pico_message& msg) {
 		mylogger << "\npico_message copy constructor being called.\n";
+
 		this->user = msg.user;
 		this->db = msg.db;
 		this->command = msg.command;
@@ -59,13 +60,34 @@ public:
 		this->oldvalue = msg.oldvalue;
 		this->json_form_of_message = msg.json_form_of_message;
 		this->json_key_value_pair = msg.json_key_value_pair;
-
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
 		this->key_value_buffered_message = msg.key_value_buffered_message;
 
 	}
-	pico_message(const std::string message_from_client) {
+	pico_message operator=(const pico_message& msg) {
+
+		mylogger << "\npico_message operator assignment being called.\n";
+
+		this->user = msg.user;
+		this->db = msg.db;
+		this->command = msg.command;
+		this->messageId = msg.messageId;
+		this->collection = msg.collection;
+		this->messageSize = msg.messageSize;
+		this->key = msg.key;
+		this->value = msg.value;
+		this->oldvalue = msg.oldvalue;
+		this->json_form_of_message = msg.json_form_of_message;
+		this->json_key_value_pair = msg.json_key_value_pair;
+		this->hashCodeOfMessage = msg.hashCodeOfMessage;
+		this->recorded_message = msg.recorded_message;
+		this->key_value_buffered_message = msg.key_value_buffered_message;
+
+		return *this;
+	}
+
+	pico_message(const std::string message_from_client, string msgId) {
 		Json::Value root;   // will contains the root value after parsing.
 		Json::Reader reader;
 
@@ -78,7 +100,8 @@ public:
 		this->json_form_of_message = message_from_client;
 		this->command = root.get("command", "unknown").asString();
 
-		this->messageId = root.get("messageId", "couldntparseit").asString();
+//		this->messageId = root.get("messageId", "couldntparseit").asString();
+		this->messageId = msgId;
 		this->collection = root.get("collection", "unknown").asString();
 		this->db = root.get("db", "unknown").asString();
 		this->user = root.get("user", "unknown").asString();
@@ -92,10 +115,10 @@ public:
 		this->convert_key_value_buffered_message();
 	}
 
-	pico_message(const std::string json_message_from_client,
-			bool simpleMessage) {
+	pico_message(const std::string json_message_from_client, bool simpleMessage,
+			string msgId) {
 		//this is for processing shell commands
-
+		this->messageId = msgId;
 		this->json_form_of_message = json_message_from_client;
 		//this->json_key_value_pair = createTheKeyValuePair(); this line should always be commented because when the msg is simple
 		//it will mess up the parser
@@ -118,8 +141,9 @@ public:
 	static pico_message build_message_from_string(const string value,
 			string messageId) {
 
-		pico_message msg(value, true);
-		msg.messageId = messageId;
+		pico_message msg(value, true, messageId); //the message id is very important to be set here ,
+		//it connects the response to the right request after request processor
+		// processes it
 		return msg;
 	}
 
@@ -150,6 +174,8 @@ public:
 	static pico_message build_complete_message_from_key_value_pair(string key,
 			string value) {
 		Json::Value root;   // will contains the root value after parsing.
+		string messageId = convertToString(calc_request_id());
+
 		root["key"] = key;
 		root["value"] = value;
 		root["oldvalue"] = "unknown";
@@ -157,13 +183,13 @@ public:
 		root["user"] = "unknown";
 		root["collection"] = "unknown";
 		root["command"] = "unknown";
-		root["messageId"] = convertToString(calc_request_id());
+		root["messageId"] = messageId;
 		root["hashCode"] = "unknown";
 
 		Json::StyledWriter writer;
 		// Make a new JSON document for the configuration. Preserve original comments.
 		std::string output = writer.write(root);
-		pico_message msg(output);
+		pico_message msg(output, messageId);
 		return msg;
 	}
 
@@ -238,7 +264,8 @@ public:
 		convert_to_buffered_message();
 		convert_key_value_buffered_message();
 	}
-	pico_message(std::string keyFromDB, std::string valueFromDB) {
+	pico_message(std::string keyFromDB, std::string valueFromDB,
+			string messageId) {
 		//this is used when we want to create a nice pico message
 		//out of array of buffers
 		command = "unknown";
@@ -247,7 +274,7 @@ public:
 		user = "unknown";
 		key = keyFromDB;
 		value = valueFromDB;
-		messageId = calc_request_id();
+		messageId = messageId;
 		json_form_of_message = convert_message_to_json();
 		messageSize = json_form_of_message.size();
 		json_key_value_pair = createTheKeyValuePair();
@@ -385,10 +412,12 @@ public:
 				i < numOfBuffersNeededForThisMessage; i++) {
 
 			string valueForThisBuffer;
-			if ((indexInJsonMessage + pico_record::max_value_size) < sizeOfMessage) {
+			if ((indexInJsonMessage + pico_record::max_value_size)
+					< sizeOfMessage) {
 				valueForThisBuffer.append(
 						json_form_of_message.substr(indexInJsonMessage,
-								indexInJsonMessage + pico_record::max_value_size));
+								indexInJsonMessage
+										+ pico_record::max_value_size));
 			} else {
 				valueForThisBuffer.append(
 						json_form_of_message.substr(indexInJsonMessage));
@@ -404,28 +433,27 @@ public:
 			pico_record::setTheMessageIdInData(currentBuffer, messageId);
 			pico_record::setTheValueInData(currentBuffer, valueForThisBuffer);
 			pico_record::addAppendMarkerToTheEnd(currentBuffer); //add append
-						recorded_message.append(currentBuffer);
+			recorded_message.append(currentBuffer);
 
 		}
-        
 
 		pico_record::removeTheAppendMarker(recorded_message.getLastBuffer()); //removes the append marker from the last record
 
-	
 		key_value_buffered_message.print();
 	}
 
 	//        std::shared_ptr<pico_concurrent_list<type>> msg_in_buffers
 	//this method is very important!! should be debugged and improved throughly
-	pico_message convertBuffersToMessage(pico_buffered_message<pico_record> all_buffers) {
-         
+	pico_message convertBuffersToMessage(
+			pico_buffered_message<pico_record> all_buffers, string messageId) {
+
 		string allMessage;
 		string key;
 		string value;
 		bool typeOfmessageIsRecord = false;
 
-
-		mylogger<<"\n this is the begning og the convertBuffersToMessage function \n";
+		mylogger
+				<< "\n pico_message : this is the begning og the convertBuffersToMessage function \n";
 		all_buffers.print();
 
 		while (!all_buffers.msg_in_buffers->empty()) {
@@ -442,7 +470,7 @@ public:
 				mylogger
 						<< "\n pico_message : convertBuffersToMessage : allMessage is "
 						<< allMessage << "\n";
-				pico_message pico_msg(allMessage);
+				pico_message pico_msg(allMessage, messageId);
 				return pico_msg;
 
 			}
@@ -495,7 +523,7 @@ public:
 					<< "pico_message : convertBuffersToMessage : extracted key is "
 					<< key << "\n value : " << value << "\n";
 
-			pico_message pico_msg(key, value);
+			pico_message pico_msg(key, value, messageId);
 			return pico_msg;
 
 		} else {
@@ -503,7 +531,7 @@ public:
 					<< "pico_message : convertBuffersToMessage : allMessage is "
 					<< allMessage << "\n";
 
-			pico_message pico_msg(allMessage);
+			pico_message pico_msg(allMessage, messageId);
 			return pico_msg;
 
 		}

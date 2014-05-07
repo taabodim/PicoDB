@@ -204,7 +204,8 @@ namespace pico {
                 mylogger<<"\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n";
 
                 allBuffersReadFromTheOtherSide.append(*currentBuffer);
-                tellHimSendTheRestOfData(currentBuffer->messageId);
+                tellHimSendTheRestOfData(currentBuffer->getMessageIdAsString()); //we should call the getMessageId to construct the message out of array of chars
+
             }
             else {
                 
@@ -212,7 +213,7 @@ namespace pico {
                   allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 
                 pico_message util;
-                    pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide);
+                    pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString());
                 mylogger<<"\nsever : this is the complete message read from  "<<last_read_message.toString();
               
                 processDataFromOtherSide(last_read_message);
@@ -244,8 +245,7 @@ namespace pico {
             }
             
             queueMessages(reply);
-            writeOneBuffer(); //go to writing mode
-            
+
         }
 
         void  ignoreThisMessageAndWriterNextBuffer()
