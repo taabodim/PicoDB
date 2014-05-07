@@ -53,15 +53,15 @@ namespace pico {
     private:
         std::shared_ptr<tcp::socket> socket_;
         ResponseProcessor responseProcessor;
-      //  typedef  std::shared_ptr<PonocoDriverHelper> helperType;
-       typedef  PonocoDriverHelper* helperType;
-      // helperType syncHelper;
+        //  typedef  std::shared_ptr<PonocoDriverHelper> helperType;
+        typedef  PonocoDriverHelper* helperType;
+        // helperType syncHelper;
         pico_concurrent_list <queueType> responseQueue_;
         std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_record>>> bufferQueuePtr_;
         
         bool clientIsConnected;
-
-       
+        
+        
         std::mutex writeOneBufferMutex;   // mutex for the condition variable
         std::mutex allowedToWriteLockMutex;
         std::mutex queueRequestMessagesMutex;
@@ -73,33 +73,33 @@ namespace pico {
         std::condition_variable bufferQueueIsEmpty;
         std::condition_variable responseQueueIsEmpty;
         
-      
+        
     public:
         PonocoDriver(helperType syncHelperArg )
-       // syncHelper ( syncHelperArg),
+        // syncHelper ( syncHelperArg),
         :bufferQueuePtr_(new pico_concurrent_list<std::shared_ptr<pico_record>>)
-          {
-//            syncHelper = syncHelperArg;
-              boost::unique_lock<std::mutex> waitForClientToConnectLock(waitForClientToConnectMutex);
+        {
+            //            syncHelper = syncHelperArg;
+            boost::unique_lock<std::mutex> waitForClientToConnectLock(waitForClientToConnectMutex);
             //clientIsConnectedCV.wait(waitForClientToConnectLock);
-//            while(!clientIsConnected)
-//            {
-//                //wait until client is connected
-//            }
+            //            while(!clientIsConnected)
+            //            {
+            //                //wait until client is connected
+            //            }
             mylogger<< "Ponoco Instance is initializing  ";
-        
+            
         }
-//        PonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelperArg) {
-//            
-//           
-//            syncHelper = syncHelperArg;
-//            mylogger<< " Ponoco Driver is initializing ";
-//            
-//        }
+        //        PonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelperArg) {
+        //
+        //
+        //            syncHelper = syncHelperArg;
+        //            mylogger<< " Ponoco Driver is initializing ";
+        //
+        //        }
         
         void start_connect(std::shared_ptr<tcp::socket> socket,tcp::resolver::iterator endpoint_iter) {
             try{
-                 socket_ = socket;
+                socket_ = socket;
                 mylogger<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
                 if (endpoint_iter != tcp::resolver::iterator()) {
                     mylogger<<  "Trying "<<endpoint_iter->endpoint() << "...\n";
@@ -203,30 +203,40 @@ namespace pico {
         }
         
         void processTheMessageJustRead(std::shared_ptr<pico_record> currentBuffer,std::size_t t){
-//            currentBuffer->loadTheKeyValueFromData();
+            //            currentBuffer->loadTheKeyValueFromData();
             string str =currentBuffer->toString();
-            
-            mylogger<<"\n client : this is the message that client read just now "<<str;
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\n client : this is the message that client read just now "<<str;
+            }
             
             if(sendmetherestofdata(str))
+            {
                 ignoreThisMessageAndWriterNextBuffer();
+            }
             else{
                 if(pico_record::find_last_of_string(currentBuffer))
                 {
-                    mylogger<<"\Client : this buffer is an add on to the last message..dont process anything..read the next buffer\n";
+                    if(mylogger.isTraceEnabled())
+                    {
+                        mylogger<<"\n Client : this buffer is an add on to the last message..dont process anything..read the next buffer\n";
+                    }
                     allBuffersReadFromTheOtherSide.append(*currentBuffer);
                     tellHimSendTheRestOfData(currentBuffer->messageId);
                 }
                 else {
                     
-
+                    
                     
                     allBuffersReadFromTheOtherSide.append(*currentBuffer);
                     
                     
                     pico_message util;
                     pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide);
-                    mylogger<<"\nsever : this is the complete message read from server "<<last_read_message.toString();
+                    if(mylogger.isTraceEnabled())
+                    {
+                        mylogger<<"\n client : this is the complete message read from server "<<last_read_message.toString();
+                    }
                     processDataFromOtherSide(last_read_message);
                     allBuffersReadFromTheOtherSide.clear();
                     
@@ -246,15 +256,23 @@ namespace pico {
         void processDataFromOtherSide(pico_message messageFromOtherSide) {
             
             try {
-                mylogger<<"\nthis is the complete message from server : "<<messageFromOtherSide.toString();
+                
+                if(mylogger.isTraceEnabled())
+                {
+                    mylogger<<"\n client this is the complete message from server : "<<messageFromOtherSide.toString();
+                }
                 //process the data from server and queue the right message or dont
                 
                 // TODO
                 responseProcessor.processResponse(messageFromOtherSide);
+                
                 queueTheResponse(messageFromOtherSide);
-              
-                  mylogger<<"\n after queueing response  : "<<messageFromOtherSide.toString();
-                 writeOneBuffer();
+                if(mylogger.isTraceEnabled())
+                {
+                    
+                    mylogger<<"\n Client after queueing response  : "<<messageFromOtherSide.toString();
+                }
+                writeOneBuffer();
                 
             } catch (std::exception &e) {
                 cout << " this is the error : " << e.what() << endl;
@@ -262,26 +280,46 @@ namespace pico {
         }
         void tellHimSendTheRestOfData(string messageId)
         {
-            mylogger<<"\nClient is telling send the rest of data for this message Id  "<<messageId<<" \n";
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nClient is telling send the rest of data for this message Id  "<<messageId<<" \n";
+            }
             string msg("sendmetherestofdata");
+            
+            
             
             pico_message reply = pico_message::build_message_from_string(msg,messageId);
           	queueRequestMessages(reply);
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nClient put this message in the queue to be sent  "<<reply.toString()<<" \n";
+            }
+            
             writeOneBuffer(); //go to writing mode
-           
+            
         }
         void  ignoreThisMessageAndWriterNextBuffer()
         {
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nClient is ignoring this message and going to write mode  \n";
+                
+            }
             writeOneBuffer();
             
         }
         void print(const boost::system::error_code& error,
                    std::size_t t,string& str)
         {
-            mylogger<<"\nClient Received :  "<<t<<" bytes from server ";
-              if(error) mylogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------\n";
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nClient Received :  "<<t<<" bytes from server ";
+                if(error) mylogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------\n";
+                
+            }
+            
         }
-       
+        
         //this is the driver function thats part of driver api
         void insert(std::string key,std::string value){
             
@@ -355,7 +393,7 @@ namespace pico {
                     //this is our response
                     mylogger<<"Client : got our response"<<response.messageId<<"\n"<<
                     "this is our response "<<response.value;
-                   
+                    
                     return response.value;
                 }
                 else
@@ -369,7 +407,7 @@ namespace pico {
                         //we ran out of time, get failed....
                         mylogger<<"Client : get Operation TIMED OUT!!\n";
                         break;
-                      
+                        
                     }
                     else{
                         
@@ -378,7 +416,7 @@ namespace pico {
                 }
                 
             }//while
-        
+            
             std::string timeout("OPERATION TIMED OUT!");
             return timeout;
             
@@ -387,20 +425,20 @@ namespace pico {
         void writeOneBuffer()
         //boost::unique_lock<std::mutex> writeOneBufferLock)
         {
-
-              mylogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
-             std::unique_lock<std::mutex> writeOneBufferLock(writeOneBufferMutex);
+            
+            mylogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
+            std::unique_lock<std::mutex> writeOneBufferLock(writeOneBufferMutex);
             
             while(bufferQueuePtr_->empty())
             {
                 
                 mylogger<<"client : bufferQueue is empty..waiting ...\n";
-       
-                    bufferQueueIsEmpty.wait(writeOneBufferLock);
-                    mylogger<<"client : bufferQueue waking up because there is some data in the queue ...\n";
+                
+                bufferQueueIsEmpty.wait(writeOneBufferLock);
+                mylogger<<"client : bufferQueue waking up because there is some data in the queue ...\n";
             }
             
-             mylogger<<"client : is going to send some data over ...\n";
+            mylogger<<"client : is going to send some data over ...\n";
             std::shared_ptr<pico_record> currentBuffer =bufferQueuePtr_->pop();
             
             char* data = currentBuffer->getDataForWrite();
@@ -413,7 +451,7 @@ namespace pico {
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
                                          
-                                                                                  mylogger<<t<<" bytes to server \n";
+                                         mylogger<<t<<" bytes to server \n";
                                          if(error)
                                              mylogger<<"\n error msg : "<<error.message();
                                          
@@ -431,7 +469,7 @@ namespace pico {
             mylogger<<"client : putting the response in the queue "<<msg.toString();
             responseQueue_.push(msg);
             mylogger<<"\n client : response pushed to responseQUEUE \n";
-
+            
             responseQueueIsEmpty.notify_all();
             
         }
@@ -439,23 +477,23 @@ namespace pico {
             //TODO put a lock here to make the all the buffers in a message go after each other.
             try{
                 
-                    boost::unique_lock<std::mutex> writeOneBufferMutexLock(writeOneBufferMutex);
-                        while(!message.recorded_message.msg_in_buffers->empty())
-                        {
-                            
-                            mylogger<<"\nPonocoDriver : queueRequestMessages : : popping current Buffer \n";
-                            pico_record buf = message.recorded_message.msg_in_buffers->pop();
-                            mylogger<<"PonocoDriver : popping current Buffer this is current buffer a and pushing it to the bufferQueue to send \n "<<buf.toString();
-                            
-                            std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
-                            bufferQueuePtr_->push(curBufPtr);
-                        }
-
+                boost::unique_lock<std::mutex> writeOneBufferMutexLock(writeOneBufferMutex);
+                while(!message.recorded_message.msg_in_buffers->empty())
+                {
+                    
+                    mylogger<<"\nPonocoDriver : queueRequestMessages : : popping current Buffer \n";
+                    pico_record buf = message.recorded_message.msg_in_buffers->pop();
+                    mylogger<<"PonocoDriver : popping current Buffer this is current buffer a and pushing it to the bufferQueue to send \n "<<buf.toString();
+                    
+                    std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
+                    bufferQueuePtr_->push(curBufPtr);
+                }
+                
                 bufferQueueIsEmpty.notify_all();
             }catch (...) {
                 std::cerr << "Exception: queueRequestMessages  message : unknown thrown" << "\n";
                 raise(SIGABRT);
-            
+                
             }
         }
         pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;

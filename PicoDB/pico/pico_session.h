@@ -47,6 +47,11 @@ namespace pico {
             }
         }
         void readOneBuffer() {
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nServer is going to read a buffer from client...\n";
+            }
+            
             //we read until the whole message is read
             //then we write until the whole message is written
             auto self(shared_from_this());
@@ -88,12 +93,24 @@ namespace pico {
         
         void writeOneBuffer()
         {
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nServer is going to send a buffer to client..going to acquire lock \n";
+            }
+            
             
             std::unique_lock<std::mutex> writeOneBufferLock(bufferQueueIsEmptyMutex);
             while(bufferQueue_.empty())
             {
-             //   cout<<"session : bufferQueue is empty..waiting ..."<<endl;
+                if(mylogger.isTraceEnabled())
+                {
+                    mylogger<<"\nServer's bufferQueue_ is empty...waiting for a message to come to queue. \n";
+                }
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
+            }
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nServer is going to send a buffer to client.. lock obtained \n";
             }
             
             
@@ -107,10 +124,14 @@ namespace pico {
                                      [this,self,currentBuffer](const boost::system::error_code& error,
                                                                std::size_t t) {
                                          string str = currentBuffer->toString();
-                                         mylogger << "\nSession Sent :  "<<t<<" bytes from Client ";
-                                         //                                         if(error) mylogger<<" error msg : "<<error.message()<<std::endl;
-                                         //                                         mylogger<<" data sent to client is "<<str<<endl;
-                                         mylogger<<("-------------------------");
+                                         if(mylogger.isTraceEnabled())
+                                         {
+                                             mylogger << "\nSession Sent :  "<<t<<" bytes from Client ";
+                                             if(error) mylogger<<" server : a communication error happend...\n msg : "<<error.message();
+                                             mylogger<<" server : data sent to client is "<<str<<"\n";
+                                             mylogger<<("-------------------------");
+                                         }
+                                         
                                          
                                          readOneBuffer();
                                      });
@@ -146,10 +167,20 @@ namespace pico {
         void processDataFromOtherSide(pico_message messageFromOtherSide) {
             
             try {
+                if(mylogger.isTraceEnabled())
+                {
+                    mylogger<<"\nServer read this message from client "<<messageFromOtherSide.toString()<<"...\n";
+                }
                 
                 
                 pico_message reply = requestProcessor_.processRequest(messageFromOtherSide);
-                mylogger<<"putting reply to the queue this is the message that server read just now"<<reply.toString();
+                if(mylogger.isTraceEnabled())
+                {
+                    
+                mylogger<<"server : putting reply to the queue this is the message that server read just now"<<reply.toString();
+                }
+                
+                
                 queueMessages(reply);
                 
             } catch (std::exception &e) {
@@ -198,10 +229,20 @@ namespace pico {
         }
         void tellHimSendTheRestOfData(string messageId)
         {
-            mylogger<<"\nServer is telling send the rest of data for this message Id  "<<messageId<<" \n";
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nServer is telling send the rest of data for this message Id  "<<messageId<<" \n";
+            }
+            
             string msg("sendmetherestofdata");
             
             pico_message reply = pico_message::build_message_from_string(msg,messageId);
+            
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nServer is going to put this message to the queue "<<reply.toString()<<" \n";
+            }
+            
             queueMessages(reply);
             writeOneBuffer(); //go to writing mode
             
@@ -210,6 +251,11 @@ namespace pico {
         void  ignoreThisMessageAndWriterNextBuffer()
         {
             
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger<<"\nServer is going to ignore this message and do nothing and go to writing mode \n";
+                
+            }
             writeOneBuffer();
             
         }
@@ -217,15 +263,14 @@ namespace pico {
         void print(const boost::system::error_code& error,std::size_t t,string& str)
         {
           //  if(error) mylogger<<" error msg : "<<error.message()<<std::endl;
+            if(mylogger.isTraceEnabled())
+            {
+                
             mylogger << "\nServer received "<<t<<" bytes read from Client  data read from client is "<<str;
-            
+            }
         }
-//        void append_to_last_message(string str) {
-//            last_read_message.append(str);
-//            
-//        }
         
-        //        writer_buffer_container writer_buffer_container_;
+        
         asyncReader asyncReader_;
         request_processor requestProcessor_;
         pico_concurrent_list<queueType> messageToClientQueue_;

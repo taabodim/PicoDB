@@ -53,6 +53,13 @@ public:
 
      }
    
+        const static bool traceEnabled = true;
+        bool isTraceEnabled()
+        {
+            return traceEnabled;
+        }
+        
+        
         logger()=delete;
         
     virtual ~logger()

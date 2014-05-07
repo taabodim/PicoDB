@@ -44,13 +44,16 @@ namespace pico
          {
              myloggerPtr = new logger("gicapods");//to delete the file once
          }
-    }
+    
+            
+        
+        }
         
         void log(const std::string str){
             mylogger<<str;
         }
         
-    
+        
        
     };
    
