@@ -33,7 +33,7 @@ public:
 
 	std::string collection;
 	std::string json_form_of_message;
-	std::string json_key_value_pair;
+	//std::string json_key_value_pair;
 	std::string hashCodeOfMessage;
 
 	pico_buffered_message<pico_record> key_value_buffered_message;
@@ -59,7 +59,7 @@ public:
 		this->value = msg.value;
 		this->oldvalue = msg.oldvalue;
 		this->json_form_of_message = msg.json_form_of_message;
-		this->json_key_value_pair = msg.json_key_value_pair;
+		////this->json_key_value_pair = msg.json_key_value_pair;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
 		this->key_value_buffered_message = msg.key_value_buffered_message;
@@ -79,7 +79,7 @@ public:
 		this->value = msg.value;
 		this->oldvalue = msg.oldvalue;
 		this->json_form_of_message = msg.json_form_of_message;
-		this->json_key_value_pair = msg.json_key_value_pair;
+		//this->json_key_value_pair = msg.json_key_value_pair;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
 		this->key_value_buffered_message = msg.key_value_buffered_message;
@@ -109,10 +109,10 @@ public:
 		this->value = root.get("value", "unknown").asString();
 		this->oldvalue = root.get("oldvalue", "unknown").asString();
 
-		this->json_key_value_pair = createTheKeyValuePair();
+		//this->json_key_value_pair = createTheKeyValuePair();
 		this->set_hash_code();
 		this->convert_to_buffered_message();
-		this->convert_key_value_buffered_message();
+		//this->convert_key_value_buffered_message();
 	}
 
 	pico_message(const std::string json_message_from_client, bool simpleMessage,
@@ -125,7 +125,7 @@ public:
 		if (!json_message_from_client.empty()) {
 			this->set_hash_code();
 			this->convert_to_buffered_message();
-			this->convert_key_value_buffered_message();
+	//		this->convert_key_value_buffered_message();
 		}
 	}
 	std::string createTheKeyValuePair() {
@@ -205,7 +205,7 @@ public:
 		this->value = msg.value;
 		this->oldvalue = msg.oldvalue;
 		this->json_form_of_message = msg.json_form_of_message;
-		this->json_key_value_pair = msg.json_key_value_pair;
+		//this->json_key_value_pair = msg.json_key_value_pair;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
 		this->key_value_buffered_message = msg.key_value_buffered_message;
@@ -241,10 +241,10 @@ public:
 		messageId = calc_request_id();
 		json_form_of_message = convert_message_to_json();
 		messageSize = json_form_of_message.size();
-		json_key_value_pair = createTheKeyValuePair();
+		//json_key_value_pair = createTheKeyValuePair();
 		set_hash_code();
 		convert_to_buffered_message();
-		convert_key_value_buffered_message();
+	//	convert_key_value_buffered_message();
 	}
 	pico_message(std::string newKey, std::string old_value_arg,
 			std::string newValue, std::string com, std::string database,
@@ -259,10 +259,10 @@ public:
 		messageId = calc_request_id();
 		json_form_of_message = convert_message_to_json();
 		messageSize = json_form_of_message.size();
-		json_key_value_pair = createTheKeyValuePair();
+	//	json_key_value_pair = createTheKeyValuePair();
 		set_hash_code();
 		convert_to_buffered_message();
-		convert_key_value_buffered_message();
+	//	convert_key_value_buffered_message();
 	}
 	pico_message(std::string keyFromDB, std::string valueFromDB,
 			string messageId) {
@@ -277,10 +277,10 @@ public:
 		messageId = messageId;
 		json_form_of_message = convert_message_to_json();
 		messageSize = json_form_of_message.size();
-		json_key_value_pair = createTheKeyValuePair();
+	//	json_key_value_pair = createTheKeyValuePair();
 		set_hash_code();
 		convert_to_buffered_message();
-		convert_key_value_buffered_message();
+		//convert_key_value_buffered_message();
 	}
 
 	void set_hash_code() {
@@ -301,9 +301,9 @@ public:
 	std::string toString() const {
 		return json_form_of_message;
 	}
-	std::string toKeyValuePairString() const {
-		return json_key_value_pair;
-	}
+//	std::string toKeyValuePairString() const {
+//		return json_key_value_pair;
+//	}
 	void addConMarkerToFirstRecord(pico_record& continuingRecord) //this argument has to be passed by ref
 			{
 
@@ -317,83 +317,83 @@ public:
 		} //the key marker is put to first 6 letters of the first record
 
 	}
-	void convert_key_value_buffered_message() {
-		//this function is used to save the key value in db
-		//and not the transfer over network
-		mylogger << "pico_message : convert_to_list_of_records \n";
-
-		pico_record firstRecord;
-
-		pico_record::addKeyMarkerToFirstRecord(firstRecord);
-		string copyOfKey = key.substr(0);
-
-		const char* keyArray = copyOfKey.c_str();
-		int i = 6;
-		while (*keyArray != 0) {
-			firstRecord.data_[i] = *keyArray;
-			++i;
-			++keyArray;
-		}            //the key is put to first record
-		for (int k = i; k < pico_record::max_key_size; k++) {
-			firstRecord.data_[i] = 0;
-		}            //put 0 after the key and before value
-
-		string copyOfValue = value.substr(0);
-		const char* valueArray = copyOfValue.c_str();
-
-		bool dataEnded = false;
-		for (int j = pico_record::max_key_size; j < pico_record::max_size - 6;
-				j++) {
-			if (*valueArray != 0) {
-				firstRecord.data_[j] = *valueArray;
-				++valueArray;
-			} else {
-				dataEnded = true;
-				break;
-
-			}
-		}            //the value of the first record is populated with values
-		if (!dataEnded) {            //there is more data to be appended
-			pico_record::addAppendMarkerToTheEnd(firstRecord);
-
-		}
-
-		bool moreThanOneRecord = false;
-		mylogger
-				<< "\n pico_message : this is the record that is put in  : key_value_buffered_message buffer : "
-				<< firstRecord.toString();
-		key_value_buffered_message.append(firstRecord);
-		while (*valueArray != 0) {
-			pico_record currentRecord;
-
-			pico_record::replicateTheFirstRecordKeyToOtherRecords(firstRecord,
-					currentRecord);
-
-			for (int i = 6; i < pico_record::max_size - 6; i++) {
-
-				if (*valueArray != 0) {
-					currentRecord.data_[i] = *valueArray;
-				} else {
-					dataEnded = true;
-					break;
-				} //adding the rest of values to the second and third and etc records
-				++valueArray;
-			}
-
-			pico_record::addAppendMarkerToTheEnd(currentRecord);
-			moreThanOneRecord = true;
-			mylogger
-					<< "\n pico_message : this is the record that is put in  : key_value_buffered_message currentRecord buffer : "
-					<< currentRecord.toString();
-			key_value_buffered_message.append(currentRecord);
-		}
-
-		if (moreThanOneRecord) {
-			pico_record::removeTheAppendMarker(
-					key_value_buffered_message.getLastBuffer());
-		}
-
-	}
+//	void convert_key_value_buffered_message() {
+//		//this function is used to save the key value in db
+//		//and not the transfer over network
+//		mylogger << "pico_message : convert_to_list_of_records \n";
+//
+//		pico_record firstRecord;
+//
+//		pico_record::addKeyMarkerToFirstRecord(firstRecord);
+//		string copyOfKey = key.substr(0);
+//
+//		const char* keyArray = copyOfKey.c_str();
+//		int i = 6;
+//		while (*keyArray != 0) {
+//			firstRecord.data_[i] = *keyArray;
+//			++i;
+//			++keyArray;
+//		}            //the key is put to first record
+//		for (int k = i; k < pico_record::max_key_size; k++) {
+//			firstRecord.data_[i] = 0;
+//		}            //put 0 after the key and before value
+//
+//		string copyOfValue = value.substr(0);
+//		const char* valueArray = copyOfValue.c_str();
+//
+//		bool dataEnded = false;
+//		for (int j = pico_record::max_key_size; j < pico_record::max_size - 6;
+//				j++) {
+//			if (*valueArray != 0) {
+//				firstRecord.data_[j] = *valueArray;
+//				++valueArray;
+//			} else {
+//				dataEnded = true;
+//				break;
+//
+//			}
+//		}            //the value of the first record is populated with values
+//		if (!dataEnded) {            //there is more data to be appended
+//			pico_record::addAppendMarkerToTheEnd(firstRecord);
+//
+//		}
+//
+//		bool moreThanOneRecord = false;
+//		mylogger
+//				<< "\n pico_message : this is the record that is put in  : key_value_buffered_message buffer : "
+//				<< firstRecord.toString();
+//		key_value_buffered_message.append(firstRecord);
+//		while (*valueArray != 0) {
+//			pico_record currentRecord;
+//
+//			pico_record::replicateTheFirstRecordKeyToOtherRecords(firstRecord,
+//					currentRecord);
+//
+//			for (int i = 6; i < pico_record::max_size - 6; i++) {
+//
+//				if (*valueArray != 0) {
+//					currentRecord.data_[i] = *valueArray;
+//				} else {
+//					dataEnded = true;
+//					break;
+//				} //adding the rest of values to the second and third and etc records
+//				++valueArray;
+//			}
+//
+//			pico_record::addAppendMarkerToTheEnd(currentRecord);
+//			moreThanOneRecord = true;
+//			mylogger
+//					<< "\n pico_message : this is the record that is put in  : key_value_buffered_message currentRecord buffer : "
+//					<< currentRecord.toString();
+//			key_value_buffered_message.append(currentRecord);
+//		}
+//
+//		if (moreThanOneRecord) {
+//			pico_record::removeTheAppendMarker(
+//					key_value_buffered_message.getLastBuffer());
+//		}
+//
+//	}
 
 	//this function converts all the message to a list of pico_records , and
 	//puts the all the message in the value part of records only
@@ -450,70 +450,108 @@ public:
 		string allMessage;
 		string key;
 		string value;
+        pico_message msgToReturnEmpty;
+        
 		bool typeOfmessageIsRecord = false;
-
-		mylogger
-				<< "\n pico_message : this is the begning og the convertBuffersToMessage function \n";
+		if (mylogger.isTraceEnabled()) {
+			mylogger
+					<< "\n pico_message :  this is the begning of the convertBuffersToMessage function \n";
+		}
 		all_buffers.print();
 
 		while (!all_buffers.msg_in_buffers->empty()) {
 			//get rid of all buffers that are not for this messageId
 			pico_record buf = all_buffers.msg_in_buffers->pop();
 			//if buffer is begingin key
-
-			mylogger << " \n buffer popped is \n " << buf.toString();
-
+			if (mylogger.isTraceEnabled()) {
+				mylogger << " \n buffer popped is \n " << buf.toString();
+			}
 			string temp;
+
 			if (pico_record::ifTheRecordIsSendMeTheRestOfData(buf)) {
+				if (mylogger.isTraceEnabled()) {
+					mylogger
+							<< " buffer popped is detected as sendmetherestofdata \n ";
+				}
+
 				string msgType(buf.getValueAsString());
 				allMessage.append(msgType);
-				mylogger
-						<< "\n pico_message : convertBuffersToMessage : allMessage is "
-						<< allMessage << "\n";
+
+				if (mylogger.isTraceEnabled()) {
+					mylogger
+							<< "\n pico_message : convertBuffersToMessage : allMessage is "
+							<< allMessage << "endofAllmessage \n";
+				}
+
 				pico_message pico_msg(allMessage, messageId);
 				return pico_msg;
 
 			}
 			if (pico_record::recordStartsWithBEGKEY(buf)) {
 
+				if (mylogger.isTraceEnabled()) {
+					mylogger
+							<< "\n pico_message : convertBuffersToMessage : buffer starts with BEGKEY \n";
+				}
 				string key = buf.getKeyAsString();
-				mylogger << "\n key extracted from key record as string is "
-						<< key;
-
+				if (mylogger.isTraceEnabled()) {
+					mylogger << "\n key extracted from key record as string is "
+							<< key;
+				}
 				//string tempWithoutKeyPart =temp.substr(pico_record::max_key_size);
-				string tempWithoutKeyPart = buf.getValueAsString();
-
-				mylogger << "\n the value part of key record as string is "
-						<< tempWithoutKeyPart;
-				value.append(tempWithoutKeyPart);
+				string value = buf.getValueAsString();
+				if (mylogger.isTraceEnabled()) {
+					mylogger << "\n the value part of key record as string is "
+							<< value;
+				}
+				value.append(value);
 				typeOfmessageIsRecord = true;
 			}
 			//if buffer is continuing key
 			else if (pico_record::recordStartsWithConKEY(buf)) {
 				//remove the marker
-
+				if (mylogger.isTraceEnabled()) {
+					mylogger
+							<< "\n pico_message : convertBuffersToMessage : buffer starts with CONKEY ";
+				}
 				string valueIncomplete = buf.getValueAsString();
-
+				if (mylogger.isTraceEnabled()) {
 				mylogger
 						<< "\n the incomplete value part of contining record as string is "
 						<< valueIncomplete;
+				}
 				typeOfmessageIsRecord = true;
 				value.append(valueIncomplete);
 			} else //its a message that passes between client and server and
 				   //is not in db
 			{
-
-				string msgType(buf.getValueAsString());
-				temp = msgType;
+                
+                
+				if (mylogger.isTraceEnabled()) {
+                    
+                    string temp(buf.getValueAsString());
+                    
+								mylogger
+										<< "\n the buffer is neithe BEGKEY NOR CONKEY NOR sendmetherestofdata ,buffer is "
+										<< buf.getValueAsString();
+								}
+                allMessage.clear();
+				
+				
 				if (!temp.empty()) {
+					if (mylogger.isTraceEnabled()) {
 					mylogger << " \n the msgType record as string is " << temp;
-
+					}
 					typeOfmessageIsRecord = false;
 					allMessage.append(temp);
+                    pico_message pico_msg(allMessage, messageId);
+                    return pico_msg;
 				} else {
 					mylogger << "\n the buffer is empty so we ignore it ";
 
 				}
+                
+                
 			}
 
 		}                    //for
@@ -526,16 +564,12 @@ public:
 			pico_message pico_msg(key, value, messageId);
 			return pico_msg;
 
-		} else {
-			mylogger
-					<< "pico_message : convertBuffersToMessage : allMessage is "
-					<< allMessage << "\n";
-
-			pico_message pico_msg(allMessage, messageId);
-			return pico_msg;
-
 		}
-
+        
+        mylogger
+        << "pico_message : convertBuffersToMessage : should never reach here \n";
+        
+        return msgToReturnEmpty; //it should never reaches here
 	}
 	//        void clear() {
 	//            mylogger << ("pico_message : clearing the message ");

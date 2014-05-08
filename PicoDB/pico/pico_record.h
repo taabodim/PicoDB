@@ -242,6 +242,7 @@ public:
 
 	string key; //the string form of key
 	string getKeyAsString() {
+         key.clear();
 		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 
@@ -256,7 +257,7 @@ public:
 	}
 	string value;		//the string form of value
 	string getValueAsString() {
-
+        value.clear();
 		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 
@@ -271,6 +272,7 @@ public:
 	}
 	string messageId;		//the string form of messageId
 	string getMessageIdAsString() {
+        messageId.clear();
 		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 
@@ -287,6 +289,7 @@ public:
 
 	std::string getDataAsString() //to write to other side
 	{
+        
 		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 		std::string data(data_copy, max_size);

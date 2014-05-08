@@ -155,6 +155,7 @@ public:
 				all_offsets_for_this_message.push_back(nextOffset);
 				nextOffset += pico_record::max_size;
 			} else {
+
 				break;
 			}
 		} while (nextOffset <= endOffset);
@@ -178,7 +179,7 @@ public:
 					<< offsetOfFirstRecordOfMessage
 					<< " messageIdForResponse  :  " << messageIdForResponse;
 		}
-//		offsetType endOffset = getEndOfFileOffset(file);
+		offsetType endOffset = getEndOfFileOffset(file);
 //
 //		if (offsetOfFirstRecordOfMessage > endOffset) {
 //			string error("offset in tree is wrong");
@@ -199,29 +200,38 @@ public:
 
 		pico_record nextRecord = retrieve(nextOffset); //get the first record of this message
 		all_records_for_this_message.append(nextRecord);
-
+		nextOffset += pico_record::max_size;
 		do {
 
 			pico_record nextRecord = retrieve(nextOffset);
-			if (pico_record::recordStartsWithBEGKEY(nextRecord)) //this for the next message
+			if (pico_record::recordStartsWithConKEY(nextRecord)) //this for the next message
+			{
+
+				if (mylogger.isTraceEnabled()) {
+								mylogger<< "\npico_collection : retrieveOneMessage :  this buffer starts with CONKEY  \n";
+							}
+
+				all_records_for_this_message.append(nextRecord);
+				if (mylogger.isTraceEnabled()) {
+								mylogger
+										<< "\npico_collection : retrieveOneMessage : "
+												" this record was retrived from db and appended to list  "
+										<< nextRecord.toString() << "\n";
+							}
+			}
+			else
 			{
 				if (mylogger.isTraceEnabled()) {
-					mylogger<< "\npico_collection : retrieveOneMessage :  reached the next message. stopping reading \n";
-				}
-
+								mylogger<< "\npico_collection : retrieveOneMessage : this buffer doesnt start with CONKEY  \n"
+										<< nextRecord.toString() << "\n";
+							}
 				break;
 			}
 
-			all_records_for_this_message.append(nextRecord);
-			nextOffset += pico_record::max_size;
-			if (mylogger.isTraceEnabled()) {
-				mylogger
-						<< "\npico_collection : retrieveOneMessage : "
-								" this record was retrived from db and appended to list  "
-						<< nextRecord.toString() << "\n";
-			}
-		} while (true);//check this , this might cause some bug
 
+			nextOffset += pico_record::max_size;
+
+		} while (nextOffset<endOffset);
 		pico_message util;
 		mylogger
 				<< "\n pico_collection : about to convert all the buffers read from db to a nice pico_message \n ";
