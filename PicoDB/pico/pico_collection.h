@@ -236,7 +236,7 @@ public:
 		mylogger
 				<< "\n pico_collection : about to convert all the buffers read from db to a nice pico_message \n ";
 		pico_message msg = util.convertBuffersToMessage(
-				all_records_for_this_message, messageIdForResponse);
+				all_records_for_this_message, messageIdForResponse,LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY);
 		mylogger
 				<< "\n pico_collection : retrieveOneMessage this is the whole message retrieved "
 				<< msg.toString();

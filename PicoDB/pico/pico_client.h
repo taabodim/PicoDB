@@ -255,7 +255,7 @@ public:
 				allBuffersReadFromTheOtherSide.append(*currentBuffer);
 
 				pico_message util;
-				pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString());
+				pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
 				if(mylogger.isTraceEnabled())
 				{
 					mylogger<<"\n client : this is the complete message read from server \n";

@@ -15,6 +15,11 @@ using namespace std;
 
 namespace pico{
     
+    
+    
+        string COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY("COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY");
+        string LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY("LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY");
+    
     typedef long offsetType;
     typedef std::string messageType;
     bool log = true;

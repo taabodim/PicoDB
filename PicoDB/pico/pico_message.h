@@ -442,130 +442,116 @@ public:
 		key_value_buffered_message.print();
 	}
 
+     
 	//        std::shared_ptr<pico_concurrent_list<type>> msg_in_buffers
 	//this method is very important!! should be debugged and improved throughly
 	pico_message convertBuffersToMessage(
-			pico_buffered_message<pico_record> all_buffers, string messageId) {
+			pico_buffered_message<pico_record> all_buffers, string messageId,messageType type) {
 
-		string allMessage;
+        if (mylogger.isTraceEnabled()) {
+			mylogger
+            << "\n pico_message :  this is the begning of the convertBuffersToMessage function \n";
+		}
+		all_buffers.print();
+
+        
+        string allMessage;
 		string key;
 		string value;
         pico_message msgToReturnEmpty;
         
-		bool typeOfmessageIsRecord = false;
-		if (mylogger.isTraceEnabled()) {
-			mylogger
-					<< "\n pico_message :  this is the begning of the convertBuffersToMessage function \n";
-		}
-		all_buffers.print();
-
-		while (!all_buffers.msg_in_buffers->empty()) {
+        
+        
+        while (!all_buffers.msg_in_buffers->empty()) {
 			//get rid of all buffers that are not for this messageId
 			pico_record buf = all_buffers.msg_in_buffers->pop();
 			//if buffer is begingin key
 			if (mylogger.isTraceEnabled()) {
 				mylogger << " \n buffer popped is \n " << buf.toString();
 			}
-			string temp;
+  
+            
+        if(type.compare(COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY)==0)
+        {
+            string msgType(buf.getValueAsString());
+            allMessage.append(msgType);
 
-			if (pico_record::ifTheRecordIsSendMeTheRestOfData(buf)) {
+        }
+        else if(type.compare(LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY)==0)
+        {
+            
+            if (pico_record::recordStartsWithBEGKEY(buf)) {
+                
 				if (mylogger.isTraceEnabled()) {
 					mylogger
-							<< " buffer popped is detected as sendmetherestofdata \n ";
-				}
-
-				string msgType(buf.getValueAsString());
-				allMessage.append(msgType);
-
-				if (mylogger.isTraceEnabled()) {
-					mylogger
-							<< "\n pico_message : convertBuffersToMessage : allMessage is "
-							<< allMessage << "endofAllmessage \n";
-				}
-
-				pico_message pico_msg(allMessage, messageId);
-				return pico_msg;
-
-			}
-			if (pico_record::recordStartsWithBEGKEY(buf)) {
-
-				if (mylogger.isTraceEnabled()) {
-					mylogger
-							<< "\n pico_message : convertBuffersToMessage : buffer starts with BEGKEY \n";
+                    << "\n pico_message : convertBuffersToMessage : buffer starts with BEGKEY \n";
 				}
 				string key = buf.getKeyAsString();
 				if (mylogger.isTraceEnabled()) {
 					mylogger << "\n key extracted from key record as string is "
-							<< key;
+                    << key;
 				}
-				//string tempWithoutKeyPart =temp.substr(pico_record::max_key_size);
-				string value = buf.getValueAsString();
+				
+                string valueExtracted = buf.getValueAsString();
 				if (mylogger.isTraceEnabled()) {
 					mylogger << "\n the value part of key record as string is "
-							<< value;
+                    << valueExtracted;
 				}
-				value.append(value);
-				typeOfmessageIsRecord = true;
-			}
-			//if buffer is continuing key
+				value.append(valueExtracted);
+			}//its a begkey record
+            //if buffer is continuing key
 			else if (pico_record::recordStartsWithConKEY(buf)) {
 				//remove the marker
 				if (mylogger.isTraceEnabled()) {
 					mylogger
-							<< "\n pico_message : convertBuffersToMessage : buffer starts with CONKEY ";
+                    << "\n pico_message : convertBuffersToMessage : buffer starts with CONKEY ";
 				}
 				string valueIncomplete = buf.getValueAsString();
 				if (mylogger.isTraceEnabled()) {
-				mylogger
-						<< "\n the incomplete value part of contining record as string is "
-						<< valueIncomplete;
+                    mylogger
+                    << "\n the incomplete value part of contining record as string is "
+                    << valueIncomplete;
 				}
-				typeOfmessageIsRecord = true;
+				
 				value.append(valueIncomplete);
 			} else //its a message that passes between client and server and
-				   //is not in db
+                //is not in db
 			{
-                
-                
-				if (mylogger.isTraceEnabled()) {
-                    
-                    string temp(buf.getValueAsString());
-                    
-								mylogger
-										<< "\n the buffer is neithe BEGKEY NOR CONKEY NOR sendmetherestofdata ,buffer is "
-										<< buf.getValueAsString();
-								}
-                allMessage.clear();
+                //log error
+                mylogger
+                << "\n  record is neither BEGKEY NOR CONKEY, its a serious error.......................... ";
 				
-				
-				if (!temp.empty()) {
-					if (mylogger.isTraceEnabled()) {
-					mylogger << " \n the msgType record as string is " << temp;
-					}
-					typeOfmessageIsRecord = false;
-					allMessage.append(temp);
-                    pico_message pico_msg(allMessage, messageId);
-                    return pico_msg;
-				} else {
-					mylogger << "\n the buffer is empty so we ignore it ";
+            }
 
-				}
-                
-                
-			}
+        }
+        else {
+            mylogger
+            << "\n  record is neither BEGKEY NOR CONKEY nor complete JSON message without KEYS, its a serious error.......................... ";
+            
+        }
+            
+        }//end of while
+        
+        
+        if(type.compare(COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY)==0)
+        {
+        
+        pico_message pico_msg(allMessage, messageId);
+        return pico_msg;
 
-		}                    //for
-
-		if (typeOfmessageIsRecord) {
-			mylogger
-					<< "pico_message : convertBuffersToMessage : extracted key is "
-					<< key << "\n value : " << value << "\n";
-
+        }
+        else if(type.compare(LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY)==0)
+        {
+            mylogger
+            << "pico_message : convertBuffersToMessage : extracted key is "
+            << key << "\n value : " << value << "\n";
+            
 			pico_message pico_msg(key, value, messageId);
 			return pico_msg;
 
-		}
+        }
         
+		
         mylogger
         << "pico_message : convertBuffersToMessage : should never reach here \n";
         

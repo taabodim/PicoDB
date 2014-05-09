@@ -213,7 +213,7 @@ namespace pico {
                   allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 
                 pico_message util;
-                    pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString());
+                    pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
                 mylogger<<"\nsever : this is the complete message read from  "<<last_read_message.toString();
               
                 processDataFromOtherSide(last_read_message);
