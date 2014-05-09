@@ -50,7 +50,14 @@ namespace pico
         {
         	msg_in_buffers->append(buf);
         }
-        
+        type pop()
+        {
+            return msg_in_buffers->pop();
+        }
+        bool empty()
+        {
+        	return  msg_in_buffers->empty();
+        }
         void clear()
         {
             

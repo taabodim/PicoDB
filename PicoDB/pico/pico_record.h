@@ -18,12 +18,20 @@ namespace pico {
 class pico_record: public pico_logger_wrapper {
 
 public:
+	static string BEGKEY;
+	static string CONKEY;
+
+	const static char keyValueSeperator = '`';
+	//this is the char that we insert after the key to make it 32 characters long
+	//if its shorter than that, then we add the key value in one string
+	//and we save them in database as bunch of buffers, this is the key value separator
+
 	const static int appendMarkerSize = 6; //this is the size of the last few characters that determine if a record is the end of message
 	//or message is going to be continued
 
 	const static int beg_key_type_index = 0;
-	const static int max_key_type_index = 6; //it could be BEGKEY or CONKEY
-	const static int end_key_type_index = max_key_type_index
+	const static int max_key_type_size = 6; //it could be BEGKEY or CONKEY
+	const static int end_key_type_index = max_key_type_size
 			+ beg_key_type_index;
 
 	const static int beg_of_key_index = end_key_type_index;
@@ -55,6 +63,10 @@ public:
 
 	char data_[max_size];
 	char data_copy[max_size];
+
+	//these the parts of record that are saved in file
+	const static int max_database_record_size = max_key_type_size + max_key_size + max_value_size;
+
 
 	offsetType offset_of_record; //this is the offset in the file and the index
 	offsetType previousRecordOffset;
@@ -240,24 +252,68 @@ public:
 //		return key_;
 //	}
 
-	
+	string getKeyTypeAsString() {
+
+		string keyType; //the string form of keyType
+		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
+		//by copying into the other string or assigning to other
+
+		for (int i = beg_key_type_index; i < end_key_type_index; i++) {
+			if (data_copy[i] != '\0') {
+				if (data_copy[i] == keyValueSeperator) {
+					//ignoring keyvalue seperator
+				} else {
+					keyType.push_back(data_copy[i]);
+				}
+			} else {
+				break;
+			}
+		}
+		return keyType;
+	}
+
 	string getKeyAsString() {
-         string key; //the string form of key
+		string key; //the string form of key
 		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 
 		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
 			if (data_copy[i] != '\0') {
-				key.push_back(data_copy[i]);
+				if (data_copy[i] == keyValueSeperator) {
+					//ignoring keyvalue seperator
+				} else {
+					key.push_back(data_copy[i]);
+				}
 			} else {
 				break;
 			}
 		}
 		return key;
 	}
-	
+
+	static string unpadTheKey(char* keyWithSeperator) {
+		string key;
+        int i=0;
+		while (keyWithSeperator != 0) {
+
+			if (keyWithSeperator[i] != '\0') {
+				if (keyWithSeperator[i] == keyValueSeperator) {
+					//ignoring keyvalue seperator
+				} else {
+					key.push_back(keyWithSeperator[i]);
+				}
+			} else {
+				break;
+			}
+            ++i;
+			++keyWithSeperator;
+		}
+
+		return key;
+
+	}
 	string getValueAsString() {
-        string value;		//the string form of value
+		string value;		//the string form of value
 		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 
@@ -270,8 +326,8 @@ public:
 		}
 		return value;
 	}
-		string getMessageIdAsString() {
-            string messageId;		//the string form of messageId
+	string getMessageIdAsString() {
+		string messageId;		//the string form of messageId
 
 		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
@@ -289,7 +345,7 @@ public:
 
 	std::string getDataAsString() //to write to other side
 	{
-        
+
 		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 		std::string data(data_copy, max_size);
@@ -343,7 +399,7 @@ public:
 	static bool recordStartsWithConKEY(pico_record& currentRecord) //debugged
 			{
 		if (currentRecord.data_[beg_key_type_index] == 'C'
-				&& currentRecord.data_[beg_key_type_index+1] == 'O'
+				&& currentRecord.data_[beg_key_type_index + 1] == 'O'
 				&& currentRecord.data_[beg_key_type_index + 2] == 'N'
 				&& currentRecord.data_[beg_key_type_index + 3] == 'K'
 				&& currentRecord.data_[beg_key_type_index + 4] == 'E'
@@ -377,6 +433,23 @@ public:
 		return true;
 
 	}
+	static void setTheKeyInData(pico_record& currentBuffer, string key) {
+
+			const char* temp_buffer_message = key.c_str();
+			for (int i = pico_record::beg_of_key_index;
+					i < pico_record::end_of_key_index; i++) {
+				//putting everything in the value part of data_ in pico_record , so retrieving it is easier
+
+				if (*temp_buffer_message != 0) {
+					currentBuffer.data_[i] = *temp_buffer_message;
+				} else {
+					break;
+				}
+				++temp_buffer_message;
+			}
+
+		}
+
 	static void setTheValueInData(pico_record& currentBuffer, string values) {
 
 		const char* temp_buffer_message = values.c_str();
@@ -440,7 +513,6 @@ public:
 		}
 	}
 
-
 	static void removeTheKeyPart(pico_record& currentRecord) {
 		for (int i = beg_of_key_index; i < max_key_size; i++) {
 			currentRecord.data_[i] = '\0';
@@ -449,11 +521,11 @@ public:
 	static void removeTheKeyMarkers1aadsadsd(pico_record& currentRecord) //debugged
 			{
 		currentRecord.data_[beg_of_appendMarker_index] = '\0';
-		currentRecord.data_[beg_of_appendMarker_index+1] = '\0';
-		currentRecord.data_[beg_of_appendMarker_index+2] = '\0';
-		currentRecord.data_[beg_of_appendMarker_index+3] = '\0';
-		currentRecord.data_[beg_of_appendMarker_index+4] = '\0';
-		currentRecord.data_[beg_of_appendMarker_index+5] = '\0';
+		currentRecord.data_[beg_of_appendMarker_index + 1] = '\0';
+		currentRecord.data_[beg_of_appendMarker_index + 2] = '\0';
+		currentRecord.data_[beg_of_appendMarker_index + 3] = '\0';
+		currentRecord.data_[beg_of_appendMarker_index + 4] = '\0';
+		currentRecord.data_[beg_of_appendMarker_index + 5] = '\0';
 	}
 	static void replicateTheFirstRecordKeyToOtherRecords(
 			pico_record& firstRecord, pico_record& currentRecord) {
@@ -470,9 +542,9 @@ public:
 		}
 	}
 
-	static void addKeyMarkerToFirstRecord(pico_record& firstRecord) //this argument has to be passed by ref
+	static void addKeyMarkerToRecord(pico_record& firstRecord, string keyMarker) //this argument has to be passed by ref
 			{
-		string keyMarker("BEGKEY"); //its the key that marks the key of the first record
+		//its the key that marks the key of the first record
 		const char* keyArray = keyMarker.c_str();
 		int i = beg_key_type_index;
 		while (*keyArray != 0) {
@@ -481,6 +553,21 @@ public:
 			++keyArray;
 		} //the key marker is put to first 6 letters of the first record
 	}
+
+	static void addConMarkerToFirstRecord(pico_record& continuingRecord) //this argument has to be passed by ref
+			{
+
+		string keyMarker("CONKEY"); //its the key that marks the key of the continuing records
+		const char* keyArray = keyMarker.c_str();
+		int i = 0;
+		while (*keyArray != 0) {
+			continuingRecord.data_[i] = *keyArray;
+			++i;
+			++keyArray;
+		} //the key marker is put to first 6 letters of the first record
+
+	}
+
 	char* getDataForWrite() { //data is loaded to write
 		return data_;
 	}

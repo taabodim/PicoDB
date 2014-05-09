@@ -243,8 +243,8 @@ public:
 				if(mylogger.isTraceEnabled())
 				{
 					mylogger<<"\n Client : this buffer is an add on to the last message, messageId for this buffer is \n"
-							<<currentBuffer->getMessageIdAsString()<<
-							"..dont process anything..read the next buffer\n";
+					<<currentBuffer->getMessageIdAsString()<<
+					"..dont process anything..read the next buffer\n";
 
 				}
 				allBuffersReadFromTheOtherSide.append(*currentBuffer);
@@ -255,7 +255,7 @@ public:
 				allBuffersReadFromTheOtherSide.append(*currentBuffer);
 
 				pico_message util;
-				pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
+				pico_message last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
 				if(mylogger.isTraceEnabled())
 				{
 					mylogger<<"\n client : this is the complete message read from server \n";
@@ -306,12 +306,12 @@ public:
 			responseProcessor.processResponse(messageFromOtherSide);
 
 			queueTheResponse(messageFromOtherSide);
-            
+
 			if(mylogger.isTraceEnabled())
 			{
 
 				mylogger<<"\n Client : got the response with this messageId :  "<<
-                messageFromOtherSide.messageId<<" and put it in ResponseQueue \n this is the full response : "<<messageFromOtherSide.toString();
+				messageFromOtherSide.messageId<<" and put it in ResponseQueue \n this is the full response : "<<messageFromOtherSide.toString();
 			}
 			writeOneBuffer();
 
@@ -369,14 +369,14 @@ public:
 
 		queueType msg (key,value,command,database,user,col );
 		queueRequestMessages(msg);
-        
-        if(mylogger.isTraceEnabled())
+
+		if(mylogger.isTraceEnabled())
 		{
-			mylogger<<"\nClient : one message was pushed to requestQueue with this messageId "<<  msg.messageId<<"\n";
-            
+			mylogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg.messageId<<"\n";
+
 		}
-        return msg.messageId;
-        
+		return msg.messageId;
+
 		//            queueType msgReadFromQueue = commandQueue_.pop();
 		//            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
 
@@ -469,7 +469,6 @@ public:
 
 	}
 	void writeOneBuffer()
-	//boost::unique_lock<std::mutex> writeOneBufferLock)
 	{
 
 		mylogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
@@ -530,11 +529,14 @@ public:
 		try {
 
 			boost::unique_lock<std::mutex> writeOneBufferMutexLock(writeOneBufferMutex);
-			while(!message.recorded_message.msg_in_buffers->empty())
+			pico_buffered_message<pico_record> msg_in_buffers =
+			message.getCompleteMessageInJsonAsBuffers();
+
+			while(!msg_in_buffers.empty())
 			{
 
 				mylogger<<"\nPonocoDriver : queueRequestMessages : popping current Buffer \n";
-				pico_record buf = message.recorded_message.msg_in_buffers->pop();
+				pico_record buf = msg_in_buffers.pop();
 				mylogger<<"nPonocoDriver : popping current Buffer this is current buffer and pushing it to the bufferQueue to send "<<buf.toString()<<" \n";
 
 				std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));

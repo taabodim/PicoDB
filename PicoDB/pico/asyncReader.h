@@ -13,8 +13,6 @@
 #include <pico/pico_concurrent_list.h>
 #include <pico/pico_utils.h>
 
-//#include <pico/pico_recorded_message.h>
-
 #include  <pico_logger_wrapper.h>
 using namespace std;
 namespace pico {

@@ -100,12 +100,11 @@ public:
 		int i = 0;
 		std::shared_ptr<pico_collection> optionCollection =
 				collectionManager.getTheCollection(picoMsg.collection);
-        
-        listOfBuffersToWriteToDB=picoMsg.getDatabaseRecords();
-		
-        
-        pico_record firstrecord =
-				picoMsg.recorded_message.msg_in_buffers->pop();
+
+		pico_buffered_message<pico_record> msg_in_buffers =
+				picoMsg.getKeyValueOfMessageInRecords();
+
+		pico_record firstrecord = msg_in_buffers.pop();
 
 		offsetType whereToWriteThisRecord = -1;
 		if (collectionManager.getTheCollection(picoMsg.collection)->ifRecordExists(
@@ -121,11 +120,12 @@ public:
 
 		}
 
-		do {
+		
+        do {
+			
 			pico_record record;
 			if (i != 0) {
-				record =
-						picoMsg.recorded_message.msg_in_buffers->pop();
+				record = msg_in_buffers.pop();
 			} else {
 				record = firstrecord;
 			}
@@ -145,7 +145,7 @@ public:
 
 			}
 			i++;
-		} while (!picoMsg.recorded_message.msg_in_buffers->empty());
+		} while (!msg_in_buffers.empty());
 		string result("one message was added to database in ");
 		result.append(convertToString(i));
 		result.append(" seperate records");
@@ -162,8 +162,10 @@ public:
 		//i am using collection pointer because, it should be passed to the
 		//deleter thread , so it should be in heap
 
-		pico_record firstrecord =
-				picoMsg.recorded_message.msg_in_buffers->pop();
+		pico_buffered_message<pico_record> msg_in_buffers =
+						picoMsg.getKeyValueOfMessageInRecords();
+
+		pico_record firstrecord = msg_in_buffers.pop();
 		mylogger
 				<< "\n request_processor : record that is going to be deleted from this : "
 				<< firstrecord.toString();
@@ -178,8 +180,11 @@ public:
 	}
 	pico_message updateRecords(pico_message picoMsg) {
 		pico_collection optionCollection(picoMsg.collection);
-		pico_record firstrecord =
-				picoMsg.recorded_message.msg_in_buffers->pop();
+
+		pico_buffered_message<pico_record> msg_in_buffers =
+						picoMsg.getKeyValueOfMessageInRecords();
+
+		pico_record firstrecord = msg_in_buffers.pop();
 		if (optionCollection.ifRecordExists(firstrecord)) {
 			//if the record is found
 			deleteRecords(picoMsg);
@@ -232,8 +237,10 @@ public:
 		std::shared_ptr<pico_collection> collectionPtr =
 				collectionManager.getTheCollection(requestMessage.collection);
 
-		pico_record firstrecord =
-				requestMessage.recorded_message.msg_in_buffers->pop();
+		pico_buffered_message<pico_record> msg_in_buffers =
+				requestMessage.getKeyValueOfMessageInRecords();
+
+		pico_record firstrecord = msg_in_buffers.pop();
 		mylogger
 				<< "\n request_processor : record that is going to be fetched  from this : "
 				<< firstrecord.toString() << " \n offset of record is "

@@ -153,7 +153,7 @@ public:
 			pico_record nextRecord = retrieve(nextOffset);
 			if (pico_record::recordStartsWithConKEY(nextRecord)) {
 				all_offsets_for_this_message.push_back(nextOffset);
-				nextOffset += pico_record::max_size;
+				nextOffset += pico_record::max_database_record_size;
 			} else {
 
 				break;
@@ -200,7 +200,7 @@ public:
 
 		pico_record nextRecord = retrieve(nextOffset); //get the first record of this message
 		all_records_for_this_message.append(nextRecord);
-		nextOffset += pico_record::max_size;
+		nextOffset += pico_record::max_database_record_size;
 		do {
 
 			pico_record nextRecord = retrieve(nextOffset);
@@ -235,7 +235,7 @@ public:
 		pico_message util;
 		mylogger
 				<< "\n pico_collection : about to convert all the buffers read from db to a nice pico_message \n ";
-		pico_message msg = util.convertBuffersToMessage(
+		pico_message msg = util.convert_records_to_message(
 				all_records_for_this_message, messageIdForResponse,LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY);
 		mylogger
 				<< "\n pico_collection : retrieveOneMessage this is the whole message retrieved "
@@ -291,20 +291,37 @@ public:
 		pico_record record_read_from_file;
 
 		infileLocal.seekg(offset);
-		infileLocal.read((char*) record_read_from_file.data_,
-				pico_record::max_size);
+		char typeHolder [pico_record::max_key_type_size];
+		char keyHolder[pico_record::max_key_size];
+		char valueHolder[pico_record::max_value_size];
+
+
+
+		infileLocal.read((char*) typeHolder,
+						pico_record::max_key_type_size);
+		infileLocal.read((char*) keyHolder,
+				pico_record::max_key_size);
+		infileLocal.read((char*) valueHolder,
+						pico_record::max_value_size);
 
 		record_read_from_file.offset_of_record = offset;
-		mylogger << "\n read_all_records : record_read_from_file  "
-				<< record_read_from_file.toString();
 
-		mylogger
-				<< "\n read_all_records : record_read_from_file.getKeyAsString() "
-				<< record_read_from_file.getKeyAsString();
 
-		mylogger
-				<< "\n read_all_records : record_read_from_file.getValueAsString() "
-				<< record_read_from_file.getValueAsString();
+
+		string keyHolderStr = pico_record::unpadTheKey(keyHolder);
+
+		string typeHolderStr(typeHolder);
+		string valueHolderStr(valueHolder);
+
+
+		mylogger << "\n read_all_records : record_read_from_file : keyHolderStr  "
+				<< keyHolderStr;
+		mylogger << "\n read_all_records : record_read_from_file : typeHolderStr  "
+						<< typeHolderStr;
+		mylogger << "\n read_all_records : record_read_from_file : valueHolderStr  "
+						<< valueHolderStr;
+
+
 		infileLocal.close();
 		return record_read_from_file;
 
@@ -525,19 +542,25 @@ public:
 	void append_a_record(pico_record& record, offsetType record_offset) {
 
 		mylogger
-				<< "\nappending  one record to collection at this offset record_offset : "
+				<< "\npico_collection : appending  one record to collection at this offset record_offset : "
 				<< record_offset << " \n";
+		mylogger << "appending  one record key type is :  "
+						<< record.getKeyTypeAsString() << " \n";
 		mylogger << "appending  one record key is :  "
 				<< record.getKeyAsString() << " \n";
 		mylogger << "appending one record value is :  "
 				<< record.getValueAsString() << " \n";
+
 
 		if (record_offset == -1)
 			record_offset = 0;
 
 		std::unique_lock < std::mutex > writeLock(writeMutex);
 		file.seekp(record_offset, ios_base::beg);
-		file.write((char*) record.data_, pico_record::max_size);
+		file.write((char*) record.getKeyTypeAsString().c_str(), pico_record::max_key_type_size);
+		file.write((char*) record.getKeyAsString().c_str(), pico_record::max_key_size);
+		file.write((char*) record.getValueAsString().c_str(), pico_record::max_value_size);
+//		file.write((char*) record.data_, pico_record::max_size);
 		file.flush();
 		if (pico_record::recordStartsWithBEGKEY(record)) {
 			index.add_to_tree(record);

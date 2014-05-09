@@ -74,11 +74,13 @@ namespace pico {
             {
                 std::unique_lock<std::mutex> queueMessagesLock(queueMessagesMutext);
             //put all the buffers in the message in the buffer queue
-            while(!message.recorded_message.msg_in_buffers->empty())
+                pico_buffered_message<pico_record> msg_in_buffers =
+                		message.getCompleteMessageInJsonAsBuffers();
+            while(!msg_in_buffers.empty())
             {
                 
                 mylogger<<"pico_session : popping current Buffer ";
-                pico_record buf = message.recorded_message.msg_in_buffers->pop();
+                pico_record buf = msg_in_buffers.pop();
                 //                    mylogger<<"PonocoDriver : popping current Buffer this is current buffer ";
                 
                 std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
@@ -213,7 +215,7 @@ namespace pico {
                   allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 
                 pico_message util;
-                    pico_message last_read_message = util.convertBuffersToMessage(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
+                    pico_message last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
                 mylogger<<"\nsever : this is the complete message read from  "<<last_read_message.toString();
               
                 processDataFromOtherSide(last_read_message);
