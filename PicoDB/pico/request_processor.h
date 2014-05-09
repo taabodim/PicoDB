@@ -100,8 +100,12 @@ public:
 		int i = 0;
 		std::shared_ptr<pico_collection> optionCollection =
 				collectionManager.getTheCollection(picoMsg.collection);
-		pico_record firstrecord =
-				picoMsg.key_value_buffered_message.msg_in_buffers->pop();
+        
+        listOfBuffersToWriteToDB=picoMsg.getDatabaseRecords();
+		
+        
+        pico_record firstrecord =
+				picoMsg.recorded_message.msg_in_buffers->pop();
 
 		offsetType whereToWriteThisRecord = -1;
 		if (collectionManager.getTheCollection(picoMsg.collection)->ifRecordExists(
@@ -121,7 +125,7 @@ public:
 			pico_record record;
 			if (i != 0) {
 				record =
-						picoMsg.key_value_buffered_message.msg_in_buffers->pop();
+						picoMsg.recorded_message.msg_in_buffers->pop();
 			} else {
 				record = firstrecord;
 			}
@@ -141,7 +145,7 @@ public:
 
 			}
 			i++;
-		} while (!picoMsg.key_value_buffered_message.msg_in_buffers->empty());
+		} while (!picoMsg.recorded_message.msg_in_buffers->empty());
 		string result("one message was added to database in ");
 		result.append(convertToString(i));
 		result.append(" seperate records");
@@ -159,7 +163,7 @@ public:
 		//deleter thread , so it should be in heap
 
 		pico_record firstrecord =
-				picoMsg.key_value_buffered_message.msg_in_buffers->pop();
+				picoMsg.recorded_message.msg_in_buffers->pop();
 		mylogger
 				<< "\n request_processor : record that is going to be deleted from this : "
 				<< firstrecord.toString();
@@ -175,7 +179,7 @@ public:
 	pico_message updateRecords(pico_message picoMsg) {
 		pico_collection optionCollection(picoMsg.collection);
 		pico_record firstrecord =
-				picoMsg.key_value_buffered_message.msg_in_buffers->pop();
+				picoMsg.recorded_message.msg_in_buffers->pop();
 		if (optionCollection.ifRecordExists(firstrecord)) {
 			//if the record is found
 			deleteRecords(picoMsg);
@@ -229,7 +233,7 @@ public:
 				collectionManager.getTheCollection(requestMessage.collection);
 
 		pico_record firstrecord =
-				requestMessage.key_value_buffered_message.msg_in_buffers->pop();
+				requestMessage.recorded_message.msg_in_buffers->pop();
 		mylogger
 				<< "\n request_processor : record that is going to be fetched  from this : "
 				<< firstrecord.toString() << " \n offset of record is "

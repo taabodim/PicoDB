@@ -36,7 +36,7 @@ public:
 	//std::string json_key_value_pair;
 	std::string hashCodeOfMessage;
 
-	pico_buffered_message<pico_record> key_value_buffered_message;
+	//pico_buffered_message<pico_record> key_value_buffered_message;
 	////key value pair that came with this message in record list to
 	//be saved in db
 
@@ -62,9 +62,7 @@ public:
 		////this->json_key_value_pair = msg.json_key_value_pair;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
-		this->key_value_buffered_message = msg.key_value_buffered_message;
-
-	}
+		}
 	pico_message operator=(const pico_message& msg) {
 
 		mylogger << "\npico_message operator assignment being called.\n";
@@ -82,8 +80,7 @@ public:
 		//this->json_key_value_pair = msg.json_key_value_pair;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
-		this->key_value_buffered_message = msg.key_value_buffered_message;
-
+	
 		return *this;
 	}
 
@@ -208,7 +205,6 @@ public:
 		//this->json_key_value_pair = msg.json_key_value_pair;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
-		this->key_value_buffered_message = msg.key_value_buffered_message;
 		return *this;
 	}
 	std::string convert_message_to_json() {
@@ -439,8 +435,7 @@ public:
 
 		pico_record::removeTheAppendMarker(recorded_message.getLastBuffer()); //removes the append marker from the last record
 
-		key_value_buffered_message.print();
-	}
+		}
 
      
 	//        std::shared_ptr<pico_concurrent_list<type>> msg_in_buffers

@@ -240,9 +240,9 @@ public:
 //		return key_;
 //	}
 
-	string key; //the string form of key
+	
 	string getKeyAsString() {
-         key.clear();
+         string key; //the string form of key
 		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 
@@ -255,9 +255,9 @@ public:
 		}
 		return key;
 	}
-	string value;		//the string form of value
+	
 	string getValueAsString() {
-        value.clear();
+        string value;		//the string form of value
 		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 
@@ -270,9 +270,9 @@ public:
 		}
 		return value;
 	}
-	string messageId;		//the string form of messageId
-	string getMessageIdAsString() {
-        messageId.clear();
+		string getMessageIdAsString() {
+            string messageId;		//the string form of messageId
+
 		memcpy(data_copy, data_, sizeof(data_));//get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
 
