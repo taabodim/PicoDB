@@ -540,16 +540,18 @@ public:
 
 	}
 	void append_a_record(pico_record& record, offsetType record_offset) {
-
+		string keyType=record.getKeyTypeAsString();
+		string key = record.getKeyAsString();
+		string value = record.getValueAsString();
 		mylogger
 				<< "\npico_collection : appending  one record to collection at this offset record_offset : "
 				<< record_offset << " \n";
 		mylogger << "appending  one record key type is :  "
-						<< record.getKeyTypeAsString() << " \n";
+						<<  keyType<< " \n";
 		mylogger << "appending  one record key is :  "
-				<< record.getKeyAsString() << " \n";
+				<< key << " \n";
 		mylogger << "appending one record value is :  "
-				<< record.getValueAsString() << " \n";
+				<< value << " \n";
 
 
 		if (record_offset == -1)
@@ -557,9 +559,9 @@ public:
 
 		std::unique_lock < std::mutex > writeLock(writeMutex);
 		file.seekp(record_offset, ios_base::beg);
-		file.write((char*) record.getKeyTypeAsString().c_str(), pico_record::max_key_type_size);
-		file.write((char*) record.getKeyAsString().c_str(), pico_record::max_key_size);
-		file.write((char*) record.getValueAsString().c_str(), pico_record::max_value_size);
+		file.write((char*) keyType.c_str(), pico_record::max_key_type_size);
+		file.write((char*) key.c_str(), pico_record::max_key_size);
+		file.write((char*) value.c_str(), pico_record::max_value_size);
 //		file.write((char*) record.data_, pico_record::max_size);
 		file.flush();
 		if (pico_record::recordStartsWithBEGKEY(record)) {
