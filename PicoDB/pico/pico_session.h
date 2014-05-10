@@ -201,11 +201,12 @@ namespace pico {
                 ignoreThisMessageAndWriterNextBuffer();
             
             else
-                if(pico_record::find_last_of_string(currentBuffer))
+                if(pico_record::IsThisRecordAnAddOn(*currentBuffer))
             {
                 mylogger<<"\nsession: this buffer is an add on to the last message..dont process anything..read the next buffer\n";
 
                 allBuffersReadFromTheOtherSide.append(*currentBuffer);
+                
                 tellHimSendTheRestOfData(currentBuffer->getMessageIdAsString()); //we should call the getMessageId to construct the message out of array of chars
 
             }

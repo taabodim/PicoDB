@@ -245,7 +245,9 @@ public:
 				<< "\n request_processor : record that is going to be fetched  from this : "
 				<< firstrecord.toString() << " \n offset of record is "
 				<< firstrecord.offset_of_record;
-
+        
+        assert(!requestMessage.messageId.empty());
+        
 		pico_message responseMsg = collectionPtr->getMessageByKey(firstrecord,
 				requestMessage.messageId);
 		mylogger << "\n request_processor : record that is fetched  db : "

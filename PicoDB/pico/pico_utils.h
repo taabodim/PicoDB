@@ -11,6 +11,7 @@
 #include <chrono>
 #include <pico_logger_wrapper.h>
 
+#include <assert.h>
 using namespace std;
 
 namespace pico{

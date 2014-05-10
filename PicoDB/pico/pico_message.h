@@ -17,6 +17,7 @@
 #include <pico/pico_buffered_message.h>
 #include <list>
 
+
 namespace pico {
 class pico_message: public pico_logger_wrapper {
 private:
@@ -363,13 +364,15 @@ public:
 								<< "\n key extracted from key record as string is "
 								<< key;
 					}
-
+                    assert(!key.empty());
 					string valueExtracted = buf.getValueAsString();
 					if (mylogger.isTraceEnabled()) {
 						mylogger
 								<< "\n the value part of key record as string is "
 								<< valueExtracted;
 					}
+                    assert(!valueExtracted.empty());
+					
 					value.append(valueExtracted);
 				}	//its a begkey record
 				//if buffer is continuing key
@@ -385,7 +388,7 @@ public:
 								<< "\n the incomplete value part of contining record as string is "
 								<< valueIncomplete;
 					}
-
+                    assert(!valueIncomplete.empty());
 					value.append(valueIncomplete);
 				} else //its a message that passes between client and server and
 					   //is not in db
@@ -406,7 +409,8 @@ public:
 
 		if (type.compare(COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY)
 				== 0) {
-
+            assert(!allMessage.empty());
+//            assert(!messageId.empty());
 			pico_message pico_msg(allMessage, messageId);
 			return pico_msg;
 
@@ -415,8 +419,11 @@ public:
 			mylogger
 					<< "pico_message : convert_records_to_message : extracted key is "
 					<< key << "\n value : " << value << "\n";
-
-			pico_message pico_msg(key, value, messageId);
+            assert(!key.empty());
+            assert(!value.empty());
+            assert(!messageId.empty());
+                   
+            pico_message pico_msg(key, value, messageId);
 			return pico_msg;
 
 		}
@@ -481,21 +488,25 @@ public:
 			if (addBEGKEY_CONKEY == true )
 				{
 				pico_record::setTheKeyInData(currentBuffer, this->key);
-				pico_record::setTheMessageIdInData(currentBuffer, messageId);
+				
 				}
-
-
+            
+            assert(!messageId.empty());
+            
 			pico_record::setTheValueInData(currentBuffer, valueForThisBuffer);
-
+            pico_record::setTheMessageIdInData(currentBuffer, messageId);
 
 			pico_record::addAppendMarkerToTheEnd(currentBuffer); //add append
 			buffersContainingMessage.append(currentBuffer);
-
+            
 		}
 
 		pico_record::removeTheAppendMarker(
 				buffersContainingMessage.getLastBuffer()); //removes the append marker from the last record
-		return buffersContainingMessage;
+        
+        assert(!pico_record::IsThisRecordAnAddOn(*buffersContainingMessage.getLastBuffer()));
+		
+        return buffersContainingMessage;
 	}
 	~pico_message() {
 		mylogger << ("pico_message being destroyed now.\n");

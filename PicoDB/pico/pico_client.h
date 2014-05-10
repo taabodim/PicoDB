@@ -238,7 +238,7 @@ public:
 			ignoreThisMessageAndWriterNextBuffer();
 		}
 		else {
-			if(pico_record::find_last_of_string(currentBuffer))
+			if(pico_record::IsThisRecordAnAddOn(*currentBuffer))
 			{
 				if(mylogger.isTraceEnabled())
 				{
@@ -495,6 +495,8 @@ public:
 				[this,self,currentBuffer](const boost::system::error_code& error,
 						std::size_t t) {
 					string str = currentBuffer->toString();
+                    
+                    
 					if(mylogger.isTraceEnabled())
 					{
 						mylogger<<t<<"Client  bytes to server \n";
@@ -509,6 +511,9 @@ public:
 						mylogger<<"\n Client : data sent to server is "<<str<<" end of data!";
 
 					}
+                    
+                    assert(t!=0);
+                    
 					readOneBuffer();
 				});
 
