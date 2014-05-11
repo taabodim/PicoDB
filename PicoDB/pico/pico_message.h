@@ -199,15 +199,15 @@ public:
 	pico_message(std::string newKey, std::string newValue, std::string com,
 			std::string database, std::string us, std::string col) {
 
-		command = com;
-		collection = col;
-		db = database;
-		user = us;
-		key = newKey;
-		value = newValue;
-		messageId = calc_request_id();
-		json_form_of_message = convert_message_to_json();
-		messageSize = json_form_of_message.size();
+		this->command = com;
+		this->collection = col;
+		this->db = database;
+		this->user = us;
+		this->key = newKey;
+		this->value = newValue;
+		this->messageId = calc_request_id();
+		this->json_form_of_message = convert_message_to_json();
+		this->messageSize = json_form_of_message.size();
 
 		set_hash_code();
 
@@ -215,33 +215,33 @@ public:
 	pico_message(std::string newKey, std::string old_value_arg,
 			std::string newValue, std::string com, std::string database,
 			std::string us, std::string col) {
-		command = com;
-		collection = col;
-		db = database;
-		user = us;
-		key = newKey;
-		oldvalue = old_value_arg;
-		value = newValue;
-		messageId = calc_request_id();
-		json_form_of_message = convert_message_to_json();
-		messageSize = json_form_of_message.size();
+		this->command = com;
+		this->collection = col;
+		this->db = database;
+		this->user = us;
+		this->key = newKey;
+		this->oldvalue = old_value_arg;
+		this->value = newValue;
+		this->messageId = calc_request_id();
+		this->json_form_of_message = convert_message_to_json();
+		this->messageSize = json_form_of_message.size();
 
 		set_hash_code();
 
 	}
 	pico_message(std::string keyFromDB, std::string valueFromDB,
-			string messageId) {
+			string messageIdArg) {
 		//this is used when we want to create a nice pico message
 		//out of array of buffers
-		command = "unknown";
-		collection = "unknown";
-		db = "unknown";
-		user = "unknown";
-		key = keyFromDB;
-		value = valueFromDB;
-		messageId = messageId;
-		json_form_of_message = convert_message_to_json();
-		messageSize = json_form_of_message.size();
+		this->command = "unknown";
+		this->collection = "unknown";
+		this->db = "unknown";
+        this->user = "unknown";
+            this->key = keyFromDB;
+		this->value = valueFromDB;
+		this->messageId = messageIdArg;
+		this->json_form_of_message = convert_message_to_json();
+		this->messageSize = json_form_of_message.size();
 		set_hash_code();
 
 	}
@@ -278,6 +278,7 @@ public:
 			mylogger
 					<< " pico_message : getCompleteMessageInJsonAsBuffers being called \n";
 		}
+        assert(!messageId.empty());
 		recorded_message = convert_message_to_records(
 				this->json_form_of_message, false);
 
@@ -321,9 +322,9 @@ public:
 	//
 	//        }
 	pico_message convert_records_to_message(
-			pico_buffered_message<pico_record> all_buffers, string messageId,
+			pico_buffered_message<pico_record> all_buffers, string messageIdArg,
 			messageType type) {
-
+        assert(!messageIdArg.empty());
 		if (mylogger.isTraceEnabled()) {
 			mylogger
 					<< "\n pico_message :  this is the start of the convert_records_to_message function \n";
@@ -358,13 +359,16 @@ public:
 						mylogger
 								<< "\n pico_message : convertBuffersToMessage : buffer starts with BEGKEY \n";
 					}
-					string key = buf.getKeyAsString();
+					if(this->key.empty())
+                    {
+                        this->key = buf.getKeyAsString();
+                    }
 					if (mylogger.isTraceEnabled()) {
 						mylogger
 								<< "\n key extracted from key record as string is "
-								<< key;
+								<< this->key;
 					}
-                    assert(!key.empty());
+                    assert(!this->key.empty());
 					string valueExtracted = buf.getValueAsString();
 					if (mylogger.isTraceEnabled()) {
 						mylogger
@@ -410,8 +414,9 @@ public:
 		if (type.compare(COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY)
 				== 0) {
             assert(!allMessage.empty());
-//            assert(!messageId.empty());
-			pico_message pico_msg(allMessage, messageId);
+            assert(!messageIdArg.empty());
+			pico_message pico_msg(allMessage, messageIdArg);
+            assert(!pico_msg.messageId.empty());
 			return pico_msg;
 
 		} else if (type.compare(LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY)
@@ -419,12 +424,14 @@ public:
 			mylogger
 					<< "pico_message : convert_records_to_message : extracted key is "
 					<< key << "\n value : " << value << "\n";
-            assert(!key.empty());
+            assert(!this->key.empty());
             assert(!value.empty());
-            assert(!messageId.empty());
+            assert(!messageIdArg.empty());
                    
-            pico_message pico_msg(key, value, messageId);
-			return pico_msg;
+            pico_message pico_msg(this->key, value, messageIdArg);
+            assert(!pico_msg.messageId.empty());
+			
+            return pico_msg;
 
 		}
 
@@ -443,7 +450,8 @@ public:
 		if (mylogger.isTraceEnabled()) {
 			mylogger
 					<< " number of records needed to contain the key value of this message is "
-					<< numOfBuffersNeededForThisMessage << "\n";
+					<< numOfBuffersNeededForThisMessage << "\n theMessageToConvertToBuffers : "
+                    <<theMessageToConvertToBuffers<<"\n";
 		}
 		for (int i = 0, indexInJsonMessage = 0;
 				i < numOfBuffersNeededForThisMessage; i++) {

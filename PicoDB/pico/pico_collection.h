@@ -26,6 +26,10 @@ namespace pico {
         char keyHolder[pico_record::max_key_size];
         char valueHolder[pico_record::max_value_size];
     };
+    
+    //these the parts of record that are saved in file
+    const static int max_database_record_size = sizeof(struct recordInDatabase);
+    
     class pico_collection: public std::enable_shared_from_this<pico_collection>,
     public pico_logger_wrapper {
         
@@ -147,7 +151,7 @@ namespace pico {
                 pico_record nextRecord = retrieve(nextOffset);
                 if (pico_record::recordStartsWithConKEY(nextRecord)) {
                     all_offsets_for_this_message.push_back(nextOffset);
-                    nextOffset += pico_record::max_database_record_size;
+                    nextOffset += max_database_record_size;
                 } else {
                     
                     break;
@@ -175,31 +179,19 @@ namespace pico {
             }
             offsetType endOffset = getEndOfFileOffset(file);
             
-            //		if (offsetOfFirstRecordOfMessage > endOffset) {
-            //			string error("offset in tree is wrong");
-            //			string messageId("offsetIsWrong");
-            //			pico_message msg = pico_message::build_message_from_string(error,
-            //					messageId);
-            //			mylogger
-            //					<< "\n pico_collection : retrieveOneMessage offset is  wrong "
-            //					<< msg.toString();
-            //			return msg;
-            //		}
-            
-            //            std::shared_ptr<list<pico_record>> all_records_for_this_message(new list<pico_record>());
-            //it should be shared ptr in the heap because list wont copy over to the next function nicely
             pico_buffered_message<pico_record> all_records_for_this_message;
             
             offsetType nextOffset = offsetOfFirstRecordOfMessage;
             
             pico_record nextRecord = retrieve(nextOffset); //get the first record of this message
             all_records_for_this_message.append(nextRecord);
-            nextOffset += pico_record::max_database_record_size;
+            nextOffset += max_database_record_size;
             do {
                 
                 pico_record nextRecord = retrieve(nextOffset);
                 assert(!nextRecord.toString().empty());
                 
+                assert(pico_record::recordStartsWithBEGKEY(nextRecord) || pico_record::recordStartsWithConKEY(nextRecord));
                 if (pico_record::recordStartsWithConKEY(nextRecord)) //this for the next message
                 {
                     if (mylogger.isTraceEnabled()) {
@@ -220,18 +212,22 @@ namespace pico {
                         mylogger<< "\npico_collection : retrieveOneMessage : this buffer doesnt start with CONKEY  \n"
                         << nextRecord.toString() << "\n";
                     }
+                    
                     break;
                 }
                 
                 
-                nextOffset += pico_record::max_size;
+                nextOffset += max_database_record_size;
                 
             } while (nextOffset<endOffset);
             pico_message util;
             mylogger
             << "\n pico_collection : about to convert all the buffers read from db to a nice pico_message \n ";
+      
+            assert(!messageIdForResponse.empty());
             pico_message msg = util.convert_records_to_message(
                                                                all_records_for_this_message, messageIdForResponse,LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY);
+            
             mylogger
             << "\n pico_collection : retrieveOneMessage this is the whole message retrieved "
             << msg.toString();
@@ -243,14 +239,19 @@ namespace pico {
                                      string messageIdForResponse) {
             
             if (index.search(record) != nullptr) {
+                assert(record.offset_of_record>-1);
+                assert(!messageIdForResponse.empty());
                 mylogger << " getMessageByKey record.offset_of_record is "
                 << record.offset_of_record << "\n";
                 pico_message foundMessage = retrieveOneMessage(
                                                                record.offset_of_record, messageIdForResponse);
+                
+               
                 mylogger
                 << "\n pico_collection : getMessageByKey this is the whole message , messageId : "
                 << foundMessage.messageId << "\n content : \n "
                 << foundMessage.toString();
+                assert(!foundMessage.messageId.empty());
                 return foundMessage;
             }
             mylogger << " getMessageByKey didnt find this record ";
@@ -391,7 +392,7 @@ namespace pico {
             // cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
             
             for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-                 pico_record::max_size) {
+                 max_database_record_size) {
                 //  cout << " read_all_records_offsets : reading one record from offset "<<offset  //<< std::endl;
                 
                 pico_record record_read_from_file = retrieve(offset);
@@ -417,9 +418,10 @@ namespace pico {
                 mylogger << "\n offset of end of file is " << endOfFile_Offset;
                 
                 for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-                     pico_record::max_size) {
+                     max_database_record_size) {
                     
                     pico_record record_read_from_file = retrieve(offset);
+                    record_read_from_file.offset_of_record =offset;
                     mylogger
                     << "\n read_all_records_offsets : reading one record from offset "
                     << offset << "\n the record read is "
@@ -542,13 +544,12 @@ namespace pico {
         void overwrite(pico_record record, offsetType record_offset) { //this overwrites a file
             
             mylogger << "\noverwriting  one record to collection at this offset\n";
-            
-            std::unique_lock < std::mutex > writeLock(writeMutex);
+            int tryNum=0;
             do {
                 //this while loop will take care of multi threaded delete
-                file.seekp(record_offset);
-                file.write((char*) record.data_, pico_record::max_size);
-                file.flush();
+               
+                append_a_record(record,record_offset);
+                
                 pico_record currentRecord = retrieve(record_offset);
                 if (currentRecord.areRecordsEqual(record)) {
                     break;
@@ -563,8 +564,9 @@ namespace pico {
                     << currentRecord.getValueAsString()
                     << " vs record.getValueAsString() is "
                     << record.getValueAsString();
+                    tryNum++;
                 }
-            } while (true);
+            } while (tryNum<20);
         }
         void insert(pico_record& record) { //this appends to the end of file
             append(record);
@@ -594,20 +596,20 @@ namespace pico {
             fread(&my_record,sizeof(struct recordInDatabase),1,ptr_myfile);
             
             
-            for(int i=pico_record::beg_key_type_index;i<pico_record::max_key_type_size;i++)
+            for(int i=pico_record::beg_key_type_index;i<pico_record::end_key_type_index;i++)
             {
                 
-                read_from_file.data_[i]=my_record.typeHolder[i];
+                read_from_file.data_[i]=my_record.typeHolder[i-pico_record::beg_key_type_index];
                 
             }
             for(int i=pico_record::beg_of_key_index;i<pico_record::end_of_key_index;i++)
             {
-                read_from_file.data_[i]=my_record.keyHolder[i];
+                read_from_file.data_[i]=my_record.keyHolder[i-pico_record::beg_of_key_index];
                 
             }
             for(int i=pico_record::beg_of_value_index;i<pico_record::end_of_value_index;i++)
             {
-                read_from_file.data_[i]=my_record.valueHolder[i];
+                read_from_file.data_[i]=my_record.valueHolder[i-pico_record::beg_of_value_index];
                 
             }
             
@@ -653,55 +655,17 @@ namespace pico {
             fwrite(&my_record, sizeof(struct recordInDatabase), 1, ptr_myfile);
             fflush(ptr_myfile);
             fclose(ptr_myfile);
-        }
-        void append_a_recordDeprecated(pico_record& record, offsetType record_offset) {
-            string keyType=record.getKeyTypeAsString();
-            string key = record.getKeyAsString();
-            string value = record.getValueAsString();
-            //
-            //get a fresh copy of the variables
-            //because they will be converted to char*  and they might point to other part of memory
-            //if we use original variables as they might not fully completed
             
-            mylogger
-            << "\npico_collection : appending  one record to collection at this offset record_offset : "
-            << record_offset << " \n";
-            mylogger << "appending  one record key type is :  "
-            <<  keyType<< " \n";
-            mylogger << "appending  one record key is :  "
-            << key << " \n";
-            mylogger << "appending one record value is :  "
-            << value << " \n";
-            
-            size_t emptyPaddingForValueSize =pico_record::max_value_size-value.size();
-            size_t emptyPaddingForKeySize =pico_record::max_key_size-key.size();
-            
-            
-            string emptyPaddingForValue(emptyPaddingForValueSize,'`');
-            string emptyPaddingForKey(emptyPaddingForKeySize,'`');
-            
-            
-            if (record_offset == -1)
-                record_offset = 0;
-            
-            std::unique_lock < std::mutex > writeLock(writeMutex);
-            file.seekp(record_offset, ios_base::beg);
-            file.write((char*) keyType.c_str(), key.size());
-            
-            file.write((char*) key.c_str(), key.size());
-            if(emptyPaddingForKeySize>0) file.write((char*) emptyPaddingForKey.c_str(), emptyPaddingForKeySize);
-            
-            file.write((char*) value.c_str(), value.size());
-            if(emptyPaddingForValueSize>0) file.write((char*) emptyPaddingForValue.c_str(), emptyPaddingForValueSize);
-            
-            
-            //		file.write((char*) record.data_, pico_record::max_size);
-            file.flush();
             if (pico_record::recordStartsWithBEGKEY(record)) {
-                index.add_to_tree(record);
+                if(index.search(record)==nullptr)
+                {
+                    record.offset_of_record=record_offset;
+                    index.add_to_tree(record);
+                }
             }
-            
+           
         }
+      
         
         ~pico_collection() {
             //		outfile.flush();

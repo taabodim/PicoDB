@@ -59,16 +59,12 @@ namespace pico {
         
         const static int max_size = end_of_appendMarker_index;
         
-        long previous_record_offset;//if its -1, it means that there is no parent, if its more than -1, it indicates that it is add on to previous record
+        long previous_record_offset = -1;//if its -1, it means that there is no parent, if its more than -1, it indicates that it is add on to previous record
         
         char data_[max_size];
         char data_copy[max_size];
         
-        //these the parts of record that are saved in file
-        const static int max_database_record_size = max_key_type_size + max_key_size + max_value_size;
-        
-        offsetType offset_of_record;//this is the offset in the file and the index
-        offsetType previousRecordOffset;
+        offsetType offset_of_record=-1;//this is the offset in the file and the index
         
         // Construct from a std::string.
         //        void setValue(const std::string  realData) {
@@ -143,7 +139,7 @@ namespace pico {
             //		for (int i = 0; i < messageId_size; i++) { //initializng
             //			messageId_[i] = '\0';
             //		}
-            
+            offset_of_record=-1;
         }
         
         pico_record(const pico_record& buffer) {
