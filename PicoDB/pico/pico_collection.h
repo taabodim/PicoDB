@@ -238,7 +238,6 @@ namespace pico {
                                      string messageIdForResponse) {
             
             if (index.search(record) != nullptr) {
-                assert(record.offset_of_record>-1);
                 assert(!messageIdForResponse.empty());
                 mylogger << " getMessageByKey record.offset_of_record is "
                 << record.offset_of_record << "\n";
