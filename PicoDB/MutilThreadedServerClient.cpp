@@ -61,7 +61,7 @@
 #include <pico/ThreadPool.h>
 #include <pico/pico_test.h>
 #include <pico/pico_server.h>
-
+#include <pico/pico_utils.h>
 #include <pico/pico_record.h>
 #include <pico/pico_collection.h>
 #include <pico/pico_client.h>
@@ -956,6 +956,9 @@ std::string request_processor::findCommand("find");
 std::string request_processor::getCommand("get");
 std::string request_processor::addUserToDBCommand("adduser");
 std::string request_processor::deleteUserToDBCommand("deleteuser");
+std::string request_processor::deleteCollectionCommand("deleteCollection");
+std::string request_processor::createCollectionCommand("createCollection");
+std::string PicoConfig::dataDir("/Users/mahmoudtaabodi/Documents/");
 
 std::string pico_record::BEGKEY {"BEGKEY"};
 std::string pico_record::CONKEY {"CONKEY"};

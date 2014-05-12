@@ -20,19 +20,19 @@ private:
 	collection_manager collectionManager;
 public:
 
-	pico_message insertOneMessage(pico_message picoMsg, offsetType offset) //insert at a specific offset
+	msgPtr insertOneMessage(msgPtr picoMsg, offsetType offset) //insert at a specific offset
 			{
 		
 		std::shared_ptr<pico_collection> optionCollection =
-				collectionManager.getTheCollection(picoMsg.collection);
+				collectionManager.getTheCollection(picoMsg->collection);
 
 		pico_buffered_message<pico_record> msg_in_buffers =
-				picoMsg.getKeyValueOfMessageInRecords();
+				picoMsg->getKeyValueOfMessageInRecords();
                 int initialSize = msg_in_buffers.size();
 		pico_record firstrecord = msg_in_buffers.peek();
 
 		offsetType whereToWriteThisRecord = offset;
-		if (collectionManager.getTheCollection(picoMsg.collection)->ifRecordExists(
+		if (collectionManager.getTheCollection(picoMsg->collection)->ifRecordExists(
 				firstrecord)) {
 
 			if (mylogger.isTraceEnabled()) {
@@ -41,8 +41,8 @@ public:
 			}
 
 			string result("record already exists in database ");
-			pico_message msg = pico_message::build_message_from_string(result,
-					picoMsg.messageId);
+			msgPtr msg = pico_message::build_message_from_string(result,
+					picoMsg->messageId);
 			return msg;
 
 		}
@@ -64,24 +64,24 @@ public:
 		result.append(convertToString(i));
 		result.append(" seperate records");
 
-		pico_message msg = pico_message::build_message_from_string(result,
-				picoMsg.messageId);
+		msgPtr msg = pico_message::build_message_from_string(result,
+				picoMsg->messageId);
 		return msg;
 
 	}
 
-	pico_message insertOneMessage(pico_message picoMsg) {
+	msgPtr insertOneMessage(msgPtr picoMsg) {
 
 		std::shared_ptr<pico_collection> optionCollection =
-				collectionManager.getTheCollection(picoMsg.collection);
+				collectionManager.getTheCollection(picoMsg->collection);
 
 		pico_buffered_message<pico_record> msg_in_buffers =
-				picoMsg.getKeyValueOfMessageInRecords();
+				picoMsg->getKeyValueOfMessageInRecords();
             int initialSize = msg_in_buffers.size();
 		pico_record firstrecord = msg_in_buffers.peek();
 
 		offsetType whereToWriteThisRecord = -1;
-		if (collectionManager.getTheCollection(picoMsg.collection)->ifRecordExists(
+		if (collectionManager.getTheCollection(picoMsg->collection)->ifRecordExists(
 				firstrecord)) {
 
 			if (mylogger.isTraceEnabled()) {
@@ -90,8 +90,8 @@ public:
 			}
 
 			string result("record already exists in database ");
-			pico_message msg = pico_message::build_message_from_string(result,
-					picoMsg.messageId);
+			msgPtr msg = pico_message::build_message_from_string(result,
+					picoMsg->messageId);
 			return msg;
 
 		}
@@ -114,8 +114,9 @@ public:
 		result.append(convertToString(i));
 		result.append(" seperate records");
 
-		pico_message msg = pico_message::build_message_from_string(result,
-				picoMsg.messageId);
+		msgPtr msg = pico_message::build_message_from_string(result,
+				picoMsg->messageId);
+        
 		return msg;
 
 	}

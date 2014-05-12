@@ -19,8 +19,11 @@
 
 
 namespace pico {
+class pico_message;
+typedef std::shared_ptr<pico_message> msgPtr;
 class pico_message: public pico_logger_wrapper {
 private:
+
 	pico_buffered_message<pico_record> recorded_message; //a container for all the records that make up the whole message as a full json with all the value
 	pico_buffered_message<pico_record> keyValueInBuffers;
 	//a container for all the records that make up the key value
@@ -130,10 +133,10 @@ public:
 		std::string output = writer.write(root);
 		return output;
 	}
-	static pico_message build_message_from_string(const string value,
+	static msgPtr build_message_from_string(const string value,
 			string messageId) {
 
-		pico_message msg(value, true, messageId); //the message id is very important to be set here ,
+		msgPtr msg (new pico_message(value, true, messageId)); //the message id is very important to be set here ,
 		//it connects the response to the right request after request processor
 		// processes it
 		return msg;

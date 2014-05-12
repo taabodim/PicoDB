@@ -25,7 +25,7 @@ class pico_session: public std::enable_shared_from_this<pico_session>,
 
 private:
 	std::shared_ptr<tcp::socket> socket_;
-	typedef pico_message queueType;
+	typedef msgPtr queueType;
 public:
 	static string logFileName;
 	pico_session(std::shared_ptr<tcp::socket> r_socket) {
@@ -130,7 +130,7 @@ public:
 					> queueMessagesLock(queueMessagesMutext);
 			//put all the buffers in the message in the buffer queue
 			pico_buffered_message<pico_record> msg_in_buffers =
-					message.getCompleteMessageInJsonAsBuffers();
+					message->getCompleteMessageInJsonAsBuffers();
 			while (!msg_in_buffers.empty()) {
 
 				mylogger << "pico_session : popping current Buffer ";
@@ -171,21 +171,21 @@ public:
 		mylogger << "\nend of function readingAndWritingRecordData() ";
 
 	}
-	void processDataFromOtherSide(pico_message messageFromOtherSide) {
+	void processDataFromOtherSide(msgPtr messageFromOtherSide) {
 
 		try {
 			if (mylogger.isTraceEnabled()) {
 				mylogger << "\nServer read this message from client "
-						<< messageFromOtherSide.toString() << "...\n";
+						<< messageFromOtherSide->toString() << "...\n";
 			}
 
-			pico_message reply = requestProcessor_.processRequest(
+			msgPtr reply = requestProcessor_.processRequest(
 					messageFromOtherSide);
 			if (mylogger.isTraceEnabled()) {
 
 				mylogger
 						<< "server : putting reply to the queue this is the message that server read just now"
-						<< reply.toString();
+						<< reply->toString();
 			}
 
 			queueMessages(reply);
@@ -223,7 +223,7 @@ public:
 			mylogger << "\nsever : this is the complete message read from Client "
 					<< last_read_message->toString();
 
-			processDataFromOtherSide(*last_read_message);
+			processDataFromOtherSide(last_read_message);
 			allBuffersReadFromTheOtherSide.clear();
 			writeOneBuffer(); //going to writing mode to write the reply for this complete message
 
@@ -236,37 +236,37 @@ public:
 			return true;
 		return false;
 	}
-	void tellHimSendTheRestOfData(string messageId) {
-		if (mylogger.isTraceEnabled()) {
-			mylogger
-					<< "\nServer is telling send the rest of data for this message Id  "
-					<< messageId << " \n";
-		}
+//	void tellHimSendTheRestOfData(string messageId) {
+//		if (mylogger.isTraceEnabled()) {
+//			mylogger
+//					<< "\nServer is telling send the rest of data for this message Id  "
+//					<< messageId << " \n";
+//		}
+//
+//		string msg("sendmetherestofdata");
+//
+//		pico_message replyTemp = pico_message::build_message_from_string(msg,
+//				messageId);
+//
+//		if (mylogger.isTraceEnabled()) {
+//			mylogger << "\nServer is going to put this message to the queue "
+//					<< reply.toString() << " \n";
+//		}
+//        msgPtr reply(new pico_nessage(replyTemp));
+//		queueMessages(reply);
+//
+//	}
 
-		string msg("sendmetherestofdata");
-
-		pico_message reply = pico_message::build_message_from_string(msg,
-				messageId);
-
-		if (mylogger.isTraceEnabled()) {
-			mylogger << "\nServer is going to put this message to the queue "
-					<< reply.toString() << " \n";
-		}
-
-		queueMessages(reply);
-
-	}
-
-	void ignoreThisMessageAndWriterNextBuffer() {
-
-		if (mylogger.isTraceEnabled()) {
-			mylogger
-					<< "\nServer is going to ignore this message and do nothing and go to writing mode \n";
-
-		}
-		writeOneBuffer();
-
-	}
+//	void ignoreThisMessageAndWriterNextBuffer() {
+//
+//		if (mylogger.isTraceEnabled()) {
+//			mylogger
+//					<< "\nServer is going to ignore this message and do nothing and go to writing mode \n";
+//
+//		}
+//		writeOneBuffer();
+//
+//	}
 
 	void print(const boost::system::error_code& error, std::size_t t,
 			string& str) {

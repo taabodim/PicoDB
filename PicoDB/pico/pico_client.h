@@ -350,7 +350,6 @@ public:
 				messageFromOtherSide->messageId<<" and put it in ResponseQueue \n this is the full response : "<<messageFromOtherSide->toString();
 				assert(messageFromOtherSide->toString().size()>0);
 			}
-			
 
 		} catch (std::exception &e) {
 			cout << " this is the error : " << e.what() << endl;
@@ -416,6 +415,51 @@ public:
 		return getTheResponseOfRequest(msg);
 	}
 
+	queueType deleteCollection(std::string collectionName) {
+		string key("unimportant");
+		string value("unimportant");
+		string command("deleteCollection");
+
+		string database("currencyDB");
+		string user("currencyUser");
+		string col("currencyCollection");
+
+		//queueType msg (key,value,command,database,user,col );
+		queueType msg (new pico_message(key,value,command,database,user,col ));
+		queueRequestMessages(msg);
+
+		if(mylogger.isTraceEnabled())
+		{
+			mylogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
+
+		}
+		return getTheResponseOfRequest(msg);
+
+	}
+
+	queueType createCollection(std::string collectionName) {
+		string key("unimportant");
+		string value("unimportant");
+		string command("createCollection");
+
+		string database("currencyDB");
+		string user("currencyUser");
+		string col("currencyCollection");
+
+		//queueType msg (key,value,command,database,user,col );
+		queueType msg (new pico_message(key,value,command,database,user,col ));
+		queueRequestMessages(msg);
+
+		if(mylogger.isTraceEnabled())
+		{
+			mylogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
+
+		}
+		return getTheResponseOfRequest(msg);
+
+	}
+
+
 	queueType deleteRecord(std::string key) {
 
 		string command("delete");
@@ -448,8 +492,8 @@ public:
 		steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
 		mylogger<<"Client : waiting for our response from server...msg.messageId = "<< msg->messageId<< " \n";
 		std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
-        steady_clock::time_point t2 = steady_clock::now(); //time that we are going to check to determine timeout
-        while(true)
+		steady_clock::time_point t2 = steady_clock::now();//time that we are going to check to determine timeout
+		while(true)
 		{
 
 			if(responseQueue_.empty())
@@ -457,34 +501,34 @@ public:
 				if(mylogger.isTraceEnabled()) {mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
 //				auto now = std::chrono::system_clock::now();
 				responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
-                if(responseQueue_.empty()){break;}
-                
+				if(responseQueue_.empty()) {break;}
+
 			}
-			
+
 //            if(!responseQueue_.empty())
 //            {
-				queueType response = responseQueue_.peek();
-                
-				if(response->messageId.compare(msg->messageId)==0)
-				{
-					responseQueue_.remove(response); //remove this from the responseQueue_
-					//this is our response
-					if(mylogger.isTraceEnabled()) {
-						mylogger<<"Client : got our response"<<response->messageId<<"\n"<<
-						"this is our response "<<response->value;
-					}
-                    
-					testPassed = true;
-					if(response->value.compare("NODATAFOUND")==0)
-					{
-                        
-						response->value = "NULL";
-						//recalculate all the json form of message and hash code
-						//and etc
-                        
-					}
-					return response;
+			queueType response = responseQueue_.peek();
+
+			if(response->messageId.compare(msg->messageId)==0)
+			{
+				responseQueue_.remove(response); //remove this from the responseQueue_
+				//this is our response
+				if(mylogger.isTraceEnabled()) {
+					mylogger<<"Client : got our response"<<response->messageId<<"\n"<<
+					"this is our response "<<response->value;
 				}
+
+				testPassed = true;
+				if(response->value.compare("NODATAFOUND")==0)
+				{
+
+					response->value = "NULL";
+					//recalculate all the json form of message and hash code
+					//and etc
+
+				}
+				return response;
+			}
 //
 //            }
 //            
@@ -507,7 +551,7 @@ public:
 //
 //				
 //			}
-			
+
 		} //while
 		assert(testPassed);
 		std::string timeout("OPERATION TIMED OUT for this command :  !");

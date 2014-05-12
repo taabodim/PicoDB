@@ -51,11 +51,9 @@ namespace pico {
         
         pico_collection(std::string name) {
             
-            string path("/Users/mahmoudtaabodi/Documents/");
-            std::string ext(".dat");
-            path.append(name);
-            path.append(ext);
-            name = path;
+
+
+            name = getFullCollectionName(name);
             filename = name;
             // mylogger<<("pico_collection : name of the file is "<<filename<<std::endl;
             //		infile.open(name, std::fstream::in | std::fstream::binary);
@@ -164,7 +162,7 @@ namespace pico {
             
         }
         
-        pico_message retrieveOneMessage(offsetType offsetOfFirstRecordOfMessage,
+        msgPtr retrieveOneMessage(offsetType offsetOfFirstRecordOfMessage,
                                         string messageIdForResponse)
         //this function retrieves all the records of a message starting from the first one
         //until the next "first record" is found
@@ -230,33 +228,33 @@ namespace pico {
             mylogger
             << "\n pico_collection : retrieveOneMessage this is the whole message retrieved "
             << msg->toString();
-            return *msg;
+            return msg;
             
         }
         
-        pico_message getMessageByKey(pico_record record,
+        msgPtr getMessageByKey(pico_record record,
                                      string messageIdForResponse) {
             
             if (index.search(record) != nullptr) {
                 assert(!messageIdForResponse.empty());
                 mylogger << " getMessageByKey record.offset_of_record is "
                 << record.offset_of_record << "\n";
-                pico_message foundMessage = retrieveOneMessage(
+                msgPtr foundMessage = retrieveOneMessage(
                                                                record.offset_of_record, messageIdForResponse);
                 
                
                 mylogger
                 << "\n pico_collection : getMessageByKey this is the whole message , messageId : "
-                << foundMessage.messageId << "\n content : \n "
-                << foundMessage.toString();
-                assert(!foundMessage.messageId.empty());
+                << foundMessage->messageId << "\n content : \n "
+                << foundMessage->toString();
+                assert(!foundMessage->messageId.empty());
                 return foundMessage;
             }
             mylogger << " getMessageByKey didnt find this record ";
             
             string noDataFound("NODATAFOUND");
             
-            pico_message msg = pico_message::build_message_from_string(noDataFound,
+            msgPtr msg = pico_message::build_message_from_string(noDataFound,
                                                                        messageIdForResponse);
             return msg;
             
@@ -341,7 +339,7 @@ namespace pico {
                 return false;
             
             return true;
-            
+
             //this is the old version of funciton
             //        list<offsetType> allRecords = read_all_offsets_that_match_this_record(record);
             //        if(allRecords.size()>0) return true;
@@ -519,7 +517,20 @@ namespace pico {
             }
            
         }
-      
+        bool dropCollection()
+        {
+
+       	   int  status = remove(filename.c_str());
+
+        	   if( status == 0 )
+        	      {mylogger<<filename<<"  deleted successfully\n";
+        	      return true;}
+        	   else
+        	   {
+        		   mylogger<<"Unable to delete the file"<<filename<<"\n";
+        		   return false;
+        	   }
+        }
         
         ~pico_collection() {
             //		outfile.flush();

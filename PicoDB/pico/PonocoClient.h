@@ -69,7 +69,13 @@ namespace pico{
             }
             
         }
-//        void getTest(std::string key)
+        void deleteCollectionTest(string collectionName)
+        {
+             driverPtr->deleteCollection(collectionName);
+             driverPtr->createCollection(collectionName);
+
+        }
+        //        void getTest(std::string key)
 //        {
 //            
 //            std::size_t hashcodeOfSentKey =   calc_hash_code(key);
@@ -156,21 +162,22 @@ namespace pico{
 //            
 //        }
         
- 
+
+        
         void currentTestCase()
         {
             
             
             steady_clock::time_point t1 = steady_clock::now();
             
-            
-            
+            string col("currencyCollection");
+            deleteCollectionTest(col);
             // write1000smallRandomData();
             //            writeOneDeleteOne();
-            insertOneBigData();
+//            insertOneBigData();
             getOneBigData();
-            deleteOneBigData();
-            updateOneBigData();
+//            deleteOneBigData();
+//            updateOneBigData();
             //write1000SmallKeysBigValues_and_deleteAll();
             
             
