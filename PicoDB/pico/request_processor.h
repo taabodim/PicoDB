@@ -11,11 +11,13 @@
 #include <pico/pico_utils.h>
 #include <pico/collection_manager.h>
 #include <pico_logger_wrapper.h>
+#include <RecordInserter.h>
 using namespace std;
 namespace pico {
+class RecordInserter;
 class request_processor: public pico_logger_wrapper {
 private:
-	collection_manager collectionManager;
+	
 
 	static std::string insertCommand;
 	static std::string deleteCommand;
@@ -24,8 +26,9 @@ private:
 	static std::string getCommand;
 	static std::string addUserToDBCommand;
 	static std::string deleteUserToDBCommand;
-
+    RecordInserter recordInserter;
 public:
+    collection_manager collectionManager;
 	static string logFileName;
 
 	request_processor() {
@@ -48,7 +51,7 @@ public:
 		if (picoMessage.command.compare(insertCommand) == 0) {
 			mylogger
 					<< "\nrequest_processr: inserting one record per client request";
-			retMsg = insertOneMessage(picoMessage);
+			retMsg = recordInserter.insertOneMessage(picoMessage);
 			messageWasProcessed = true;
 		} else if (picoMessage.command.compare(deleteCommand) == 0) {
 			mylogger
@@ -95,66 +98,7 @@ public:
 		}
 		return retMsg;
 	}
-	pico_message insertOneMessage(pico_message picoMsg) {
-
-		int i = 0;
-		std::shared_ptr<pico_collection> optionCollection =
-				collectionManager.getTheCollection(picoMsg.collection);
-
-		pico_buffered_message<pico_record> msg_in_buffers =
-				picoMsg.getKeyValueOfMessageInRecords();
-
-		pico_record firstrecord = msg_in_buffers.pop();
-
-		offsetType whereToWriteThisRecord = -1;
-		if (collectionManager.getTheCollection(picoMsg.collection)->ifRecordExists(
-				firstrecord)) {
-
-			if (mylogger.isTraceEnabled()) {
-				mylogger
-						<< "request_processr: record already exists,going to overwrite it ";
-			}
-
-			optionCollection->index.search(firstrecord);
-			whereToWriteThisRecord = firstrecord.offset_of_record;
-
-		}
-
-		
-        do {
-			
-			pico_record record;
-			if (i != 0) {
-				record = msg_in_buffers.pop();
-			} else {
-				record = firstrecord;
-			}
-			pico_record::removeTheAppendMarkerNoPtr(record);
-			mylogger
-					<< "\nrequest_processor : record that is going to be saved is this : "
-					<< record.toString();
-			if (whereToWriteThisRecord == -1) {
-				//this is the case that the record is unique
-
-				optionCollection->append(record); //append the
-			} else {
-				//this is the case that we have the offset of the first record of this message
-				//that should be replaced...
-				optionCollection->overwrite(record, whereToWriteThisRecord);
-				whereToWriteThisRecord += max_database_record_size;
-
-			}
-			i++;
-		} while (!msg_in_buffers.empty());
-		string result("one message was added to database in ");
-		result.append(convertToString(i));
-		result.append(" seperate records");
-
-		pico_message msg = pico_message::build_message_from_string(result,
-				picoMsg.messageId);
-		return msg;
-	}
-
+	
 	pico_message deleteRecords(pico_message picoMsg,bool async) {
 		std::shared_ptr<pico_collection> collectionPtr =
 				collectionManager.getTheCollection(picoMsg.collection);
@@ -195,12 +139,11 @@ public:
 		}
 		//if found, it will be deleted and and inserted agaain
 		//if not found, it will be inserted
-		insertOneMessage(picoMsg);
+		recordInserter.insertOneMessage(picoMsg,firstrecord.offset_of_record);
 
 		//TODO add num to the reply
 		std::string result("records were updated");
-		//			msg.append(num);
-		//			msg.append("records were updated.");
+
 		pico_message msg = pico_message::build_message_from_string(result,
 				picoMsg.messageId);
 
@@ -280,5 +223,9 @@ public:
 	~request_processor() {
 	}
 };
-}
+    class RecordDeleter : public request_processor{};
+    class RecordUpdater : public request_processor{};
+    class RecordFetcher : public request_processor{};
+    
+  }
 #endif /* REQUESTPROCESSOR_H_ */

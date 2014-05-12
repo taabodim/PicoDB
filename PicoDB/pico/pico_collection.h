@@ -347,14 +347,14 @@ namespace pico {
             if (offsetOfToBeDeletedRecord == -1)
                 return;
             
-            string empty("DELETE");
+            string empty("");
             pico_record empty_record;
             pico_record::setTheKeyInData(empty_record,empty);
             pico_record::setTheValueInData(empty_record,empty);
             pico_record::setTheRecordTypeInData(empty_record,empty);
             
             //            (empty,empty);
-            pico_record current_record = retrieve(offsetOfToBeDeletedRecord);
+           // pico_record current_record = retrieve(offsetOfToBeDeletedRecord);
             //        nodeType node = index.createANodeBasedOnOffset(offset);
             //		index.deleteNode(node);
             
@@ -463,12 +463,14 @@ namespace pico {
             
             std::unique_lock < std::mutex > writeLock(writeMutex);
           
-            ptr_myfile=fopen(filename.c_str(),"ab");
+            ptr_myfile=fopen(filename.c_str(),"r+b");
             if (!ptr_myfile)
             {
-                printf("Unable to open file!");
+                mylogger<<"Unable to open file!";
+
             }
-            
+
+            assert(ptr_myfile);
             for(int i=pico_record::beg_key_type_index;i<pico_record::max_key_type_size;i++)
             {
                 
@@ -506,7 +508,7 @@ namespace pico {
             //		outfile.flush();
             //		infile.close();
             //		outfile.close();
-            cout << " pico_collection destructor being called..\n";
+            mylogger << " pico_collection destructor being called..\n";
             if (file.good()) {
                 file.close();
             }

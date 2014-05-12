@@ -54,6 +54,10 @@ namespace pico
         {
             return msg_in_buffers->pop();
         }
+        type peek()
+        {
+         return msg_in_buffers->peek();
+        }
         bool empty()
         {
         	return  msg_in_buffers->empty();

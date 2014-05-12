@@ -64,7 +64,6 @@ namespace pico {
                                                               std::size_t t ) {
                                         
                                         processTheBufferJustRead(currentBuffer,t);
-                                        writeOneBuffer();
                                         
                                     });
         }
@@ -135,7 +134,15 @@ namespace pico {
                                          }
                                          
                                          
-                                         readOneBuffer();
+                                            //readOneBuffer();
+                                         
+                                         if(bufferQueue_.empty()) //write to client until buffer is empty
+                                         {
+                                             readOneBuffer();
+                                         }else{
+                                             writeOneBuffer();
+                                         }
+
                                      });
             
         }
@@ -198,7 +205,9 @@ namespace pico {
             mylogger<<"\nsession : this is the message that server read just now "<<str;
             
             if(sendmetherestofdata(str))
-                ignoreThisMessageAndWriterNextBuffer();
+            {
+            //    ignoreThisMessageAndWriterNextBuffer();
+            }
             
             else
                 if(pico_record::IsThisRecordAnAddOn(*currentBuffer))
@@ -207,7 +216,7 @@ namespace pico {
 
                 allBuffersReadFromTheOtherSide.append(*currentBuffer);
                 
-                tellHimSendTheRestOfData(currentBuffer->getMessageIdAsString()); //we should call the getMessageId to construct the message out of array of chars
+              //  tellHimSendTheRestOfData(currentBuffer->getMessageIdAsString()); //we should call the getMessageId to construct the message out of array of chars
 
             }
             else {
@@ -221,6 +230,8 @@ namespace pico {
               
                 processDataFromOtherSide(last_read_message);
                 allBuffersReadFromTheOtherSide.clear();
+                writeOneBuffer();
+
             }
         }
         bool sendmetherestofdata(string comparedTo)

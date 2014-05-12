@@ -235,7 +235,7 @@ public:
 
 		if(sendmetherestofdata(str))
 		{
-			ignoreThisMessageAndWriterNextBuffer();
+//			ignoreThisMessageAndWriterNextBuffer();
 		}
 		else {
 			if(pico_record::IsThisRecordAnAddOn(*currentBuffer))
@@ -248,7 +248,7 @@ public:
 
 				}
 				allBuffersReadFromTheOtherSide.append(*currentBuffer);
-				tellHimSendTheRestOfData(currentBuffer->getMessageIdAsString());
+			//	tellHimSendTheRestOfData(currentBuffer->getMessageIdAsString());
 			}
 			else {
 
@@ -320,34 +320,34 @@ public:
 			cout << " this is the error : " << e.what() << endl;
 		}
 	}
-	void tellHimSendTheRestOfData(string messageId)
-	{
-		if(mylogger.isTraceEnabled())
-		{
-			mylogger<<"\nClient is telling send the rest of data for this message Id  "<<messageId<<" \n";
-		}
-		string msg("sendmetherestofdata");
-
-		pico_message reply = pico_message::build_message_from_string(msg,messageId);
-		queueRequestMessages(reply);
-		if(mylogger.isTraceEnabled())
-		{
-			mylogger<<"\nClient put this message in the queue to be sent  "<<reply.toString()<<" \n";
-		}
-
-		writeOneBuffer(); //go to writing mode
-
-	}
-	void ignoreThisMessageAndWriterNextBuffer()
-	{
-		if(mylogger.isTraceEnabled())
-		{
-			mylogger<<"\nClient is ignoring this message and going to write mode  \n";
-
-		}
-		writeOneBuffer();
-
-	}
+//	void tellHimSendTheRestOfData(string messageId)
+//	{
+//		if(mylogger.isTraceEnabled())
+//		{
+//			mylogger<<"\nClient is telling send the rest of data for this message Id  "<<messageId<<" \n";
+//		}
+//		string msg("sendmetherestofdata");
+//
+//		pico_message reply = pico_message::build_message_from_string(msg,messageId);
+//		queueRequestMessages(reply);
+//		if(mylogger.isTraceEnabled())
+//		{
+//			mylogger<<"\nClient put this message in the queue to be sent  "<<reply.toString()<<" \n";
+//		}
+//
+//		writeOneBuffer(); //go to writing mode
+//
+//	}
+//	void ignoreThisMessageAndWriterNextBuffer()
+//	{
+//		if(mylogger.isTraceEnabled())
+//		{
+//			mylogger<<"\nClient is ignoring this message and going to write mode  \n";
+//
+//		}
+//		writeOneBuffer();
+//
+//	}
 	void print(const boost::system::error_code& error,
 			std::size_t t,string& str)
 	{
@@ -424,8 +424,8 @@ public:
 				responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
 			}
 			queueType response = responseQueue_.peek();
-			mylogger<<"Client : response.requestId"<<response.messageId<<"\n"<<
-			"msg.requestId is "<<msg.messageId<<"\n";
+//			mylogger<<"Client : response.requestId"<<response.messageId<<"\n"<<
+//			"msg.requestId is "<<msg.messageId<<"\n";
 			if(response.messageId.compare(msg.messageId)==0)
 			{
                 responseQueue_.remove(response); //remove this from the responseQueue_
@@ -529,7 +529,12 @@ public:
                     
                     assert(t!=0);
                     
-					readOneBuffer();
+					if(bufferQueuePtr_->empty()) //write to server until buffer is empty
+                    {
+                        readOneBuffer();
+                    }else{
+                        writeOneBuffer();
+                    }
 				});
 
 	}
