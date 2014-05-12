@@ -312,6 +312,7 @@ public:
 
 				mylogger<<"\n Client : got the response with this messageId :  "<<
 				messageFromOtherSide.messageId<<" and put it in ResponseQueue \n this is the full response : "<<messageFromOtherSide.toString();
+                assert(messageFromOtherSide.toString().size()>0);
 			}
 			writeOneBuffer();
 
@@ -396,21 +397,80 @@ public:
 
 	}
 
-	void update(std::string key,std::string oldValue,std::string newValue) {
+	pico_message update(std::string key,std::string newValue) {
 
 		string command("update");
 		string database("currencyDB");
 		string user("currencyUser");
 		string col("currencyCollection");
-
+        string oldValue("notimportant");
 		queueType msg (key,oldValue,newValue,command,database,user,col );
 		queueRequestMessages(msg);
+        return getTheResponseOfRequest(msg);
+        	}
+    
+    pico_message getTheResponseOfRequest(pico_message msg,double userTimeOut=10)
+    {
+        
+		steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
+		mylogger<<"Client : waiting for our response from server...msg.messageId = "<< msg.messageId<< " \n";
+		std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
+		while(true)
+		{
+            
+			while(responseQueue_.empty())
+			{
+				mylogger<<"Client : waiting for our responseQueue_ to be filled again 1 !\n";
+				responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
+			}
+			queueType response = responseQueue_.peek();
+			mylogger<<"Client : response.requestId"<<response.messageId<<"\n"<<
+			"msg.requestId is "<<msg.messageId<<"\n";
+			if(response.messageId.compare(msg.messageId)==0)
+			{
+                responseQueue_.remove(response); //remove this from the responseQueue_
+				//this is our response
+				mylogger<<"Client : got our response"<<response.messageId<<"\n"<<
+				"this is our response "<<response.value;
+                
+                if(response.value.compare("NODATAFOUND")==0)
+                {
+                    response.value = "NULL";
+                    //recalculate all the json form of message and hash code
+                    //and etc
+                    
+                    
+                }
+				return response;
+			}
+			else
+			{
+				steady_clock::time_point t2 = steady_clock::now(); //time that we are going to check to determine timeout
+                
+				duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+				double timeoutInSeconds = time_span.count();
+				if(timeoutInSeconds>=userTimeOut)
+				{
+					//we ran out of time, get failed....
+					mylogger<<"Client : get Operation TIMED OUT!!\n";
+					break;
+                    
+				}
+				else {
+                    
+				}
+                
+			}
+            
+		} //while
+        
+        
+		std::string timeout("OPERATION TIMED OUT!");
+		pico_message timeoutResponse(msg.key,timeout,msg.messageId);
+        return timeoutResponse;
 
-		//            queueType msgReadFromQueue = commandQueue_.pop();
-		//            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
-
-	}
-	std::string get(std::string key,double userTimeOut=10) {
+    }
+	pico_message get(std::string key,double userTimeOut=10) {
 
 		string command("get");
 		string database("currencyDB");
@@ -420,52 +480,7 @@ public:
 		string newValue("");
 		queueType msg (key,oldValue,newValue,command,database,user,col );
 		queueRequestMessages(msg);
-
-		steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
-		mylogger<<"Client : waiting for our response from server...msg.messageId = "<< msg.messageId<< " \n";
-		std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
-		while(true)
-		{
-
-			while(responseQueue_.empty())
-			{
-				mylogger<<"Client : waiting for our responseQueue_ to be filled again 1 !\n";
-				responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
-			}
-			queueType response = responseQueue_.pop();
-			mylogger<<"Client : response.requestId"<<response.messageId<<"\n"<<
-			"msg.requestId is "<<response.messageId<<"\n";
-			if(response.messageId==msg.messageId)
-			{
-				//this is our response
-				mylogger<<"Client : got our response"<<response.messageId<<"\n"<<
-				"this is our response "<<response.value;
-
-				return response.value;
-			}
-			else
-			{
-				steady_clock::time_point t2 = steady_clock::now(); //time that we are going to check to determine timeout
-
-				duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-				double timeoutInSeconds = time_span.count();
-				if(timeoutInSeconds>=userTimeOut)
-				{
-					//we ran out of time, get failed....
-					mylogger<<"Client : get Operation TIMED OUT!!\n";
-					break;
-
-				}
-				else {
-
-				}
-
-			}
-
-		} //while
-
-		std::string timeout("OPERATION TIMED OUT!");
-		return timeout;
+        return getTheResponseOfRequest(msg);
 
 	}
 	void writeOneBuffer()

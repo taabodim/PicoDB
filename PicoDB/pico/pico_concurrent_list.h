@@ -67,7 +67,13 @@ namespace pico{
                }
            }
         }
-        
+        void remove(queueType element)
+        {
+            if(underlying_list.size()>0)
+            {
+                underlying_list.remove(element);
+            }
+        }
         queueType peek()//this method returns the end of queue without deleting it
         {
             queueType msg;

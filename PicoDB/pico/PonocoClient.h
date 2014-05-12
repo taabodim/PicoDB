@@ -31,7 +31,9 @@ namespace pico{
             {
            
             driverPtr->insert(key,pico_test::bigValue0);
-            driverPtr->get(key);
+            pico_message message = driverPtr->get(key);
+            pico_message result  = driverPtr->update(message.key,pico_test::smallValue0);
+                
             }
             
             //while(true){}//keep the thread forever

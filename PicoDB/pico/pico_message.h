@@ -160,7 +160,23 @@ public:
 		pico_message msg(output, messageId);
 		return msg;
 	}
-
+    
+    bool operator==(const pico_message& msg){
+        //this is used for removing the message
+        //from the responseQueue
+        if(
+           (this->messageId.compare(msg.messageId)==0) &&
+           (this->key.compare(msg.key)==0) &&
+           (this->json_form_of_message.compare(msg.json_form_of_message)==0) &&
+           (this->db.compare(msg.db)==0) &&
+           (this->collection.compare(msg.collection)==0) &&
+           (this->value.compare(msg.value)==0) 
+           
+           )
+            return true;
+        
+        return false;
+    }
 	pico_message operator=(pico_message& msg) {
 		mylogger << ("pico_message copy operator being called.\n");
 		this->user = msg.user;

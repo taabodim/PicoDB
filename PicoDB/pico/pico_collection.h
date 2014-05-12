@@ -91,16 +91,6 @@ namespace pico {
         string getName() {
             return filename;
         }
-        
-        //	pico_record get(int index) {
-        //   		pico_record record;
-        //		offsetType offset = index * record.max_size;
-        //		if (offset > getEndOfFileOffset())
-        //			return empty_record;
-        //        record = retrieve(offset);
-        //
-        //		return record;
-        //	}
         void queue_record_for_deletion(
                                        pico_record& firstRecordOfMessageToBeDeleted) {
             auto deleteTask = std::make_shared < DeleteTaskRunnable
@@ -109,7 +99,7 @@ namespace pico {
             //mylogger<<"hello"<<"I am here"<<" "<<3<<3.23<<"\n";
             delete_thread_pool->submitTask(deleteTask);
         }
-        void deleteRecord(pico_record& firstRecordOfMessageToBeDeleted) {
+        void deleteRecord(pico_record& firstRecordOfMessageToBeDeleted,bool async) {
             //this function gets called by request processor, it finds the first record of the message
             //that has the same key and delete all the records that follows that first record until the next
             //first record in the file
@@ -120,7 +110,12 @@ namespace pico {
             pico_record_node node = *index.convert_pico_record_to_index_node(
                                                                              firstRecordOfMessageToBeDeleted);
             firstRecordOfMessageToBeDeleted.offset_of_record = node.offset;
-            queue_record_for_deletion(firstRecordOfMessageToBeDeleted);
+            
+            if(async) {queue_record_for_deletion(firstRecordOfMessageToBeDeleted);
+            }
+            else {
+            deletion_function(firstRecordOfMessageToBeDeleted);
+            }
             index.remove(node);
             
         }
@@ -142,21 +137,23 @@ namespace pico {
         //until the next "first record" is found
         {
             list<offsetType> all_offsets_for_this_message;
-            all_offsets_for_this_message.push_back(offsetOfFirstRecordOfMessage);
             
             offsetType nextOffset = offsetOfFirstRecordOfMessage;
             offsetType endOffset = getEndOfFileOffset(file);
+            bool ignoreFirstBEGKEYRecordOffset = true;
             do {
                 
                 pico_record nextRecord = retrieve(nextOffset);
-                if (pico_record::recordStartsWithConKEY(nextRecord)) {
+                
+                if (pico_record::recordStartsWithBEGKEY(nextRecord) && ignoreFirstBEGKEYRecordOffset==false ) {
+                   break;
+                } else {
                     all_offsets_for_this_message.push_back(nextOffset);
                     nextOffset += max_database_record_size;
-                } else {
+                    ignoreFirstBEGKEYRecordOffset = false;
                     
-                    break;
                 }
-            } while (nextOffset <= endOffset);
+            } while (nextOffset < endOffset);
             
             while (!all_offsets_for_this_message.empty()) {
                 deleteOneRecord(all_offsets_for_this_message.front());
@@ -191,7 +188,7 @@ namespace pico {
                 pico_record nextRecord = retrieve(nextOffset);
                 assert(!nextRecord.toString().empty());
                 
-                assert(pico_record::recordStartsWithBEGKEY(nextRecord) || pico_record::recordStartsWithConKEY(nextRecord));
+//                assert(pico_record::recordStartsWithBEGKEY(nextRecord) || pico_record::recordStartsWithConKEY(nextRecord));
                 if (pico_record::recordStartsWithConKEY(nextRecord)) //this for the next message
                 {
                     if (mylogger.isTraceEnabled()) {
@@ -263,127 +260,7 @@ namespace pico {
             return msg;
             
         }
-        //        list<pico_record> find(pico_record& firstRecordOfMessageToBeFound) {
-        //
-        //		list<pico_record> all_records;
-        //		list<offsetType> list_of_offset = read_all_offsets_that_match_this_record(firstRecordOfMessageToBeFound);
-        //
-        //        while (!list_of_offset.empty()) {
-        //
-        //			offsetType offset = list_of_offset.front();
-        //			cout << "  offset in the list is  " << offset << endl;
-        //			list_of_offset.pop_front();
-        //			pico_record record = retrieve(offset);
-        //			all_records.push_back(record);
-        //		}
-        //		return all_records;
-        //	}
-        
-        pico_record retrieveCStyle(offsetType offset) {        //was debugged
-            //it seems if if I use the global infile
-            //and when I use it in other functions, it stops working here , it wont read the data here , so I am using the infileLocal ,
-            std::ifstream infileLocal;
-            infileLocal.open(filename, std::fstream::in | std::fstream::binary);
-            mylogger << "\n pico_collection  : retrieve : offset is  " << offset;
-            pico_record record_read_from_file;
-            
-            infileLocal.seekg(offset);
-            char typeHolder [pico_record::max_key_type_size];
-            char keyHolder[pico_record::max_key_size];
-            char valueHolder[pico_record::max_value_size];
-            
-            int allSize = pico_record::max_key_type_size+pico_record::max_key_size+pico_record::max_value_size;
-            
-            //        char*  allrecord = new char[allSize];
-            char  allrecord [allSize];
-            //        char * buffer = new char [length];
-            
-            infileLocal.read( allrecord,
-                             allSize);
-            
-            
-            //		infileLocal.read((char*) typeHolder,
-            //						pico_record::max_key_type_size);
-            //        infileLocal.seekg(offset+pico_record::max_key_type_size);
-            //		infileLocal.read((char*) keyHolder,
-            //				pico_record::max_key_size);
-            //		infileLocal.read((char*) valueHolder,
-            //						pico_record::max_value_size);
-            
-            record_read_from_file.offset_of_record = offset;
-            
-            
-            
-            for(int i=0;i<pico_record::max_key_type_size;i++)
-            {
-                
-                typeHolder[i]=allrecord[i];
-                
-            }
-            for(int i=pico_record::max_key_type_size;i<pico_record::max_key_type_size+pico_record::max_key_size;i++)
-            {
-                keyHolder[i]=allrecord[i];
-                
-            }
-            for(int i=pico_record::max_key_type_size+pico_record::max_key_size;i<pico_record::max_key_type_size+pico_record::max_key_size+pico_record::max_value_size;i++)
-            {
-                valueHolder[i-pico_record::max_key_size]=allrecord[i];
-                
-            }
-            
-            
-            string typeHolderStr(typeHolder);
-            string valueHolderStr(valueHolder);
-            string keyHolderStr(keyHolder);
-            //
-            string allrecordStr(allrecord);
-            mylogger << "\n read_all_records : record_read_from_file : allrecordStr  "
-            << allrecordStr;
-            
-            mylogger << "\n read_all_records : record_read_from_file : keyHolderStr  "
-            << keyHolderStr;
-            mylogger << "\n read_all_records : record_read_from_file : typeHolderStr  "
-            << typeHolderStr;
-            mylogger << "\n read_all_records : record_read_from_file : valueHolderStr  "
-            << valueHolderStr;
-            
-            assert(allrecordStr.size()==allSize);
-            assert(!typeHolderStr.empty());
-            assert(!valueHolderStr.empty());
-            assert(!keyHolderStr.empty());
-            //
-            //
-            //
-            //        pico_record::setTheKeyInData(record_read_from_file,keyHolderStr);
-            //        pico_record::setTheValueInData(record_read_from_file,valueHolderStr);
-            //        pico_record::setTheRecordTypeInData(record_read_from_file,typeHolderStr);
-            //
-            
-            infileLocal.close();
-            return record_read_from_file;
-            
-        }
-        //    list<pico_record> read_all_records() { //this function was debugged!
-        //
-        //		list<pico_record> list_of_records;
-        //		offsetType endOfFile_Offset = getEndOfFileOffset(file);
-        //		cout << "read_all_records : offset of end of file is " << endOfFile_Offset //<< std::endl;
-        //		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-        //             pico_record::getRecordSize()) {
-        //            cout << " read_all_records : reading one record from offset "<<offset  //<< std::endl;
-        //
-        //			pico_record record_read_from_file = retrieve(offset);
-        //				if (!record_read_from_file.getKeyAsString().empty()) {
-        //
-        //				list_of_records.push_back(record_read_from_file);
-        //			}
-        //            else{
-        //                mylogger<<("warning : read_all_records : key is empty!");
-        //            }
-        //
-        //		}
-        //        return list_of_records;
-        //	}
+
         
         list<offsetType> read_all_Messages_offsets() {
             //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY
@@ -452,35 +329,7 @@ namespace pico {
             }
             
         }
-        
-        //deprecate this function and replace it with one that finds the record in the index
-        //	list<offsetType> read_all_offsets_that_match_this_record(pico_record& record) {//debugged
-        //        //this function should use the index , and not iterate through the file
-        //
-        //        //this function finds all the records that are the same as this record
-        //		list<offsetType> list_of_offsets;
-        //		offsetType endOfFile_Offset = getEndOfFileOffset(file);
-        //		cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
-        //
-        //		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-        //				pico_record::getRecordSize()) {
-        //            pico_record record_read_from_file = retrieve(offset);
-        //
-        //
-        //			if (!pico_record::recordIsEmpty(record_read_from_file) && record_read_from_file == record) {
-        //				//add the offset to the list of offset
-        //				list_of_offsets.push_back(offset);
-        //				cout << " read_all_offsets_that_match_this_record :  records match" //<< std::endl;
-        //                //as all the first records are unique in the collection we can break out of the loop
-        //                break;
-        //			}
-        //
-        //
-        //
-        //		}
-        //		return list_of_offsets;
-        //	}
-        
+
         bool ifRecordExists(pico_record& record) {
             //this function checks if a record exists or not
             
@@ -498,14 +347,19 @@ namespace pico {
             if (offsetOfToBeDeletedRecord == -1)
                 return;
             
-            string empty("");
+            string empty("DELETE");
             pico_record empty_record;
+            pico_record::setTheKeyInData(empty_record,empty);
+            pico_record::setTheValueInData(empty_record,empty);
+            pico_record::setTheRecordTypeInData(empty_record,empty);
+            
             //            (empty,empty);
             pico_record current_record = retrieve(offsetOfToBeDeletedRecord);
             //        nodeType node = index.createANodeBasedOnOffset(offset);
             //		index.deleteNode(node);
             
             overwrite(empty_record, offsetOfToBeDeletedRecord);
+            
             // index.remove(*index.convert_pico_record_to_index_node(current_record));//passing the key of the record that was deleted
             //to calculate the right
             
@@ -521,26 +375,7 @@ namespace pico {
             else
                 return node->offset;
             
-            //old version of the function
-            //        offsetType endOfFile_Offset = getEndOfFileOffset(file);//this function is expensive,
-            //        //we should have a class variable to store endOfFilleOffset
-            //
-            //        cout << " get_offset_of_this_record : offset of end of file is " << endOfFile_Offset //<< std::endl;
-            //
-            //		for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
-            //             pico_record::getRecordSize()) {
-            //            pico_record record_read_from_file = retrieve(offset);
-            //
-            //
-            //			if (!pico_record::recordIsEmpty(record_read_from_file) && record_read_from_file == this_record) {
-            //				cout << " get_offset_of_this_record :  records match" //<< std::endl;
-            //                return offset;
-            //
-            //			}
-            //        }
-            //        return -1;
-            
-        }
+                }
         void overwrite(pico_record record, offsetType record_offset) { //this overwrites a file
             
             mylogger << "\noverwriting  one record to collection at this offset\n";
@@ -633,7 +468,7 @@ namespace pico {
             {
                 printf("Unable to open file!");
             }
-              fseek ( ptr_myfile , record_offset , SEEK_SET );
+            
             for(int i=pico_record::beg_key_type_index;i<pico_record::max_key_type_size;i++)
             {
                 
@@ -651,7 +486,7 @@ namespace pico {
                 
             }
             
-            
+            fseek ( ptr_myfile , record_offset , SEEK_SET );
             fwrite(&my_record, sizeof(struct recordInDatabase), 1, ptr_myfile);
             fflush(ptr_myfile);
             fclose(ptr_myfile);

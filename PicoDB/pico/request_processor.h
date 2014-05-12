@@ -53,7 +53,7 @@ public:
 		} else if (picoMessage.command.compare(deleteCommand) == 0) {
 			mylogger
 					<< "\nrequest_processr: deleting one record per client request";
-			retMsg = deleteRecords(picoMessage);
+			retMsg = deleteRecords(picoMessage,true);//delete asynchronously
 			messageWasProcessed = true;
 		} else if (picoMessage.command.compare(updateCommand) == 0) {
 			mylogger
@@ -141,7 +141,7 @@ public:
 				//this is the case that we have the offset of the first record of this message
 				//that should be replaced...
 				optionCollection->overwrite(record, whereToWriteThisRecord);
-				whereToWriteThisRecord += pico_record::max_size;
+				whereToWriteThisRecord += max_database_record_size;
 
 			}
 			i++;
@@ -155,7 +155,7 @@ public:
 		return msg;
 	}
 
-	pico_message deleteRecords(pico_message picoMsg) {
+	pico_message deleteRecords(pico_message picoMsg,bool async) {
 		std::shared_ptr<pico_collection> collectionPtr =
 				collectionManager.getTheCollection(picoMsg.collection);
 
@@ -170,7 +170,7 @@ public:
 				<< "\n request_processor : record that is going to be deleted from this : "
 				<< firstrecord.toString();
 //            optionCollection.deleteRecord(firstrecord,collectionPtr);
-		collectionPtr->deleteRecord(firstrecord);
+		collectionPtr->deleteRecord(firstrecord,async);
 		string result("one message was deleted from database in unknown(todo)");
 		result.append(" seperate records");
 		pico_message msg = pico_message::build_message_from_string(result,
@@ -179,7 +179,11 @@ public:
 		return msg;
 	}
 	pico_message updateRecords(pico_message picoMsg) {
-		pico_collection optionCollection(picoMsg.collection);
+        pico_collection optionCollection(picoMsg.collection);
+
+        mylogger
+        << "\nrequest_processor : record that is going to be updated is this : "
+        << picoMsg.toString();
 
 		pico_buffered_message<pico_record> msg_in_buffers =
 						picoMsg.getKeyValueOfMessageInRecords();
@@ -187,7 +191,7 @@ public:
 		pico_record firstrecord = msg_in_buffers.pop();
 		if (optionCollection.ifRecordExists(firstrecord)) {
 			//if the record is found
-			deleteRecords(picoMsg);
+			deleteRecords(picoMsg,false); //delete it synchronously, wait for completion
 		}
 		//if found, it will be deleted and and inserted agaain
 		//if not found, it will be inserted
