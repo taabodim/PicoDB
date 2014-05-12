@@ -75,8 +75,10 @@ namespace pico {
             // test_reading_from_collection();
             
             list<pico_record> all_pico_messages = read_all_messages_records(); //write a function to get all the begining records for putting them in the tree (done)
+            size_t initSize = all_pico_messages.size();
             index.build_tree(all_pico_messages);
             
+            assert(index.size()==(initSize+1));
         }
         
         
@@ -294,17 +296,23 @@ namespace pico {
                 offsetType endOfFile_Offset = getEndOfFileOffset(file);
                 mylogger << "\n offset of end of file is " << endOfFile_Offset;
                 
-                for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
+                for (offsetType offset = 0; offset < endOfFile_Offset; offset +=
                      max_database_record_size) {
                     
                     pico_record record_read_from_file = retrieve(offset);
                     record_read_from_file.offset_of_record =offset;
-                    if(!record_read_from_file.toString().empty())
+                    
+                    if(pico_record::recordStartsWithBEGKEY(
+                                                           record_read_from_file) ||
+                       pico_record::recordStartsWithConKEY(
+                                                           record_read_from_file))
                     {
-                    mylogger
-                    << "\n read_all_records_offsets : reading one record from offset "
+                  
+                        mylogger
+                    << "\n read_all_messages_records : reading one record from offset "
                     << offset << "\n the record read is "
                     << record_read_from_file.toString();
+                        
                     }
                     if (pico_record::recordStartsWithBEGKEY(
                                                             record_read_from_file)) {
@@ -388,6 +396,13 @@ namespace pico {
                 append_a_record(record,record_offset);
                 
                 pico_record currentRecord = retrieve(record_offset);
+                
+                if(mylogger.isTraceEnabled()) //just to test if overwrite worked properly
+                {
+                    pico_record read_from_file  = retrieve(record_offset);
+                    assert(currentRecord.areRecordsEqual(read_from_file));
+                }
+                
                 if (currentRecord.areRecordsEqual(record)) {
                     break;
                 } else {
@@ -418,7 +433,7 @@ namespace pico {
         pico_record retrieve(offsetType offset) {
             pico_record read_from_file;
             
-            std::unique_lock < std::mutex > writeLock(writeMutex);
+            
             FILE *ptr_myfile;
             struct recordInDatabase my_record;
             
@@ -501,6 +516,12 @@ namespace pico {
                     record.offset_of_record=record_offset;
                     index.add_to_tree(record);
                 }
+            }
+            
+            if(mylogger.isTraceEnabled()) //just to test if append worked properly
+            {
+               pico_record read_from_file  = retrieve(record_offset);
+               assert(record.areRecordsEqual(read_from_file));
             }
            
         }

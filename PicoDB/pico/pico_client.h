@@ -459,21 +459,26 @@ public:
 
 			while(responseQueue_.empty())
 			{
-				mylogger<<"Client : waiting for our responseQueue_ to be filled again 1 !\n";
+				if(mylogger.isTraceEnabled()){mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
 				responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
 			}
 			queueType response = responseQueue_.peek();
-			mylogger<<"Client : checking response for requests !! response.requestId"<<response->messageId<<"\n"<<
-			"msg.requestId is "<<msg->messageId<<"\n";
+
+//			if(mylogger.isTraceEnabled){mylogger<<"Client : response for this request came responseQueue_ to be filled again  !\n";}
+
 			if(response->messageId.compare(msg->messageId)==0)
 			{
 				responseQueue_.remove(response); //remove this from the responseQueue_
 				//this is our response
-				mylogger<<"Client : got our response"<<response->messageId<<"\n"<<
-				"this is our response "<<response->value;
+				if(mylogger.isTraceEnabled()){
+					mylogger<<"Client : got our response"<<response->messageId<<"\n"<<
+									"this is our response "<<response->value;
+				}
+
 
 				if(response->value.compare("NODATAFOUND")==0)
 				{
+
 					response->value = "NULL";
 					//recalculate all the json form of message and hash code
 					//and etc
@@ -490,7 +495,7 @@ public:
 				if(timeoutInSeconds>=userTimeOut)
 				{
 					//we ran out of time, get failed....
-					mylogger<<"Client : get Operation TIMED OUT!!\n";
+					if(mylogger.isTraceEnabled()){mylogger<<"Client : "<<msg->command<<" Operation TIMED OUT!!\n";}
 					break;
 
 				}
@@ -502,7 +507,10 @@ public:
 
 		} //while
 
-		std::string timeout("OPERATION TIMED OUT!");
+		std::string timeout("OPERATION TIMED OUT for this command :  !");
+		timeout.append(msg->command);
+		timeout.append(" with this message id : ");
+		timeout.append(msg->messageId);
 		//pico_message timeoutResponse(msg.key,timeout,msg.messageId);
 		queueType timeoutResponse(new pico_message(msg->key,timeout,msg->messageId));
 		return timeoutResponse;
