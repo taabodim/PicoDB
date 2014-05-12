@@ -959,7 +959,7 @@ std::string request_processor::deleteUserToDBCommand("deleteuser");
 std::string request_processor::deleteCollectionCommand("deleteCollection");
 std::string request_processor::createCollectionCommand("createCollection");
 std::string PicoConfig::dataDir("/Users/mahmoudtaabodi/Documents/");
-
+long PicoConfig::defaultTimeoutInSec(10);
 std::string pico_record::BEGKEY {"BEGKEY"};
 std::string pico_record::CONKEY {"CONKEY"};
 

@@ -19,6 +19,7 @@
 #include <DeleteTaskRunnable.h>
 #include <pico/pico_utils.h>
 #include <pico_logger_wrapper.h>
+#include <OffsetManager.h>
 //this is a wrapper around the file that represents the collection
 namespace pico {
     struct recordInDatabase{
@@ -41,7 +42,7 @@ namespace pico {
         const static int numberOfDeletionThreads = 1;
         static std::unique_ptr<ThreadPool> delete_thread_pool;
         std::mutex writeMutex;
-        
+        OffsetManager offsetManager;
     public:
         
         boost::mutex collectionMutex;
@@ -63,8 +64,8 @@ namespace pico {
             openFileIfItDoesntExist(filename);
             
             mylogger << "pico_collection : file being opened now.\n";
-            file.open(filename,
-                      std::fstream::in | std::fstream::out | std::fstream::binary);
+//            file.open(filename,
+//                      std::fstream::in | std::fstream::out | std::fstream::binary);
             //use the fstream for both reading and writing and appending , there should be
             //only one stream open to the file, it makes the life easier and less buggier.
             //writing in out mode,
@@ -139,7 +140,7 @@ namespace pico {
             list<offsetType> all_offsets_for_this_message;
             
             offsetType nextOffset = offsetOfFirstRecordOfMessage;
-            offsetType endOffset = getEndOfFileOffset(file);
+            offsetType endOffset = offsetManager.getEndOfFileOffset();
             bool ignoreFirstBEGKEYRecordOffset = true;
             do {
                 
@@ -174,7 +175,7 @@ namespace pico {
                 << offsetOfFirstRecordOfMessage
                 << " messageIdForResponse  :  " << messageIdForResponse;
             }
-            offsetType endOffset = getEndOfFileOffset(file);
+            offsetType endOffset = offsetManager.getEndOfFileOffset();
             
             pico_buffered_message<pico_record> all_records_for_this_message;
             
@@ -232,8 +233,10 @@ namespace pico {
             
         }
         
-        msgPtr getMessageByKey(pico_record record,
+        msgPtr getMessageByKey(pico_record& record,
                                      string messageIdForResponse) {
+            
+            assert(!pico_record::isRecordEmpty(record));
             
             if (index.search(record) != nullptr) {
                 assert(!messageIdForResponse.empty());
@@ -250,7 +253,7 @@ namespace pico {
                 assert(!foundMessage->messageId.empty());
                 return foundMessage;
             }
-            mylogger << " getMessageByKey didnt find this record ";
+            mylogger << " getMessageByKey didnt find this record in the index ";
             
             string noDataFound("NODATAFOUND");
             
@@ -264,7 +267,7 @@ namespace pico {
         list<offsetType> read_all_Messages_offsets() {
             //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY
             list<offsetType> list_of_offsets;
-            offsetType endOfFile_Offset = getEndOfFileOffset(file);
+            offsetType endOfFile_Offset = offsetManager.getEndOfFileOffset();
             // cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
             
             for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
@@ -290,10 +293,10 @@ namespace pico {
             try {
                 //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY and return them as pico_records not offsets
                 
-                offsetType endOfFile_Offset = getEndOfFileOffset(file);
+                offsetType endOfFile_Offset = offsetManager.getEndOfFileOffset();
                 mylogger << "\n offset of end of file is " << endOfFile_Offset;
                 
-                for (offsetType offset = -1; offset < endOfFile_Offset; offset +=
+                for (offsetType offset = 0; offset < endOfFile_Offset; offset +=
                      max_database_record_size) {
                     
                     pico_record record_read_from_file = retrieve(offset);
@@ -416,7 +419,7 @@ namespace pico {
             append(record);
         }
         void append(pico_record& record) { //this appends to the end of file
-            offsetType record_offset = getEndOfFileOffset(file);
+            offsetType record_offset = offsetManager.getEndOfFileOffset();
             record.offset_of_record = record_offset;
             append_a_record(record, record_offset);
             
@@ -505,8 +508,16 @@ namespace pico {
             if (pico_record::recordStartsWithBEGKEY(record)) {
                 if(index.search(record)==nullptr)
                 {
+                     mylogger<<"pico_collection : Adding the BEGKEY record to the index !";
+                    
+                    int initSize = index.size();
                     record.offset_of_record=record_offset;
                     index.add_to_tree(record);
+                    assert(index.size()==(initSize+1));
+                }
+                else{
+                    mylogger<<"pico_collection : BEGKEY already exists in the tree !";
+
                 }
             }
             
@@ -519,12 +530,13 @@ namespace pico {
         }
         bool dropCollection()
         {
-
+         
        	   int  status = remove(filename.c_str());
 
         	   if( status == 0 )
         	      {mylogger<<filename<<"  deleted successfully\n";
-        	      return true;}
+        	      return true;
+                  }
         	   else
         	   {
         		   mylogger<<"Unable to delete the file"<<filename<<"\n";
@@ -533,13 +545,9 @@ namespace pico {
         }
         
         ~pico_collection() {
-            //		outfile.flush();
-            //		infile.close();
-            //		outfile.close();
+           
             mylogger << " pico_collection destructor being called..\n";
-            if (file.good()) {
-                file.close();
-            }
+           
         }
         
         const pico_record empty_record;
@@ -547,7 +555,7 @@ namespace pico {
         
         //	std::ifstream infile;
         //	std::ifstream outfile;
-        std::fstream file;
+//        std::fstream file;
     };
     
     void DeleteTaskRunnable::run() {

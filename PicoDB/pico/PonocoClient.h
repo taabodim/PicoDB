@@ -54,8 +54,7 @@ namespace pico{
                 
                 driverPtr->insert(key,pico_test::bigValue0);
                 std::shared_ptr<pico_message> message = driverPtr->get(key);
-                //            std::shared_ptr<pico_message> result  = driverPtr->update(message->key,pico_test::smallValue0);
-                //                
+
             }
         }
         void insertOneBigData()
@@ -69,7 +68,7 @@ namespace pico{
             }
             
         }
-        void deleteCollectionTest(string collectionName)
+        void deleteAndCreateCollectionTest(string collectionName)
         {
              driverPtr->deleteCollection(collectionName);
              driverPtr->createCollection(collectionName);
@@ -171,7 +170,8 @@ namespace pico{
             steady_clock::time_point t1 = steady_clock::now();
             
             string col("currencyCollection");
-            deleteCollectionTest(col);
+            PicoConfig::defaultTimeoutInSec = 1000;
+            deleteAndCreateCollectionTest(col);
             // write1000smallRandomData();
             //            writeOneDeleteOne();
 //            insertOneBigData();

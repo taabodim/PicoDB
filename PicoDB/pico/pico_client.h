@@ -25,7 +25,7 @@
 #include <pico/pico_logger_wrapper.h>
 #include <ClientResponseProcessor.h>
 #include <PonocoDriverHelper.h>
-
+#include <PicoConfig.h>
 using boost::asio::ip::tcp;
 using namespace std;
 using namespace std::chrono;
@@ -486,7 +486,7 @@ public:
 		return getTheResponseOfRequest(msg);
 	}
 
-	queueType getTheResponseOfRequest(queueType msg,long userTimeOut=10)
+	queueType getTheResponseOfRequest(queueType msg,long userTimeOut=PicoConfig::defaultTimeoutInSec)
 	{
 		bool testPassed = false;
 		steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
@@ -521,7 +521,7 @@ public:
 				testPassed = true;
 				if(response->value.compare("NODATAFOUND")==0)
 				{
-
+					testPassed = false;
 					response->value = "NULL";
 					//recalculate all the json form of message and hash code
 					//and etc

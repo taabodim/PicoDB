@@ -145,16 +145,16 @@ bool openFileIfItDoesntExist(const std::string& name) {
 	}
 }
 
-offsetType getEndOfFileOffset(std::fstream& file) { //was debugged
-
-	file.seekg(0, std::ifstream::end);
-//        mylogger<<" getEndOfFileOffset : filename is ";
-	// mylogger<<filename<<std::endl;
-	//  std::cout<<" \ngetEndOfFileOffset : file.tellg() :  "<<file.tellg();
-
-	return file.tellg();
-
-}
+//offsetType getEndOfFileOffset(std::fstream& file) { //was debugged
+//    
+//	file.seekg(0, std::ifstream::end);
+////        mylogger<<" getEndOfFileOffset : filename is ";
+//	// mylogger<<filename<<std::endl;
+//	//  std::cout<<" \ngetEndOfFileOffset : file.tellg() :  "<<file.tellg();
+//
+//	return file.tellg();
+//
+//}
 
 string calc_request_id() {
 	return random_number<string>(32);

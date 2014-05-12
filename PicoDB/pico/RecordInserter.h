@@ -80,7 +80,7 @@ public:
             int initialSize = msg_in_buffers.size();
 		pico_record firstrecord = msg_in_buffers.peek();
 
-		offsetType whereToWriteThisRecord = -1;
+		offsetType whereToWriteThisRecord = 0;
 		if (collectionManager.getTheCollection(picoMsg->collection)->ifRecordExists(
 				firstrecord)) {
 
@@ -102,7 +102,8 @@ public:
 			pico_record record = msg_in_buffers.pop();
 			i++;
 			mylogger
-					<< "\nrequest_processor : record that is going to be saved is this : "
+					<< "\nrequest_processor : record that is going to be saved at this offset "
+            << whereToWriteThisRecord<<" : "
 					<< record.toString();
 
 			optionCollection->append(record); //append the

@@ -14,6 +14,7 @@ namespace pico{
     class PicoConfig{
     public:
         static string dataDir;
+        static long defaultTimeoutInSec;
     };
 
 }
