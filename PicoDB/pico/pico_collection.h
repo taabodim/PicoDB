@@ -222,13 +222,13 @@ namespace pico {
             << "\n pico_collection : about to convert all the buffers read from db to a nice pico_message \n ";
       
             assert(!messageIdForResponse.empty());
-            pico_message msg = util.convert_records_to_message(
+            std::shared_ptr<pico_message> msg = util.convert_records_to_message(
                                                                all_records_for_this_message, messageIdForResponse,LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY);
             
             mylogger
             << "\n pico_collection : retrieveOneMessage this is the whole message retrieved "
-            << msg.toString();
-            return msg;
+            << msg->toString();
+            return *msg;
             
         }
         
@@ -299,11 +299,13 @@ namespace pico {
                     
                     pico_record record_read_from_file = retrieve(offset);
                     record_read_from_file.offset_of_record =offset;
+                    if(!record_read_from_file.toString().empty())
+                    {
                     mylogger
                     << "\n read_all_records_offsets : reading one record from offset "
                     << offset << "\n the record read is "
                     << record_read_from_file.toString();
-                    
+                    }
                     if (pico_record::recordStartsWithBEGKEY(
                                                             record_read_from_file)) {
                         list_.push_back(record_read_from_file);

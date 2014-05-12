@@ -337,7 +337,7 @@ public:
 	//            messageSize = 0;
 	//
 	//        }
-	pico_message convert_records_to_message(
+    std::shared_ptr<pico_message>  convert_records_to_message(
 			pico_buffered_message<pico_record> all_buffers, string messageIdArg,
 			messageType type) {
         assert(!messageIdArg.empty());
@@ -350,8 +350,13 @@ public:
 		string allMessage;
 		string key;
 		string value;
-		pico_message msgToReturnEmpty;
-
+        
+        
+		//pico_message msgToReturnEmpty;
+        std::shared_ptr<pico_message> msgToReturnEmpty(new pico_message());
+        
+        
+        
 		while (!all_buffers.msg_in_buffers->empty()) {
 			//get rid of all buffers that are not for this messageId
 			pico_record buf = all_buffers.msg_in_buffers->pop();
@@ -431,8 +436,10 @@ public:
 				== 0) {
             assert(!allMessage.empty());
             assert(!messageIdArg.empty());
-			pico_message pico_msg(allMessage, messageIdArg);
-            assert(!pico_msg.messageId.empty());
+			//pico_message pico_msg(allMessage, messageIdArg);
+            std::shared_ptr<pico_message> pico_msg(new pico_message(allMessage, messageIdArg));
+            
+            assert(!pico_msg->messageId.empty());
 			return pico_msg;
 
 		} else if (type.compare(LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY)
@@ -444,8 +451,9 @@ public:
             assert(!value.empty());
             assert(!messageIdArg.empty());
                    
-            pico_message pico_msg(this->key, value, messageIdArg);
-            assert(!pico_msg.messageId.empty());
+            //pico_message pico_msg(this->key, value, messageIdArg);
+            std::shared_ptr<pico_message> pico_msg(new pico_message(this->key, value, messageIdArg));
+            assert(!pico_msg->messageId.empty());
 			
             return pico_msg;
 

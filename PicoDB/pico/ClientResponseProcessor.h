@@ -20,11 +20,11 @@ namespace pico {
         ResponseProcessor(){
         
         }
-        void processResponse(pico_message messageFromOtherSide)
+        void processResponse(std::shared_ptr<pico_message> messageFromOtherSide)
         {
         
             //convert the string to pico_message
-            mylogger<<"ClientResponseProcessor : this is the message that is going to be processed by the client "<<messageFromOtherSide.toString();
+            mylogger<<"ClientResponseProcessor : this is the message that is going to be processed by the client "<<messageFromOtherSide->toString();
             
             
           //  pico_message picoMessage(messageFromServer);

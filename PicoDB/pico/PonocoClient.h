@@ -31,8 +31,8 @@ namespace pico{
             {
            
             driverPtr->insert(key,pico_test::bigValue0);
-            pico_message message = driverPtr->get(key);
-            pico_message result  = driverPtr->update(message.key,pico_test::smallValue0);
+            std::shared_ptr<pico_message> message = driverPtr->get(key);
+            std::shared_ptr<pico_message> result  = driverPtr->update(message->key,pico_test::smallValue0);
                 
             }
             

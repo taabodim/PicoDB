@@ -62,6 +62,11 @@ namespace pico
         {
         	return  msg_in_buffers->empty();
         }
+        size_t size()
+        {
+
+        	return msg_in_buffers->size();
+        }
         void clear()
         {
             
