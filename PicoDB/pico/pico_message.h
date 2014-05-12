@@ -139,27 +139,27 @@ public:
 		return msg;
 	}
 
-	static pico_message build_complete_message_from_key_value_pair(string key,
-			string value) {
-		Json::Value root;   // will contains the root value after parsing.
-		string messageId = convertToString(calc_request_id());
-
-		root["key"] = key;
-		root["value"] = value;
-		root["oldvalue"] = "unknown";
-		root["db"] = "unknown";
-		root["user"] = "unknown";
-		root["collection"] = "unknown";
-		root["command"] = "unknown";
-		root["messageId"] = messageId;
-		root["hashCode"] = "unknown";
-
-		Json::StyledWriter writer;
-		// Make a new JSON document for the configuration. Preserve original comments.
-		std::string output = writer.write(root);
-		pico_message msg(output, messageId);
-		return msg;
-	}
+//	static pico_message build_complete_message_from_key_value_pair(string key,
+//			string value) {
+//		Json::Value root;   // will contains the root value after parsing.
+//		string messageId = convertToString(calc_request_id());
+//
+//		root["key"] = key;
+//		root["value"] = value;
+//		root["oldvalue"] = "unknown";
+//		root["db"] = "unknown";
+//		root["user"] = "unknown";
+//		root["collection"] = "unknown";
+//		root["command"] = "unknown";
+//		root["messageId"] = messageId;
+//		root["hashCode"] = "unknown";
+//
+//		Json::StyledWriter writer;
+//		// Make a new JSON document for the configuration. Preserve original comments.
+//		std::string output = writer.write(root);
+//		pico_message msg(output, messageId);
+//		return msg;
+//	}
     
     bool operator==(const pico_message& msg){
         //this is used for removing the message
@@ -300,12 +300,7 @@ public:
 
 		return recorded_message;
 	}
-	void padTheKey() {
-
-		for (int i = key.size(); i < pico_record::max_key_size; i++) {
-			key.push_back(pico_record::keyValueSeperator);
-		}
-	}
+	
 	pico_buffered_message<pico_record>& getKeyValueOfMessageInRecords()
 	//this method will add BEG KEY and CONKEY to the first and rest of buffers
 	{

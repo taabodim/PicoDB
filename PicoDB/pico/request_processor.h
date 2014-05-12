@@ -113,11 +113,12 @@ public:
 		mylogger
 				<< "\n request_processor : record that is going to be deleted from this : "
 				<< firstrecord.toString();
-//            optionCollection.deleteRecord(firstrecord,collectionPtr);
+
 		collectionPtr->deleteRecord(firstrecord,async);
 		string result("one message was deleted from database in unknown(todo)");
 		result.append(" seperate records");
-		pico_message msg = pico_message::build_message_from_string(result,
+		std::string key("SUCCESS");
+		pico_message msg (key,result,
 				picoMsg.messageId);
 
 		return msg;
@@ -143,8 +144,8 @@ public:
 
 		//TODO add num to the reply
 		std::string result("records were updated");
-
-		pico_message msg = pico_message::build_message_from_string(result,
+		std::string key("SUCCESS");
+		pico_message msg(key,result,
 				picoMsg.messageId);
 
 		return msg;

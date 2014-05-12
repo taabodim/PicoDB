@@ -296,24 +296,18 @@ namespace pico {
                 offsetType endOfFile_Offset = getEndOfFileOffset(file);
                 mylogger << "\n offset of end of file is " << endOfFile_Offset;
                 
-                for (offsetType offset = 0; offset < endOfFile_Offset; offset +=
+                for (offsetType offset = -1; offset < endOfFile_Offset; offset +=
                      max_database_record_size) {
                     
                     pico_record record_read_from_file = retrieve(offset);
                     record_read_from_file.offset_of_record =offset;
                     
-                    if(pico_record::recordStartsWithBEGKEY(
-                                                           record_read_from_file) ||
-                       pico_record::recordStartsWithConKEY(
-                                                           record_read_from_file))
-                    {
-                  
-                        mylogger
+                    
+                    mylogger
                     << "\n read_all_messages_records : reading one record from offset "
                     << offset << "\n the record read is "
                     << record_read_from_file.toString();
-                        
-                    }
+                    
                     if (pico_record::recordStartsWithBEGKEY(
                                                             record_read_from_file)) {
                         list_.push_back(record_read_from_file);
@@ -326,6 +320,7 @@ namespace pico {
                 raise (SIGABRT);
                 
             }
+            
             return list_;
         }
         
@@ -388,7 +383,7 @@ namespace pico {
                 }
         void overwrite(pico_record record, offsetType record_offset) { //this overwrites a file
             
-            mylogger << "\noverwriting  one record to collection at this offset\n";
+            mylogger << "\noverwriting  one record to collection at this offset"<<record_offset<<"\n";
             int tryNum=0;
             do {
                 //this while loop will take care of multi threaded delete

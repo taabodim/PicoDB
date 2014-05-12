@@ -24,19 +24,49 @@ namespace pico{
             
         }
         
-        void insert1SmallKeyBigValue_And_GetIt()
+        void updateOneBigData()
+        {
+            std::string key(pico_test::smallKey0);
+            
+            for(int i=0;i<1;i++)
+            {
+                
+                driverPtr->insert(key,pico_test::bigValue0);
+                std::shared_ptr<pico_message> message = driverPtr->update(key,pico_test::smallValue0);
+                
+            }
+        }
+        void deleteOneBigData()
+        {
+            std::string key(pico_test::smallKey0);
+            for(int i=0;i<1;i++)
+            {
+                
+                driverPtr->insert(key,pico_test::bigValue0);
+                std::shared_ptr<pico_message> message = driverPtr->deleteRecord(key);
+               
+            }
+        }
+        void getOneBigData(){
+            std::string key(pico_test::smallKey0);
+            for(int i=0;i<1;i++)
+            {
+                
+                driverPtr->insert(key,pico_test::bigValue0);
+                std::shared_ptr<pico_message> message = driverPtr->get(key);
+                //            std::shared_ptr<pico_message> result  = driverPtr->update(message->key,pico_test::smallValue0);
+                //                
+            }
+        }
+        void insertOneBigData()
         {
              std::string key(pico_test::smallKey0);
             for(int i=0;i<1;i++)
             {
            
             driverPtr->insert(key,pico_test::bigValue0);
-            std::shared_ptr<pico_message> message = driverPtr->get(key);
-            std::shared_ptr<pico_message> result  = driverPtr->update(message->key,pico_test::smallValue0);
                 
             }
-            
-            //while(true){}//keep the thread forever
             
         }
 //        void getTest(std::string key)
@@ -137,7 +167,10 @@ namespace pico{
             
             // write1000smallRandomData();
             //            writeOneDeleteOne();
-            insert1SmallKeyBigValue_And_GetIt();
+            insertOneBigData();
+            getOneBigData();
+            deleteOneBigData();
+            updateOneBigData();
             //write1000SmallKeysBigValues_and_deleteAll();
             
             
@@ -147,6 +180,8 @@ namespace pico{
             
             mylogger << "****************************************\n";
             mylogger<< "\nIt took me " << time_span.count() << " seconds.\n";
+            std::cout << "****************************************\n";
+            std::cout<< "\nIt took me " << time_span.count() << " seconds.\n";
             
         }
         

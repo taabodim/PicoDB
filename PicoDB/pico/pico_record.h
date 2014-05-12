@@ -21,14 +21,6 @@ namespace pico {
         static string BEGKEY;
         static string CONKEY;
         
-        const static char keyValueSeperator = '`';
-        //this is the char that we insert after the key to make it 32 characters long
-        //if its shorter than that, then we add the key value in one string
-        //and we save them in database as bunch of buffers, this is the key value separator
-        
-        const static int appendMarkerSize = 6;//this is the size of the last few characters that determine if a record is the end of message
-        //or message is going to be continued
-        
         const static int beg_key_type_index = 0;
         const static int max_key_type_size = 6;//it could be BEGKEY or CONKEY
         const static int end_key_type_index = max_key_type_size
@@ -39,7 +31,7 @@ namespace pico {
         const static int end_of_key_index = max_key_size + beg_of_key_index;
         
         const static int beg_of_value_index = end_of_key_index;
-        const static int max_value_size = 256;//should be more than 168 as the smallest message is that
+        const static int max_value_size = 432+512;//to ke the whole record 512 bytes ,
         const static int end_of_value_index = max_value_size + beg_of_value_index;
         
         const static int beg_of_messageId_index = end_of_value_index;
@@ -255,11 +247,9 @@ namespace pico {
             
             for (int i = beg_key_type_index; i < end_key_type_index; i++) {
                 if (data_copy[i] != '\0') {
-                    if (data_copy[i] == keyValueSeperator) {
-                        //ignoring keyvalue seperator
-                    } else {
+                   
                         keyType.push_back(data_copy[i]);
-                    }
+                   
                 } else {
                     break;
                 }
@@ -283,11 +273,9 @@ namespace pico {
             while (keyWithSeperator != 0) {
                 
                 if (keyWithSeperator[i] != '\0') {
-                    if (keyWithSeperator[i] == keyValueSeperator) {
-                        //ignoring keyvalue seperator
-                    } else {
+                    
                         key.push_back(keyWithSeperator[i]);
-                    }
+                    
                 } else {
                     break;
                 }
@@ -420,11 +408,9 @@ namespace pico {
             
             for (int i = beg_of_key_index; i < end_of_key_index; i++) {
                 if (data_copy[i] != '\0') {
-                    if (data_copy[i] == keyValueSeperator) {
-                        //ignoring keyvalue seperator
-                    } else {
+                   
                         key.push_back(data_copy[i]);
-                    }
+                   
                 } else {
                     break;
                 }

@@ -12,7 +12,7 @@
 #include <array>
 #include "AsyncTcpClient.h"
 #include <boost/thread.hpp>
-
+#include <chrono>
 #include <pico/writer_buffer_container.h>
 #include <pico/asyncReader.h>
 #include <pico/pico_message.h>
@@ -285,14 +285,14 @@ public:
 
 			}
 			allBuffersReadFromTheOtherSide.append(*currentBuffer);
-			readOneBuffer();//read the next addon buffer
+			readOneBuffer();					//read the next addon buffer
 		}
 		else {
 
 			allBuffersReadFromTheOtherSide.append(*currentBuffer);
 
 			pico_message util;
-            std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
+			std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
 			if(mylogger.isTraceEnabled())
 			{
 				mylogger<<"\n client : this is the complete message read from server \n";
@@ -350,7 +350,7 @@ public:
 				messageFromOtherSide->messageId<<" and put it in ResponseQueue \n this is the full response : "<<messageFromOtherSide->toString();
 				assert(messageFromOtherSide->toString().size()>0);
 			}
-			writeOneBuffer();
+			
 
 		} catch (std::exception &e) {
 			cout << " this is the error : " << e.what() << endl;
@@ -397,7 +397,7 @@ public:
 	}
 
 	//this is the driver function thats part of driver api
-	string insert(std::string key,std::string value) {
+	queueType insert(std::string key,std::string value) {
 
 		string command("insert");
 		string database("currencyDB");
@@ -413,26 +413,20 @@ public:
 			mylogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
 
 		}
-		return msg->messageId;
-
-		//            queueType msgReadFromQueue = commandQueue_.pop();
-		//            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
-
+		return getTheResponseOfRequest(msg);
 	}
 
-	void deleteTest(std::string key,std::string value) {
+	queueType deleteRecord(std::string key) {
 
 		string command("delete");
 		string database("currencyDB");
 		string user("currencyUser");
 		string col("currencyCollection");
-
+		std::string value("unimportant");
 		//queueType msg (key,value,command,database,user,col );
 		queueType msg (new pico_message(key,value,command,database,user,col ));
 		queueRequestMessages(msg);
-		//            queueType msgReadFromQueue = commandQueue_.pop();
-		//            mylogger<<"this is to test if queue works fine"<<endl<<"queue item is "<<msgReadFromQueue.toString()<<endl<<msgReadFromQueue.key_of_message<<" " <<msgReadFromQueue.value_of_message<<endl<<msgReadFromQueue.command<<endl<<msgReadFromQueue.collection<<endl;
-
+		return getTheResponseOfRequest(msg);
 	}
 
 	queueType update(std::string key,std::string newValue) {
@@ -448,65 +442,74 @@ public:
 		return getTheResponseOfRequest(msg);
 	}
 
-	queueType getTheResponseOfRequest(queueType msg,double userTimeOut=10)
+	queueType getTheResponseOfRequest(queueType msg,long userTimeOut=10)
 	{
-
+		bool testPassed = false;
 		steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
 		mylogger<<"Client : waiting for our response from server...msg.messageId = "<< msg->messageId<< " \n";
 		std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
-		while(true)
+        steady_clock::time_point t2 = steady_clock::now(); //time that we are going to check to determine timeout
+        while(true)
 		{
 
-			while(responseQueue_.empty())
+			if(responseQueue_.empty())
 			{
-				if(mylogger.isTraceEnabled()){mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
-				responseQueueIsEmpty.wait(responseQueueIsEmptyLock);
+				if(mylogger.isTraceEnabled()) {mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
+//				auto now = std::chrono::system_clock::now();
+				responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
+                if(responseQueue_.empty()){break;}
+                
 			}
-			queueType response = responseQueue_.peek();
-
-//			if(mylogger.isTraceEnabled){mylogger<<"Client : response for this request came responseQueue_ to be filled again  !\n";}
-
-			if(response->messageId.compare(msg->messageId)==0)
-			{
-				responseQueue_.remove(response); //remove this from the responseQueue_
-				//this is our response
-				if(mylogger.isTraceEnabled()){
-					mylogger<<"Client : got our response"<<response->messageId<<"\n"<<
-									"this is our response "<<response->value;
-				}
-
-
-				if(response->value.compare("NODATAFOUND")==0)
+			
+//            if(!responseQueue_.empty())
+//            {
+				queueType response = responseQueue_.peek();
+                
+				if(response->messageId.compare(msg->messageId)==0)
 				{
-
-					response->value = "NULL";
-					//recalculate all the json form of message and hash code
-					//and etc
-
+					responseQueue_.remove(response); //remove this from the responseQueue_
+					//this is our response
+					if(mylogger.isTraceEnabled()) {
+						mylogger<<"Client : got our response"<<response->messageId<<"\n"<<
+						"this is our response "<<response->value;
+					}
+                    
+					testPassed = true;
+					if(response->value.compare("NODATAFOUND")==0)
+					{
+                        
+						response->value = "NULL";
+						//recalculate all the json form of message and hash code
+						//and etc
+                        
+					}
+					return response;
 				}
-				return response;
-			}
-			else
-			{
-				steady_clock::time_point t2 = steady_clock::now(); //time that we are going to check to determine timeout
-
-				duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-				double timeoutInSeconds = time_span.count();
-				if(timeoutInSeconds>=userTimeOut)
-				{
-					//we ran out of time, get failed....
-					if(mylogger.isTraceEnabled()){mylogger<<"Client : "<<msg->command<<" Operation TIMED OUT!!\n";}
-					break;
-
-				}
-				else {
-
-				}
-
-			}
-
+//
+//            }
+//            
+//				else
+//				{
+//					
+//
+//					duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+//					double timeoutInSeconds = time_span.count();
+//					if(timeoutInSeconds>=userTimeOut)
+//					{
+//						//we ran out of time, get failed....
+//						if(mylogger.isTraceEnabled()) {mylogger<<"Client : "<<msg->command<<" Operation TIMED OUT!!\n";}
+//						break;
+//
+//					}
+//					else {
+//
+//					}
+//
+//				
+//			}
+			
 		} //while
-
+		assert(testPassed);
 		std::string timeout("OPERATION TIMED OUT for this command :  !");
 		timeout.append(msg->command);
 		timeout.append(" with this message id : ");
