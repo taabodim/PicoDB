@@ -22,7 +22,7 @@ namespace pico {
         
         int numberOfJobsDoneByTheWorker;
        
-        std::shared_ptr<pico_concurrent_list<taskType>> queueOfTasks;//this queue must be common among the thread pool and all thread workers ,thus it should be in heap
+        std::shared_ptr<pico_concurrent_list<taskType,list_traits<taskType>>> queueOfTasks;//this queue must be common among the thread pool and all thread workers ,thus it should be in heap
         std::size_t WorkerQueueLimit;
         bool free;
         
@@ -34,7 +34,7 @@ namespace pico {
 
         boost::thread threadHandle;
         
-        ThreadWorker(std::shared_ptr<pico_concurrent_list<taskType>> queueOfTasksArg) :bound_func(boost::bind(&ThreadWorker::runIndefinitely, this)),threadHandle(bound_func){
+        ThreadWorker(std::shared_ptr<pico_concurrent_list<taskType,list_traits<taskType>>> queueOfTasksArg) :bound_func(boost::bind(&ThreadWorker::runIndefinitely, this)),threadHandle(bound_func){
            
             
             queueOfTasks = queueOfTasksArg;

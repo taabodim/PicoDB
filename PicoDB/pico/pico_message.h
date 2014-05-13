@@ -538,11 +538,23 @@ public:
 		
         return buffersContainingMessage;
 	}
+   
+    
 	~pico_message() {
 		mylogger << ("pico_message being destroyed now.\n");
 	}
 
+    static  std::shared_ptr<pico_message> emptyInstance() //for template class
+    {
+        return NULL;
+    }
+    
 };
+    
+    
+
+    
+      
 }
 
 #endif /* PICO_MESSAGE_H_ */

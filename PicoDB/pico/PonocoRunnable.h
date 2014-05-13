@@ -28,8 +28,10 @@ namespace  pico  {
         void runPoncoClientProgram() //this is the third party program that is going to put
         //messages in the request queue of the PonocoDriver
         {
+            
             PonocoClient myClient(driverPtr);
-            myClient.currentTestCase();
+           
+//            myClient.currentTestCase();
             
             
         }

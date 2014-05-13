@@ -59,7 +59,7 @@ public:
 	char data_copy[max_size];
 
 	offsetType offset_of_record = -1; //this is the offset in the file and the index
-
+    
 	pico_record() {
 		for (int i = 0; i < max_size; i++) {		//initializng
 			data_[i] = '\0';
@@ -580,6 +580,15 @@ public:
 		return max_size;
 	}
 	typedef std::shared_ptr<pico_record> recordTypePtr;
+
+    
+    static pico_record emptyInstance() //for template class
+    {
+        pico_record* emptyRecordPtr (new pico_record());//fix the leak later
+        return *emptyRecordPtr;
+        //resource leak
+    }
+    
 private:
 
 }

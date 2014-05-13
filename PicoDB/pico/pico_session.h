@@ -281,8 +281,8 @@ public:
 
 	asyncReader asyncReader_;
 	request_processor requestProcessor_;
-	pico_concurrent_list<queueType> messageToClientQueue_;
-	pico_concurrent_list<std::shared_ptr<pico_record>> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
+	pico_concurrent_list<queueType,list_traits<pico_message>> messageToClientQueue_;
+	pico_concurrent_list<std::shared_ptr<pico_record>,list_traits<pico_record>> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
 
 	std::mutex sessionMutex;   // mutex for the condition variable
 	std::mutex bufferQueueIsEmptyMutex;

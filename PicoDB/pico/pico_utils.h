@@ -149,6 +149,16 @@ string calc_request_id() {
 	return random_number<string>(32);
 }
 
+void sleepViaBoost(int seconds)
+ {
+        boost::this_thread::sleep(boost::posix_time::seconds(seconds));
+        //this throws some weird exception
+        
+        //    std::chrono::milliseconds dura( seconds*1000 );
+        //    std::this_thread::sleep_for( dura );
+        
+    }
+    
 string getFullCollectionName(string name) {
 	string fullname = PicoConfig::dataDir;
 	std::string ext(".dat");

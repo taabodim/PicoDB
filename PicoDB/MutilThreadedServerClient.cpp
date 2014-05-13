@@ -67,7 +67,33 @@
 #include <pico/pico_client.h>
 #include <pico/pico_index.h>
 #include <pico/pico_concurrent_list.h>
+#include <type_traits>
+#include <memory>
+#include <cstdio>
 
+class Foo { };
+typedef std::shared_ptr<Foo> SharedFoo;
+
+template <class T>
+struct getValue {
+    getValue() {
+        printf("not shared!\n");
+    }
+};
+
+template <class T>
+struct getValue<std::shared_ptr<T> > {
+    getValue() {
+        printf("shared!\n");
+    }
+};
+
+int templateSpecialiaztionOfSharedPtrExample()
+{
+    getValue<SharedFoo>();
+    getValue<Foo>();
+    return 0;
+}
 using namespace pico;
 using namespace std;
 
@@ -198,7 +224,7 @@ int g(int n1)
     return n1;
 }
 
-struct Foo {
+struct Foo1 {
     void print_sum(int n1, int n2)
     {
       //  mylogger << n1+n2 << '\n';
@@ -374,15 +400,7 @@ void test_pico_binary_index_tree()
 void createACollection() {
 
 }
-void sleepViaBoost(int seconds)
-{
-boost::this_thread::sleep(boost::posix_time::seconds(seconds));
-    //this throws some weird exception
-    
-//    std::chrono::milliseconds dura( seconds*1000 );
-//    std::this_thread::sleep_for( dura );
-    
-}
+
 void runPicoHedgeFundClient(std::shared_ptr<DriverType> ptr)
 {
     cout<<("hedge fund is starting...");
@@ -486,7 +504,7 @@ void clientServerExample() {
 std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
 //         DriverType* ptr = new DriverType(sharedSyncHelper);
         boost::thread serverThread(runServer);
-		sleepViaBoost(1);
+       // sleepViaBoost(1);
 
         // boost::bind(runPonocoDriver,_1, _2)(*ptr,sharedSyncHelper);
 //auto func = std::bind(runPonocoDriver,_1, _2,ptr,sharedSyncHelper);
@@ -494,7 +512,7 @@ std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
          PonocoRunnable driverThreadRunnable(ptr.get(),sharedSyncHelper);
        // boost::thread picoDriverThread(boost::bind(runPonocoDriver,_1, _2)(ptr,sharedSyncHelper));
        boost::thread  poncoDriverThread(boost::bind(&PonocoRunnable::runPonocoDriver,driverThreadRunnable));
-        sleepViaBoost(1);
+       // sleepViaBoost(1);
         
         //bind(f, _2, _1)(x, y);
         
@@ -508,7 +526,7 @@ std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
 //        serverThread.detach();
        
         //a thread that is waiting on a condition variable, cannot be joined
-      
+        
         if(serverThread.joinable()) {serverThread.join();}
 //        if(poncoClientThread.joinable())
 //        {poncoClientThread.join();}
@@ -978,12 +996,13 @@ int main(int argc, char** argv) {
 //        test_pico_index();
       //  testThreadPool();
         clientServerExample();
+        
        // runChatServer();
         //		readingAndWritingRecordData();
         //		jsonCPPexample() ;
         //		readingAndWritingComplexData();
        // file_example();
-        
+     //   templateSpecialiaztionOfSharedPtrExample();
 	} catch (const std::exception& e) {
 		cout << " exception : " << e.what() << endl;
         raise(SIGABRT);

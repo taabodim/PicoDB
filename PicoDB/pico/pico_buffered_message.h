@@ -22,12 +22,13 @@ namespace pico
     template <typename type>
     class pico_buffered_message{
     public:
-        pico_buffered_message():msg_in_buffers(new pico_concurrent_list<type>())
+        pico_buffered_message():msg_in_buffers(new pico_concurrent_list<type,list_traits<type>>())
         {
             //    mylogger<<("empty pico_buffered_message being constructed.....\n");
             
         }
-        pico_buffered_message(std::shared_ptr<pico_concurrent_list<type>> list):msg_in_buffers(new pico_concurrent_list<type>()){
+        pico_buffered_message(std::shared_ptr<pico_concurrent_list<type,list_traits<type>>> list)
+        :msg_in_buffers(new pico_concurrent_list<type,list_traits<type>>()){
             //     mylogger<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
             
@@ -92,7 +93,7 @@ namespace pico
         {
             return msg_in_buffers->getFirstBuffer();
         }
-        std::shared_ptr<pico_concurrent_list<type>> msg_in_buffers;
+        std::shared_ptr<pico_concurrent_list<type,list_traits<type>>> msg_in_buffers;
         //since, a list cannot be copied, I create the list on the heap and copy the pointer to it
         //every time this object wants to copy
     };

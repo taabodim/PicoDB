@@ -41,7 +41,7 @@ public:
 	}
 
 //	pico_concurrent_list<msgPtr> readerBufferList;
-	pico_concurrent_list<std::shared_ptr<pico_record>> singleBufferList;
+	pico_concurrent_list<std::shared_ptr<pico_record>,list_traits<pico_record>  > singleBufferList;
 
 private:
 //none as of now

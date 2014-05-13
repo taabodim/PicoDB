@@ -45,8 +45,8 @@ private:
 	//  typedef  std::shared_ptr<PonocoDriverHelper> helperType;
 	typedef PonocoDriverHelper* helperType;
 	// helperType syncHelper;
-	pico_concurrent_list<queueType> responseQueue_;
-	std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_record>>> bufferQueuePtr_;
+	pico_concurrent_list<queueType,list_traits<pico_messageForResponseQueue_>> responseQueue_;
+	std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_record>,list_traits<pico_record>>> bufferQueuePtr_;
 
 	bool clientIsConnected;
 
@@ -68,8 +68,8 @@ private:
 public:
 
 	PonocoDriver(helperType syncHelperArg )
-	
-	:bufferQueuePtr_(new pico_concurrent_list<std::shared_ptr<pico_record>>)
+
+	:bufferQueuePtr_(new pico_concurrent_list<std::shared_ptr<pico_record>,list_traits<pico_record>>)
 	{
 		//            syncHelper = syncHelperArg;
 		boost::unique_lock<std::mutex> waitForClientToConnectLock(waitForClientToConnectMutex);
@@ -82,7 +82,7 @@ public:
 		{
 			mylogger<< "Ponoco Instance is initializing  ";
 		}
-        setDefaultParameter();
+		setDefaultParameter();
 
 	}
 	void setDefaultParameter()
@@ -95,7 +95,7 @@ public:
 	void start_connect(std::shared_ptr<tcp::socket> socket,tcp::resolver::iterator endpoint_iter) {
 		try {
 			socket_ = socket;
-
+			startResponseQueueNotifier();
 			if(mylogger.isTraceEnabled())
 			{
 				mylogger<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
@@ -441,7 +441,6 @@ public:
 		bool testPassed = false;
 		steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
 		mylogger<<"Client : waiting for our response from server...msg.messageId = "<< msg->messageId<< " \n";
-		std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
 		steady_clock::time_point t2 = steady_clock::now();//time that we are going to check to determine timeout
 		while(true)
 		{
@@ -449,18 +448,19 @@ public:
 			if(responseQueue_.empty())
 			{
 				if(mylogger.isTraceEnabled()) {
-                    mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
+					mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
 //				auto now = std::chrono::system_clock::now();
-				responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
-				if(responseQueue_.empty()) {break;}
+//                std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
+//                responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
+//				if(responseQueue_.empty()) {break;}
 
 			}
 
-//            if(!responseQueue_.empty())
-//            {
-			queueType response = responseQueue_.peek();
+            if(!responseQueue_.empty())
+            {
+                queueType response = responseQueue_.peek();
 
-			if(response->messageId.compare(msg->messageId)==0)
+			if(msg!=NULL && response!=nullptr && response->messageId.compare(msg->messageId)==0)
 			{
 				responseQueue_.remove(response); //remove this from the responseQueue_
 				//this is our response
@@ -481,35 +481,27 @@ public:
 				return response;
 			}
 //
-//            }
-//            
-//				else
-//				{
-//					
+            }
 //
-//					duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-//					double timeoutInSeconds = time_span.count();
-//					if(timeoutInSeconds>=userTimeOut)
-//					{
-//						//we ran out of time, get failed....
-//						if(mylogger.isTraceEnabled()) {mylogger<<"Client : "<<msg->command<<" Operation TIMED OUT!!\n";}
-//						break;
-//
-//					}
-//					else {
-//
-//					}
-//
-//				
-//			}
+            
+					duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+					double timeoutInSeconds = time_span.count();
+					if(timeoutInSeconds>=userTimeOut)
+					{
+						//we ran out of time, get failed....
+						if(mylogger.isTraceEnabled()) {mylogger<<"Client : "<<msg->command<<" Operation TIMED OUT!!\n";}
+						break;
+
+					}
+			
 
 		} //while
-		//assert(testPassed);
+		  //assert(testPassed);
 		std::string timeout("OPERATION TIMED OUT for this command :  !");
 		timeout.append(msg->command);
 		timeout.append(" with this message id : ");
 		timeout.append(msg->messageId);
-		//pico_message timeoutResponse(msg.key,timeout,msg.messageId);
+		  //pico_message timeoutResponse(msg.key,timeout,msg.messageId);
 		queueType timeoutResponse(new pico_message(msg->key,timeout,msg->messageId));
 		return timeoutResponse;
 
@@ -523,7 +515,29 @@ public:
 		return getTheResponseOfRequest(msg);
 
 	}
+	void startResponseQueueNotifier()
+	{
+		try {
+//			boost::thread notifierThread(
+//					boost::bind(&PonocoDriver::notifierService,this));
 
+		} catch(std::exception& e)
+		{
+			std::cout<<" Exception in notifierThread "<<e.what()<<"\n";
+		}
+
+	}
+	void notifierService()
+	{
+//		while(true)
+//		{
+//			if(!responseQueue_.empty())
+//			{
+//				responseQueueIsEmpty.notify_all();
+//			}
+//
+//		}
+	}
 	void queueTheResponse(queueType msg)
 
 	{
@@ -532,13 +546,12 @@ public:
 			mylogger<<"client : putting the response in the queue "<<msg->toString();
 
 		}
-        responseQueueIsEmpty.notify_all();
+		responseQueueIsEmpty.notify_all();
 		responseQueue_.push(msg);
 
 		if(mylogger.isTraceEnabled())
 		{	mylogger<<"\n client : response pushed to responseQUEUE , queue size is "<<responseQueue_.size()<<" \n";
 		}
-		
 
 	}
 	void queueRequestMessages(queueType message) {

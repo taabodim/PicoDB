@@ -65,7 +65,10 @@ public:
 			std::string key(pico_test::smallKey0);
 			for (int i = 0; i < 1; i++) {
 				string randomSmallKey = random_string(key,10).append(random_string(key,10));
-
+                if(mylogger.isTraceEnabled())
+                {
+                    mylogger<<"driverPtr->insert(randomSmallKey,pico_test::bigValue0 );";
+                }
 				driverPtr->insert(randomSmallKey,pico_test::bigValue0 );
 
 			}
@@ -78,18 +81,32 @@ public:
 	}
 
 	void write1000smallRandomDataUsing100Threads() {
-		int numOfThreads = 100;
-        
+		int numOfThreads = 10;
+        PicoConfig::defaultTimeoutInSec = 2;
+//        vector<boost::thread*> allThreads;
+         sleepViaBoost(2);
 		for (int i = 0; i < numOfThreads; i++) {
             try{
-            boost::thread poncoDriverThread(
+                boost::thread poncoDriverThread(
 					boost::bind(&PonocoClient::insertOneBigRandomData,this));
-
+                
+//                allThreads.push_back(poncoDriverThread);
+                
             }catch(std::exception& e)
             {
                 std::cout<<" Exception in threads "<<e.what()<<"\n";
             }
 		}
+        
+//        for (int i = 0; i < numOfThreads; i++) {
+//            try{
+//                allThreads[i]->join();
+//                
+//            }catch(std::exception& e)
+//            {
+//                std::cout<<" Exception in threads "<<e.what()<<"\n";
+//            }
+//		}
 
 	}
 //        void write1000smallRandomData()
@@ -178,7 +195,7 @@ public:
 		steady_clock::time_point t1 = steady_clock::now();
 
 		string col("currencyCollection");
-		PicoConfig::defaultTimeoutInSec = 1000;
+		PicoConfig::defaultTimeoutInSec = 1;
 		//deleteAndCreateCollectionTest(col);
 
 		write1000smallRandomDataUsing100Threads();
