@@ -61,9 +61,14 @@ private:
 	std::condition_variable bufferQueueIsEmpty;
 	std::condition_variable responseQueueIsEmpty;
 
+	string database;
+	string user;
+	string col;
+
 public:
+
 	PonocoDriver(helperType syncHelperArg )
-	// syncHelper ( syncHelperArg),
+	
 	:bufferQueuePtr_(new pico_concurrent_list<std::shared_ptr<pico_record>>)
 	{
 		//            syncHelper = syncHelperArg;
@@ -77,16 +82,16 @@ public:
 		{
 			mylogger<< "Ponoco Instance is initializing  ";
 		}
+        setDefaultParameter();
 
 	}
-	//        PonocoDriver(std::shared_ptr<PonocoDriverHelper> syncHelperArg) {
-	//
-	//
-	//            syncHelper = syncHelperArg;
-	//            mylogger<< " Ponoco Driver is initializing ";
-	//
-	//        }
+	void setDefaultParameter()
+	{
+		database.append("currencyDB");
+		user.append("currencyUser");
+		col.append("currencyCollection");
 
+	}
 	void start_connect(std::shared_ptr<tcp::socket> socket,tcp::resolver::iterator endpoint_iter) {
 		try {
 			socket_ = socket;
@@ -170,21 +175,21 @@ public:
 		}
 	}
 
-	void readSynchronously() {
-		for (;;) {
-			boost::array<char, 128> buf;
-			boost::system::error_code error;
-
-			size_t len = socket_->read_some(boost::asio::buffer(buf), error);
-
-			if (error == boost::asio::error::eof)
-			break; // Connection closed cleanly by peer.
-			else if (error)
-			throw boost::system::system_error(error);// Some other error.
-
-			mylogger << "\nclient got this " << buf.data();
-		}
-	}
+//	void readSynchronously() {
+//		for (;;) {
+//			boost::array<char, 128> buf;
+//			boost::system::error_code error;
+//
+//			size_t len = socket_->read_some(boost::asio::buffer(buf), error);
+//
+//			if (error == boost::asio::error::eof)
+//			break; // Connection closed cleanly by peer.
+//			else if (error)
+//			throw boost::system::system_error(error);// Some other error.
+//
+//			mylogger << "\nclient got this " << buf.data();
+//		}
+//	}
 	void readOneBuffer() {
 		if(mylogger.isTraceEnabled())
 		{
@@ -208,19 +213,31 @@ public:
 	void writeOneBuffer()
 	{
 
-		mylogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
+		if(mylogger.isTraceEnabled())
+		{	mylogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
+
+		}
 		std::unique_lock<std::mutex> writeOneBufferLock(writeOneBufferMutex);
 
 		while(bufferQueuePtr_->empty())
 		{
 
-			mylogger<<"client : bufferQueue is empty..waiting ...\n";
+			if(mylogger.isTraceEnabled())
+			{	mylogger<<"client : bufferQueue is empty..waiting ...\n";
+
+			}
 
 			bufferQueueIsEmpty.wait(writeOneBufferLock);
-			mylogger<<"client : bufferQueue waking up because there is some data in the queue ...\n";
+			if(mylogger.isTraceEnabled())
+			{	mylogger<<"client : bufferQueue waking up because there is some data in the queue ...\n";
+
+			}
 		}
 
-		mylogger<<"client : is going to send some data over ...\n";
+		if(mylogger.isTraceEnabled())
+		{	mylogger<<"client : is going to send some data over ...\n";
+
+		}
 		std::shared_ptr<pico_record> currentBuffer =bufferQueuePtr_->pop();
 
 		char* data = currentBuffer->getDataForWrite();
@@ -306,28 +323,6 @@ public:
 
 	}
 
-	bool sendmetherestofdata( string comparedTo)
-	{
-		bool result;
-		string ignore("sendmetherestofdata");
-
-		if(comparedTo.compare(ignore)==0)
-		{
-			return true;
-		}
-		else if (comparedTo.empty())
-		{
-			if(mylogger.isTraceEnabled())
-			{
-				mylogger<<"\n client : WARNING:  CLIENT RECIEVED EMPTY MESSAGE \n ";
-			}
-			result = true;
-		}
-		else {
-			result= false;}
-
-		return result;
-	}
 	void processDataFromOtherSide(queueType messageFromOtherSide) {
 
 		try {
@@ -355,34 +350,7 @@ public:
 			cout << " this is the error : " << e.what() << endl;
 		}
 	}
-//	void tellHimSendTheRestOfData(string messageId)
-//	{
-//		if(mylogger.isTraceEnabled())
-//		{
-//			mylogger<<"\nClient is telling send the rest of data for this message Id  "<<messageId<<" \n";
-//		}
-//		string msg("sendmetherestofdata");
-//
-//		pico_message reply = pico_message::build_message_from_string(msg,messageId);
-//		queueRequestMessages(reply);
-//		if(mylogger.isTraceEnabled())
-//		{
-//			mylogger<<"\nClient put this message in the queue to be sent  "<<reply.toString()<<" \n";
-//		}
-//
-//		writeOneBuffer(); //go to writing mode
-//
-//	}
-//	void ignoreThisMessageAndWriterNextBuffer()
-//	{
-//		if(mylogger.isTraceEnabled())
-//		{
-//			mylogger<<"\nClient is ignoring this message and going to write mode  \n";
-//
-//		}
-//		writeOneBuffer();
-//
-//	}
+
 	void print(const boost::system::error_code& error,
 			std::size_t t,string& str)
 	{
@@ -399,9 +367,6 @@ public:
 	queueType insert(std::string key,std::string value) {
 
 		string command("insert");
-		string database("currencyDB");
-		string user("currencyUser");
-		string col("currencyCollection");
 
 		//queueType msg (key,value,command,database,user,col );
 		queueType msg (new pico_message(key,value,command,database,user,col ));
@@ -418,11 +383,8 @@ public:
 	queueType deleteCollection(std::string collectionName) {
 		string key("unimportant");
 		string value("unimportant");
-		string command("deleteCollection");
 
-		string database("currencyDB");
-		string user("currencyUser");
-		string col("currencyCollection");
+		string command("deleteCollection");
 
 		//queueType msg (key,value,command,database,user,col );
 		queueType msg (new pico_message(key,value,command,database,user,col ));
@@ -442,10 +404,6 @@ public:
 		string value("unimportant");
 		string command("createCollection");
 
-		string database("currencyDB");
-		string user("currencyUser");
-		string col("currencyCollection");
-
 		//queueType msg (key,value,command,database,user,col );
 		queueType msg (new pico_message(key,value,command,database,user,col ));
 		queueRequestMessages(msg);
@@ -459,15 +417,11 @@ public:
 
 	}
 
-
 	queueType deleteRecord(std::string key) {
 
 		string command("delete");
-		string database("currencyDB");
-		string user("currencyUser");
-		string col("currencyCollection");
 		std::string value("unimportant");
-		//queueType msg (key,value,command,database,user,col );
+
 		queueType msg (new pico_message(key,value,command,database,user,col ));
 		queueRequestMessages(msg);
 		return getTheResponseOfRequest(msg);
@@ -476,11 +430,7 @@ public:
 	queueType update(std::string key,std::string newValue) {
 
 		string command("update");
-		string database("currencyDB");
-		string user("currencyUser");
-		string col("currencyCollection");
-		string oldValue("notimportant");
-		//queueType msg (key,oldValue,newValue,command,database,user,col );
+
 		queueType msg (new pico_message(key,newValue,command,database,user,col ));
 		queueRequestMessages(msg);
 		return getTheResponseOfRequest(msg);
@@ -498,7 +448,8 @@ public:
 
 			if(responseQueue_.empty())
 			{
-				if(mylogger.isTraceEnabled()) {mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
+				if(mylogger.isTraceEnabled()) {
+                    mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
 //				auto now = std::chrono::system_clock::now();
 				responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
 				if(responseQueue_.empty()) {break;}
@@ -515,7 +466,7 @@ public:
 				//this is our response
 				if(mylogger.isTraceEnabled()) {
 					mylogger<<"Client : got our response"<<response->messageId<<"\n"<<
-					"this is our response "<<response->value;
+					"this is our response "<<response->toString();
 				}
 
 				testPassed = true;
@@ -553,7 +504,7 @@ public:
 //			}
 
 		} //while
-		assert(testPassed);
+		//assert(testPassed);
 		std::string timeout("OPERATION TIMED OUT for this command :  !");
 		timeout.append(msg->command);
 		timeout.append(" with this message id : ");
@@ -566,13 +517,8 @@ public:
 	queueType get(std::string key,double userTimeOut=10) {
 
 		string command("get");
-		string database("currencyDB");
-		string user("currencyUser");
-		string col("currencyCollection");
-		string oldValue("");
 		string newValue("");
-		//queueType msg (key,oldValue,newValue,command,database,user,col );
-		queueType msg(new pico_message(key,oldValue,newValue,command,database,user,col) );
+		queueType msg(new pico_message(key,newValue,command,database,user,col) );
 		queueRequestMessages(msg);
 		return getTheResponseOfRequest(msg);
 
@@ -581,18 +527,24 @@ public:
 	void queueTheResponse(queueType msg)
 
 	{
-		mylogger<<"client : putting the response in the queue "<<msg->toString();
+		if(mylogger.isTraceEnabled())
+		{
+			mylogger<<"client : putting the response in the queue "<<msg->toString();
+
+		}
+        responseQueueIsEmpty.notify_all();
 		responseQueue_.push(msg);
 
-		mylogger<<"\n client : response pushed to responseQUEUE , queue size is "<<responseQueue_.size()<<" \n";
-
-		responseQueueIsEmpty.notify_all();
+		if(mylogger.isTraceEnabled())
+		{	mylogger<<"\n client : response pushed to responseQUEUE , queue size is "<<responseQueue_.size()<<" \n";
+		}
+		
 
 	}
 	void queueRequestMessages(queueType message) {
-		//TODO put a lock here to make the all the buffers in a message go after each other.
-		try {
 
+		try {
+			//TODO put a lock here to make the all the buffers in a message go after each other.
 			boost::unique_lock<std::mutex> writeOneBufferMutexLock(writeOneBufferMutex);
 			pico_buffered_message<pico_record> msg_in_buffers =
 			message->getCompleteMessageInJsonAsBuffers();
@@ -600,9 +552,15 @@ public:
 			while(!msg_in_buffers.empty())
 			{
 
-				mylogger<<"\nPonocoDriver : queueRequestMessages : popping current Buffer \n";
+				if(mylogger.isTraceEnabled())
+				{	mylogger<<"\nPonocoDriver : queueRequestMessages : popping current Buffer \n";
+
+				}
 				pico_record buf = msg_in_buffers.pop();
-				mylogger<<"nPonocoDriver : popping current Buffer this is current buffer and pushing it to the bufferQueue to send "<<buf.toString()<<" \n";
+				if(mylogger.isTraceEnabled())
+				{	mylogger<<"nPonocoDriver : popping current Buffer this is current buffer and pushing it to the bufferQueue to send "<<buf.toString()<<" \n";
+
+				}
 
 				std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
 				bufferQueuePtr_->push(curBufPtr);

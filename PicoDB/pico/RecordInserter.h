@@ -17,14 +17,20 @@ namespace pico {
 
 class RecordInserter: public pico_logger_wrapper {
 private:
-	collection_manager collectionManager;
+    std::shared_ptr<collection_manager> collectionManager;
 public:
-
+    RecordInserter()
+    {
+        
+    }
+    void setCollectionManager(std::shared_ptr<collection_manager> collectionManagerArg){
+        collectionManager =collectionManagerArg;
+    }
 	msgPtr insertOneMessage(msgPtr picoMsg, offsetType offset) //insert at a specific offset
 			{
 		
 		std::shared_ptr<pico_collection> optionCollection =
-				collectionManager.getTheCollection(picoMsg->collection);
+				collectionManager->getTheCollection(picoMsg->collection);
 
 		pico_buffered_message<pico_record> msg_in_buffers =
 				picoMsg->getKeyValueOfMessageInRecords();
@@ -32,7 +38,7 @@ public:
 		pico_record firstrecord = msg_in_buffers.peek();
 
 		offsetType whereToWriteThisRecord = offset;
-		if (collectionManager.getTheCollection(picoMsg->collection)->ifRecordExists(
+		if (collectionManager->getTheCollection(picoMsg->collection)->ifRecordExists(
 				firstrecord)) {
 
 			if (mylogger.isTraceEnabled()) {
@@ -73,7 +79,7 @@ public:
 	msgPtr insertOneMessage(msgPtr picoMsg) {
 
 		std::shared_ptr<pico_collection> optionCollection =
-				collectionManager.getTheCollection(picoMsg->collection);
+				collectionManager->getTheCollection(picoMsg->collection);
 
 		pico_buffered_message<pico_record> msg_in_buffers =
 				picoMsg->getKeyValueOfMessageInRecords();
@@ -81,7 +87,7 @@ public:
 		pico_record firstrecord = msg_in_buffers.peek();
 
 		offsetType whereToWriteThisRecord = 0;
-		if (collectionManager.getTheCollection(picoMsg->collection)->ifRecordExists(
+		if (collectionManager->getTheCollection(picoMsg->collection)->ifRecordExists(
 				firstrecord)) {
 
 			if (mylogger.isTraceEnabled()) {
@@ -105,7 +111,7 @@ public:
 					<< "\nrequest_processor : record that is going to be saved at this offset "
             << whereToWriteThisRecord<<" : "
 					<< record.toString();
-
+            record.offset_of_record = whereToWriteThisRecord;
 			optionCollection->append(record); //append the
 			whereToWriteThisRecord += max_database_record_size;
 

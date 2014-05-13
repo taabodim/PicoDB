@@ -178,16 +178,19 @@ public:
 	void insert(nodeType nodeToBeInserted, nodeType leaf) {
 		offsetType key = nodeToBeInserted->key;
 		offsetType offset = nodeToBeInserted->offset;
-//            mylogger<<"pico_index : insert : nodeToBeInserted->key =key = "<<nodeToBeInserted->key<<endl;
-//            mylogger<<"pico_index : insert : leaf->key = "<<leaf->key<<endl;
-//            
+		mylogger << "pico_index : insert : nodeToBeInserted->key =key = "
+				<< nodeToBeInserted->key << "\n";
+		mylogger << "pico_index : insert : leaf->key = " << leaf->key << "\n";
+
 		if (key < leaf->key) {
 			if (leaf->left != nullptr) {
-//                    mylogger<<"pico_index : insert : key is smaller checking the left node";
+				mylogger
+						<< "pico_index : insert : key is smaller checking the left node";
 
 				insert(nodeToBeInserted, leaf->left);
 			} else {
-//                    mylogger<<("pico_index : insert : key is smaller adding a left node to this node");
+				mylogger
+						<< ("pico_index : insert : key is smaller adding a left node to this node");
 
 				leaf->left = nodeToBeInserted;
 				leaf->left->left = nullptr; //Sets the left child of the child std::string to nullptr
@@ -195,11 +198,13 @@ public:
 			}
 		} else if (key >= leaf->key) {
 			if (leaf->right != nullptr) {
-//                    mylogger<<("pico_index : insert : key is larger checking the right node ");
+				mylogger
+						<< ("pico_index : insert : key is larger checking the right node ");
 
 				insert(nodeToBeInserted, leaf->right);
 			} else {
-//                    mylogger<<("pico_index : insert : leaf doesnt have right child node.");
+				mylogger
+						<< ("pico_index : insert : leaf doesnt have right child node.");
 
 				leaf->right = nodeToBeInserted;
 				leaf->right->left = nullptr; //Sets the left child of the child std::string to nullptr
@@ -209,20 +214,37 @@ public:
 	}
 	nodeType search(nodeType node, nodeType leaf) {
 		offsetType key = node->key;
+        mylogger
+        << " pico_index : printing the  tree before search  \n";
+        print_tree();
 		mylogger
 				<< " pico_index : the record that we want to find in tree has this key  "
 				<< node->key << "\n";
-		if (leaf != nullptr && leaf != NULL) {
+		if (leaf != nullptr) {
 			mylogger
 					<< " pico_index : the record that exists in tree has this key  "
 					<< leaf->key << "\n";
-			if (key == leaf->key)
+			if (key == leaf->key) {
+				mylogger
+						<< " pico_index : the record was found in index with key  "
+						<< leaf->key << "\n";
 				return leaf;
-			if (key < leaf->key)
+			} else if (key < leaf->key) {
+
+				mylogger
+						<< " pico_index : searching the left child node for the key  "
+						<< key << "\n";
 				return search(node, leaf->left);
-			else
+			} else {
+				mylogger
+						<< " pico_index : searching the right child node for the key  "
+						<< key << "\n";
 				return search(node, leaf->right);
-		} else {
+
+			}
+		}
+
+		else {
 			mylogger
 					<< " pico_index : end of searching for node, no key found in tree  "
 					<< key << "\n";
@@ -234,7 +256,7 @@ public:
 	void insert(nodeType node) {
 		insert(node, root);
 	}
-	nodeType search(pico_record& record) {
+	nodeType search(pico_record & record) {
 		nodeType node = search(convert_pico_record_to_index_node(record), root);
 		if (node == nullptr) {
 			record.offset_of_record = -1;
@@ -247,7 +269,7 @@ public:
 		destroy_tree(root);
 	}
 
-	nodeType convert_pico_record_to_index_node(pico_record& record) {
+	nodeType convert_pico_record_to_index_node(pico_record & record) {
 		nodeType node(new pico_record_node());
 		std::hash < std::string > hash_fn;
 		std::size_t key_hash = hash_fn(record.getKeyAsString()); //record key will be used to make the node key
@@ -261,39 +283,39 @@ public:
 		return node;
 	}
 
-	//        void print_tree()
-	//        {
-	//            mylogger<<"this is the tree \n";
-	//            list<nodeType> level;
-	//            level.push_front(root);
-	//            while(!level.empty()){
-	//                nodeType node = level.front();
-	//                level.pop_front();
-	//
-	////                if(node->left!= nullptr && node->right!= nullptr)
-	////                {//to avoid duplicate printing of a node , only if its really a parent , it will print
-	//                    mylogger<<"\nthis is the middle node being printed ";
-	//                    node->printNode();
-	////                }
-	//                if(node->left!= nullptr)
-	//                {
-	//                    mylogger<<"\nthis is left Node of the above parent being printed \n";
-	//
-	//                    node->left->printNode();
-	//                    level.push_front(node->left);
-	//                }
-	//                //  mylogger<<(node->offset);
-	//                if(node->right!= nullptr)
-	//                {
-	//                    mylogger<<"\nthis is right Node of the above parent being printed \n";
-	//
-	//                    node->right->printNode();
-	//                    level.push_front(node->right);
-	//                }
-	//
-	//            }
-	//
-	//        }
+//        void print_tree()
+//        {
+//            mylogger<<"this is the tree \n";
+//            list<nodeType> level;
+//            level.push_front(root);
+//            while(!level.empty()){
+//                nodeType node = level.front();
+//                level.pop_front();
+//
+////                if(node->left!= nullptr && node->right!= nullptr)
+////                {//to avoid duplicate printing of a node , only if its really a parent , it will print
+//                    mylogger<<"\nthis is the middle node being printed ";
+//                    node->printNode();
+////                }
+//                if(node->left!= nullptr)
+//                {
+//                    mylogger<<"\nthis is left Node of the above parent being printed \n";
+//
+//                    node->left->printNode();
+//                    level.push_front(node->left);
+//                }
+//                //  mylogger<<(node->offset);
+//                if(node->right!= nullptr)
+//                {
+//                    mylogger<<"\nthis is right Node of the above parent being printed \n";
+//
+//                    node->right->printNode();
+//                    level.push_front(node->right);
+//                }
+//
+//            }
+//
+//        }
 	void print_tree() {
 		print_tree(root);
 	}
@@ -308,15 +330,16 @@ public:
 	void add_to_tree(pico_record& it) { //this method creates a tree structure
 		//based on the pico records that it reads from a collection
 		mylogger << "pico_index: adding this record to index " << it.toString();
-
+		assert(it.offset_of_record >= 0);
 		nodeType node = convert_pico_record_to_index_node(it);
 		insert(node);
 		numberOfNodesInTree++;
+		mylogger << "pico_index : This is the index being printed...\n";
+		print_tree();
 
 	}
-	 /* Computes the number of nodes in a tree. */
-	int size()
-	{
+	/* Computes the number of nodes in a tree. */
+	int size() {
 		return size(root);
 
 	}
@@ -336,6 +359,7 @@ public:
 
 			mylogger << "\nbuild_tree : offset is " << it->offset_of_record
 					<< "\n";
+			assert(it->offset_of_record >= 0);
 			nodeType node = convert_pico_record_to_index_node(*it);
 			insert(node);
 			numberOfNodesInTree++;
@@ -369,7 +393,8 @@ public:
 
 	}
 
-};
+}
+;
 }
 
 #endif /* PICO_INDEX_H_ */

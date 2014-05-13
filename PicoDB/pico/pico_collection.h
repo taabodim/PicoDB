@@ -42,7 +42,7 @@ namespace pico {
         const static int numberOfDeletionThreads = 1;
         static std::unique_ptr<ThreadPool> delete_thread_pool;
         std::mutex writeMutex;
-        OffsetManager offsetManager;
+        std::shared_ptr<OffsetManager> offsetManager;
     public:
         
         boost::mutex collectionMutex;
@@ -50,16 +50,16 @@ namespace pico {
         string filename;
         pico_collection() = delete;
         
-        pico_collection(std::string name) {
+        pico_collection(std::string name)  {
             
 
-
-            name = getFullCollectionName(name);
+        	name = getFullCollectionName(name);
             filename = name;
+            assert(!filename.empty());
+            
+            std::shared_ptr<OffsetManager> offsetManagerPtr(new OffsetManager (filename));
+            offsetManager = offsetManagerPtr;
             // mylogger<<("pico_collection : name of the file is "<<filename<<std::endl;
-            //		infile.open(name, std::fstream::in | std::fstream::binary);
-            //		outfile.open(name,
-            //				std::fstream::out | std::fstream::app | std::fstream::binary);
             
             openFileIfItDoesntExist(filename);
             
@@ -140,13 +140,13 @@ namespace pico {
             list<offsetType> all_offsets_for_this_message;
             
             offsetType nextOffset = offsetOfFirstRecordOfMessage;
-            offsetType endOffset = offsetManager.getEndOfFileOffset();
+            offsetType endOffset = offsetManager->getEndOfFileOffset();
             bool ignoreFirstBEGKEYRecordOffset = true;
             do {
                 
-                pico_record nextRecord = retrieve(nextOffset);
+                std::shared_ptr<pico_record> nextRecord = retrieve(nextOffset);
                 
-                if (pico_record::recordStartsWithBEGKEY(nextRecord) && ignoreFirstBEGKEYRecordOffset==false ) {
+                if (pico_record::recordStartsWithBEGKEY(*nextRecord) && ignoreFirstBEGKEYRecordOffset==false ) {
                    break;
                 } else {
                     all_offsets_for_this_message.push_back(nextOffset);
@@ -173,42 +173,44 @@ namespace pico {
                 mylogger
                 << "\npico_collection : retrieveOneMessage :  offsetOfFirstRecordOfMessage "
                 << offsetOfFirstRecordOfMessage
-                << " messageIdForResponse  :  " << messageIdForResponse;
+                << " messageIdForResponse  :  " << messageIdForResponse<<" max_database_record_size: "<<max_database_record_size;
             }
-            offsetType endOffset = offsetManager.getEndOfFileOffset();
+            offsetType endOffset = offsetManager->getEndOfFileOffset();
             
             pico_buffered_message<pico_record> all_records_for_this_message;
             
             offsetType nextOffset = offsetOfFirstRecordOfMessage;
+            assert(nextOffset>=0);
             
-            pico_record nextRecord = retrieve(nextOffset); //get the first record of this message
-            all_records_for_this_message.append(nextRecord);
+            std::shared_ptr<pico_record> nextRecord = retrieve(nextOffset); //get the first record of this message
+            all_records_for_this_message.append(*nextRecord);
+            
             nextOffset += max_database_record_size;
             do {
                 
-                pico_record nextRecord = retrieve(nextOffset);
-                assert(!nextRecord.toString().empty());
+            	std::shared_ptr<pico_record> nextRecord = retrieve(nextOffset);
+                assert(!nextRecord->toString().empty());
                 
 //                assert(pico_record::recordStartsWithBEGKEY(nextRecord) || pico_record::recordStartsWithConKEY(nextRecord));
-                if (pico_record::recordStartsWithConKEY(nextRecord)) //this for the next message
+                if (pico_record::recordStartsWithConKEY(*nextRecord)) //this for the next message
                 {
                     if (mylogger.isTraceEnabled()) {
                         mylogger<< "\npico_collection : retrieveOneMessage :  this buffer starts with CONKEY  \n";
                     }
                     
-                    all_records_for_this_message.append(nextRecord);
+                    all_records_for_this_message.append(*nextRecord);
                     if (mylogger.isTraceEnabled()) {
                         mylogger
                         << "\npico_collection : retrieveOneMessage : "
                         " this record was retrived from db and appended to list  "
-                        << nextRecord.toString() << "\n";
+                        << nextRecord->toString() << "\n";
                     }
                 }
                 else
                 {
                     if (mylogger.isTraceEnabled()) {
                         mylogger<< "\npico_collection : retrieveOneMessage : this buffer doesnt start with CONKEY  \n"
-                        << nextRecord.toString() << "\n";
+                        << nextRecord->toString() << "\n";
                     }
                     
                     break;
@@ -235,29 +237,50 @@ namespace pico {
         
         msgPtr getMessageByKey(pico_record& record,
                                      string messageIdForResponse) {
-            
+            string result;
             assert(!pico_record::isRecordEmpty(record));
             
-            if (index.search(record) != nullptr) {
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger << " pico_collection : getMessageByKey record.offset_of_record is "
+            << record.offset_of_record << "\n" <<"record is "<<record.toString()<<"\n";
+            }
+            if(CollectionIsEmpty())
+            {
+                result.append("COLLECTIONISEMPTY");
+            
+            }
+           
+            else
+                if (index.search(record) != nullptr) {
+                
                 assert(!messageIdForResponse.empty());
-                mylogger << " getMessageByKey record.offset_of_record is "
-                << record.offset_of_record << "\n";
+                assert(record.offset_of_record>=0);
                 msgPtr foundMessage = retrieveOneMessage(
                                                                record.offset_of_record, messageIdForResponse);
                 
                
-                mylogger
+                if(mylogger.isTraceEnabled())
+                { mylogger
                 << "\n pico_collection : getMessageByKey this is the whole message , messageId : "
                 << foundMessage->messageId << "\n content : \n "
                 << foundMessage->toString();
+                }
                 assert(!foundMessage->messageId.empty());
                 return foundMessage;
             }
-            mylogger << " getMessageByKey didnt find this record in the index ";
+           else
+           {
+            assert(false);
+            if(mylogger.isTraceEnabled())
+            {
+                mylogger << " getMessageByKey didnt find this record in the index ";
+            }
+               
+            result.append("NODATAFOUND");
             
-            string noDataFound("NODATAFOUND");
-            
-            msgPtr msg = pico_message::build_message_from_string(noDataFound,
+           }
+            msgPtr msg = pico_message::build_message_from_string(result,
                                                                        messageIdForResponse);
             return msg;
             
@@ -267,16 +290,16 @@ namespace pico {
         list<offsetType> read_all_Messages_offsets() {
             //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY
             list<offsetType> list_of_offsets;
-            offsetType endOfFile_Offset = offsetManager.getEndOfFileOffset();
+            offsetType endOfFile_Offset = offsetManager->getEndOfFileOffset();
             // cout << " offset of end of file is " << endOfFile_Offset //<< std::endl;
             
             for (offsetType offset = 0; offset <= endOfFile_Offset; offset +=
                  max_database_record_size) {
                 //  cout << " read_all_records_offsets : reading one record from offset "<<offset  //<< std::endl;
                 
-                pico_record record_read_from_file = retrieve(offset);
+            	std::shared_ptr<pico_record> record_read_from_file = retrieve(offset);
                 
-                if (pico_record::recordStartsWithBEGKEY(record_read_from_file)) {
+                if (pico_record::recordStartsWithBEGKEY(*record_read_from_file)) {
                     list_of_offsets.push_back(offset);
                 }
                 //
@@ -293,24 +316,24 @@ namespace pico {
             try {
                 //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY and return them as pico_records not offsets
                 
-                offsetType endOfFile_Offset = offsetManager.getEndOfFileOffset();
+                offsetType endOfFile_Offset = offsetManager->getEndOfFileOffset();
                 mylogger << "\n offset of end of file is " << endOfFile_Offset;
                 
                 for (offsetType offset = 0; offset < endOfFile_Offset; offset +=
                      max_database_record_size) {
                     
-                    pico_record record_read_from_file = retrieve(offset);
-                    record_read_from_file.offset_of_record =offset;
+                	std::shared_ptr<pico_record> record_read_from_file = retrieve(offset);
+                    record_read_from_file->offset_of_record =offset;
                     
                     
                     mylogger
                     << "\n read_all_messages_records : reading one record from offset "
                     << offset << "\n the record read is "
-                    << record_read_from_file.toString();
+                    << record_read_from_file->toString();
                     
                     if (pico_record::recordStartsWithBEGKEY(
-                                                            record_read_from_file)) {
-                        list_.push_back(record_read_from_file);
+                                                            *record_read_from_file)) {
+                        list_.push_back(*record_read_from_file);
                     }
                     
                 }
@@ -390,25 +413,25 @@ namespace pico {
                
                 append_a_record(record,record_offset);
                 
-                pico_record currentRecord = retrieve(record_offset);
+                std::shared_ptr<pico_record> currentRecord = retrieve(record_offset);
                 
                 if(mylogger.isTraceEnabled()) //just to test if overwrite worked properly
                 {
-                    pico_record read_from_file  = retrieve(record_offset);
-                    assert(currentRecord.areRecordsEqual(read_from_file));
+                	std::shared_ptr<pico_record> read_from_file  = retrieve(record_offset);
+                    assert(currentRecord->areRecordsEqual(*read_from_file));
                 }
                 
-                if (currentRecord.areRecordsEqual(record)) {
+                if (currentRecord->areRecordsEqual(record)) {
                     break;
                 } else {
                     
                     mylogger << "overwrite didnt work on offset " << record_offset
                     << "\n" << " currentRecord.getKeyAsString() is "
-                    << currentRecord.getKeyAsString()
+                    << currentRecord->getKeyAsString()
                     << " vs record.getKeyAsString is "
                     << record.getKeyAsString()
                     << "currentRecord.getValueAsString() is "
-                    << currentRecord.getValueAsString()
+                    << currentRecord->getValueAsString()
                     << " vs record.getValueAsString() is "
                     << record.getValueAsString();
                     tryNum++;
@@ -419,14 +442,14 @@ namespace pico {
             append(record);
         }
         void append(pico_record& record) { //this appends to the end of file
-            offsetType record_offset = offsetManager.getEndOfFileOffset();
+            offsetType record_offset = offsetManager->getEndOfFileOffset();
             record.offset_of_record = record_offset;
             append_a_record(record, record_offset);
             
         }
         
-        pico_record retrieve(offsetType offset) {
-            pico_record read_from_file;
+        std::shared_ptr<pico_record>  retrieve(offsetType offset) {
+            std::shared_ptr<pico_record> read_from_file (new pico_record());
             
             
             FILE *ptr_myfile;
@@ -446,17 +469,17 @@ namespace pico {
             for(int i=pico_record::beg_key_type_index;i<pico_record::end_key_type_index;i++)
             {
                 
-                read_from_file.data_[i]=my_record.typeHolder[i-pico_record::beg_key_type_index];
+                read_from_file->data_[i]=my_record.typeHolder[i-pico_record::beg_key_type_index];
                 
             }
             for(int i=pico_record::beg_of_key_index;i<pico_record::end_of_key_index;i++)
             {
-                read_from_file.data_[i]=my_record.keyHolder[i-pico_record::beg_of_key_index];
+                read_from_file->data_[i]=my_record.keyHolder[i-pico_record::beg_of_key_index];
                 
             }
             for(int i=pico_record::beg_of_value_index;i<pico_record::end_of_value_index;i++)
             {
-                read_from_file.data_[i]=my_record.valueHolder[i-pico_record::beg_of_value_index];
+                read_from_file->data_[i]=my_record.valueHolder[i-pico_record::beg_of_value_index];
                 
             }
             
@@ -505,6 +528,8 @@ namespace pico {
             fflush(ptr_myfile);
             fclose(ptr_myfile);
             
+            offsetManager->setEndOfFileOffset(record_offset+max_database_record_size);
+            
             if (pico_record::recordStartsWithBEGKEY(record)) {
                 if(index.search(record)==nullptr)
                 {
@@ -523,10 +548,15 @@ namespace pico {
             
             if(mylogger.isTraceEnabled()) //just to test if append worked properly
             {
-               pico_record read_from_file  = retrieve(record_offset);
-               assert(record.areRecordsEqual(read_from_file));
+               std::shared_ptr<pico_record> read_from_file  = retrieve(record_offset);
+               assert(record.areRecordsEqual(*read_from_file));
             }
            
+        }
+        bool CollectionIsEmpty()
+        {
+            
+            return (offsetManager->getEndOfFileOffset()==0);
         }
         bool dropCollection()
         {
@@ -552,10 +582,7 @@ namespace pico {
         
         const pico_record empty_record;
     private:
-        
-        //	std::ifstream infile;
-        //	std::ifstream outfile;
-//        std::fstream file;
+
     };
     
     void DeleteTaskRunnable::run() {
@@ -571,6 +598,16 @@ namespace pico {
         mylogger << " this is the num of deleted messages from collection : " << x;
         
     }
-    
+    offsetType OffsetManager::getInitialOffset()
+    	{
+    		 FILE *fp;
+    		assert(!filename.empty());
+    	    fp=fopen(filename.c_str(),"r+b");
+    	    assert(fp!=NULL);
+    		fseek(fp, 0L, SEEK_END);
+    		size_t sz = ftell(fp);
+    		fclose(fp);
+    		return sz;
+    	}
 }
 #endif /* COLLECTION_H_ */

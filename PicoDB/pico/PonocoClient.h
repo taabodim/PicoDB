@@ -11,75 +11,87 @@
 #include <pico/pico_client.h>
 #include <pico/pico_test.h>
 #include <pico_logger_wrapper.h>
-namespace pico{
+namespace pico {
 
-    class PonocoClient : public pico_logger_wrapper{
-    private:
-        PonocoDriver* driverPtr;
-    public:
+class PonocoClient: public pico_logger_wrapper {
+private:
+	PonocoDriver* driverPtr;
+public:
+
+	PonocoClient(PonocoDriver* driverPtrArg) {
+		driverPtr = driverPtrArg;
+
+	}
+
+	void updateOneBigData() {
+		std::string key(pico_test::smallKey0);
+
+		for (int i = 0; i < 1; i++) {
+
+			driverPtr->insert(key, pico_test::bigValue0);
+			std::shared_ptr<pico_message> message = driverPtr->update(key,
+					pico_test::smallValue0);
+
+		}
+	}
+	void deleteOneBigData() {
+		std::string key(pico_test::smallKey0);
+		for (int i = 0; i < 1; i++) {
+
+			driverPtr->insert(key, pico_test::bigValue0);
+			std::shared_ptr<pico_message> message = driverPtr->deleteRecord(
+					key);
+
+		}
+	}
+	void getOneBigData() {
+		std::string key(pico_test::smallKey0);
+		for (int i = 0; i < 1; i++) {
+
+			driverPtr->insert(key, pico_test::bigValue0);
+			std::shared_ptr<pico_message> message = driverPtr->get(key);
+
+		}
+	}
+	void insertOneBigData() {
+		std::string key(pico_test::smallKey0);
+		for (int i = 0; i < 1; i++) {
+			driverPtr->insert(key, pico_test::bigValue0);
+
+		}
+
+	}
+	void insertOneBigRandomData() {
+			std::string key(pico_test::smallKey0);
+			for (int i = 0; i < 1; i++) {
+				string randomSmallKey = random_string(key,10).append(random_string(key,10));
+
+				driverPtr->insert(randomSmallKey,pico_test::bigValue0 );
+
+			}
+
+		}
+	void deleteAndCreateCollectionTest(string collectionName) {
+		driverPtr->deleteCollection(collectionName);
+		driverPtr->createCollection(collectionName);
+
+	}
+
+	void write1000smallRandomDataUsing100Threads() {
+		int numOfThreads = 100;
         
-        PonocoClient(PonocoDriver* driverPtrArg)
-        {
-            driverPtr = driverPtrArg;
-            
-        }
-        
-        void updateOneBigData()
-        {
-            std::string key(pico_test::smallKey0);
-            
-            for(int i=0;i<1;i++)
-            {
-                
-                driverPtr->insert(key,pico_test::bigValue0);
-                std::shared_ptr<pico_message> message = driverPtr->update(key,pico_test::smallValue0);
-                
-            }
-        }
-        void deleteOneBigData()
-        {
-            std::string key(pico_test::smallKey0);
-            for(int i=0;i<1;i++)
-            {
-                
-                driverPtr->insert(key,pico_test::bigValue0);
-                std::shared_ptr<pico_message> message = driverPtr->deleteRecord(key);
-               
-            }
-        }
-        void getOneBigData(){
-            std::string key(pico_test::smallKey0);
-            for(int i=0;i<1;i++)
-            {
-                
-                driverPtr->insert(key,pico_test::bigValue0);
-                std::shared_ptr<pico_message> message = driverPtr->get(key);
+		for (int i = 0; i < numOfThreads; i++) {
+            try{
+            boost::thread poncoDriverThread(
+					boost::bind(&PonocoClient::insertOneBigRandomData,this));
 
-            }
-        }
-        void insertOneBigData()
-        {
-             std::string key(pico_test::smallKey0);
-            for(int i=0;i<1;i++)
+            }catch(std::exception& e)
             {
-           
-            driverPtr->insert(key,pico_test::bigValue0);
-                
+                std::cout<<" Exception in threads "<<e.what()<<"\n";
             }
-            
-        }
-        void deleteAndCreateCollectionTest(string collectionName)
-        {
-             driverPtr->deleteCollection(collectionName);
-             driverPtr->createCollection(collectionName);
+		}
 
-        }
-        //        void getTest(std::string key)
-//        {
-//            
-//            std::size_t hashcodeOfSentKey =   calc_hash_code(key);
-//            
-//        }
+	}
 //        void write1000smallRandomData()
 //        {
 //            
@@ -160,41 +172,36 @@ namespace pico{
 //            
 //            
 //        }
-        
 
-        
-        void currentTestCase()
-        {
-            
-            
-            steady_clock::time_point t1 = steady_clock::now();
-            
-            string col("currencyCollection");
-            PicoConfig::defaultTimeoutInSec = 1000;
-            deleteAndCreateCollectionTest(col);
-            // write1000smallRandomData();
-            //            writeOneDeleteOne();
+	void currentTestCase() {
+
+		steady_clock::time_point t1 = steady_clock::now();
+
+		string col("currencyCollection");
+		PicoConfig::defaultTimeoutInSec = 1000;
+		//deleteAndCreateCollectionTest(col);
+
+		write1000smallRandomDataUsing100Threads();
+		//            writeOneDeleteOne();
 //            insertOneBigData();
-            getOneBigData();
-//            deleteOneBigData();
-//            updateOneBigData();
-            //write1000SmallKeysBigValues_and_deleteAll();
-            
-            
-            steady_clock::time_point t2 = steady_clock::now();
-            
-            duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-            
-            mylogger << "****************************************\n";
-            mylogger<< "\nIt took me " << time_span.count() << " seconds.\n";
-            std::cout << "****************************************\n";
-            std::cout<< "\nIt took me " << time_span.count() << " seconds.\n";
-            
-        }
-        
-    };
+//getOneBigData();
+		//         deleteOneBigData();
+		//    updateOneBigData();
+		//write1000SmallKeysBigValues_and_deleteAll();
+
+		steady_clock::time_point t2 = steady_clock::now();
+
+		duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+
+		mylogger << "****************************************\n";
+		mylogger << "\nIt took me " << time_span.count() << " seconds.\n";
+		std::cout << "****************************************\n";
+		std::cout << "\nIt took me " << time_span.count() << " seconds.\n";
+
+	}
+
+};
 
 }
-
 
 #endif

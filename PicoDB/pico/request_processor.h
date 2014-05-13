@@ -30,11 +30,12 @@ private:
 	static std::string createCollectionCommand;
 	RecordInserter recordInserter;
 public:
-	collection_manager collectionManager;
+    std::shared_ptr<collection_manager> collectionManager;
 	static string logFileName;
 
-	request_processor() {
-
+	request_processor(): collectionManager(new collection_manager())
+     {
+         recordInserter.setCollectionManager(collectionManager);
 	}
 
 	msgPtr processRequest(msgPtr picoMessage) {
@@ -120,7 +121,7 @@ public:
 
 			string result, key;
 
-			bool resultOfOperation = collectionManager.createCollection(picoMsg
+			bool resultOfOperation = collectionManager->createCollection(picoMsg
 					);
 			if (resultOfOperation) {
 				result.append("collection ");
@@ -145,7 +146,7 @@ public:
 
 	msgPtr deleteCollection(msgPtr picoMsg) {
 		std::shared_ptr<pico_collection> collectionPtr =
-				collectionManager.getTheCollection(picoMsg->collection);
+				collectionManager->getTheCollection(picoMsg->collection);
 
 		string result, key;
 
@@ -173,7 +174,7 @@ public:
 	}
 	msgPtr deleteRecords(msgPtr picoMsg, bool async) {
 		std::shared_ptr<pico_collection> collectionPtr =
-				collectionManager.getTheCollection(picoMsg->collection);
+				collectionManager->getTheCollection(picoMsg->collection);
 
 		//i am using collection pointer because, it should be passed to the
 		//deleter thread , so it should be in heap
@@ -254,7 +255,7 @@ public:
 	msgPtr getOneMessage(msgPtr requestMessage) {
 
 		std::shared_ptr<pico_collection> collectionPtr =
-				collectionManager.getTheCollection(requestMessage->collection);
+				collectionManager->getTheCollection(requestMessage->collection);
 
 		pico_buffered_message<pico_record> msg_in_buffers =
 				requestMessage->getKeyValueOfMessageInRecords();
@@ -267,6 +268,7 @@ public:
 
 		assert(!requestMessage->messageId.empty());
 
+        
 		msgPtr msg = collectionPtr->getMessageByKey(firstrecord,
 				requestMessage->messageId);
 		mylogger << "\n request_processor : record that is fetched  db : "
