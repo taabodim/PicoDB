@@ -15,12 +15,20 @@ namespace pico {
 
 class PonocoClient: public pico_logger_wrapper {
 private:
-	PonocoDriver* driverPtr;
+	static PonocoDriver* driverPtr;
 public:
 
 	PonocoClient(PonocoDriver* driverPtrArg) {
 		driverPtr = driverPtrArg;
 
+	}
+	void setPonocoDriver(PonocoDriver* driverPtrArg)
+	{
+
+		if(driverPtr==NULL)
+		{
+			driverPtr = driverPtrArg;
+		}
 	}
 
 	void updateOneBigData() {
@@ -62,18 +70,19 @@ public:
 
 	}
 	void insertOneBigRandomData() {
-			std::string key(pico_test::smallKey0);
-			for (int i = 0; i < 1; i++) {
-				string randomSmallKey = random_string(key,10).append(random_string(key,10));
-                if(mylogger.isTraceEnabled())
-                {
-                    mylogger<<"driverPtr->insert(randomSmallKey,pico_test::bigValue0 );";
-                }
-				driverPtr->insert(randomSmallKey,pico_test::bigValue0 );
-
-			}
+		std::string key(pico_test::smallKey0);
+		for (int i = 0; i < 1; i++) {
+			string randomSmallKey = random_string(key, 10).append(
+					random_string(key, 10));
+//			if (mylogger.isTraceEnabled()) {
+//				mylogger
+//						<< "driverPtr->insert(randomSmallKey,pico_test::bigValue0 );";
+//			}
+			driverPtr->insert(randomSmallKey, pico_test::bigValue0);
 
 		}
+
+	}
 	void deleteAndCreateCollectionTest(string collectionName) {
 		driverPtr->deleteCollection(collectionName);
 		driverPtr->createCollection(collectionName);
@@ -82,26 +91,31 @@ public:
 
 	void write1000smallRandomDataUsing100Threads() {
 		int numOfThreads = 10;
-        PicoConfig::defaultTimeoutInSec = 2;
-//        vector<boost::thread*> allThreads;
-         sleepViaBoost(2);
+		PicoConfig::defaultTimeoutInSec = 2;
+		vector<boost::thread*> allThreads;
+		//sleepViaBoost(2); this throws exception
 		for (int i = 0; i < numOfThreads; i++) {
-            try{
-                boost::thread poncoDriverThread(
-					boost::bind(&PonocoClient::insertOneBigRandomData,this));
-                
-//                allThreads.push_back(poncoDriverThread);
-                
-            }catch(std::exception& e)
-            {
-                std::cout<<" Exception in threads "<<e.what()<<"\n";
-            }
+			try {
+//                boost::thread poncoDriverThread(
+//					boost::bind(&PonocoClient::insertOneBigRandomData,this));
+
+				boost::thread* poncoDriverThread(
+						new boost::thread(
+								boost::bind(
+										&PonocoClient::insertOneBigRandomData,
+										this)));
+				poncoDriverThread->detach();
+				allThreads.push_back(poncoDriverThread);
+
+			} catch (std::exception& e) {
+				std::cout << " Exception in threads " << e.what() << "\n";
+			}
 		}
-        
+
 //        for (int i = 0; i < numOfThreads; i++) {
 //            try{
 //                allThreads[i]->join();
-//                
+//
 //            }catch(std::exception& e)
 //            {
 //                std::cout<<" Exception in threads "<<e.what()<<"\n";
@@ -198,7 +212,9 @@ public:
 		PicoConfig::defaultTimeoutInSec = 1;
 		//deleteAndCreateCollectionTest(col);
 
+		assert(driverPtr!=NULL);
 		write1000smallRandomDataUsing100Threads();
+
 		//            writeOneDeleteOne();
 //            insertOneBigData();
 //getOneBigData();

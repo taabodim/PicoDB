@@ -29,6 +29,7 @@ private:
 	static std::string deleteCollectionCommand;
 	static std::string createCollectionCommand;
 	RecordInserter recordInserter;
+    bool shutDownNormally;
 public:
     std::shared_ptr<collection_manager> collectionManager;
 	static string logFileName;
@@ -298,6 +299,7 @@ public:
 	}
 
 	~request_processor() {
+        assert(shutDownNormally);
 	}
 };
 class RecordDeleter: public request_processor {

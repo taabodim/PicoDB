@@ -16,7 +16,7 @@
 using namespace std;
 namespace pico {
 class pico_record: public pico_logger_wrapper {
-
+//use n=memcmp ( buffer1, buffer2, sizeof(buffer1) ); use this to compare if records are equal
 public:
 	static string BEGKEY;
 	static string CONKEY;
@@ -100,14 +100,6 @@ public:
 		std::copy(std::begin(buffer.data_), std::end(buffer.data_),
 				std::begin(this->data_));
 
-		//		std::copy(std::begin(buffer.key_), std::end(buffer.key_),
-		//				std::begin(this->key_));
-		//		std::copy(std::begin(buffer.value_), std::end(buffer.value_),
-		//				std::begin(this->value_));
-		//
-		//		std::copy(std::begin(buffer.messageId_), std::end(buffer.messageId_),
-		//				std::begin(this->messageId_));
-
 		this->offset_of_record = buffer.offset_of_record;
 	}
 
@@ -156,31 +148,8 @@ public:
 		for (int i = 0; i < max_size; i++) {
 			this->data_[i] = '\0';
 		}
-		//		for (int i = 0; i < max_size; i++) {
-		//			this->key_[i] = '\0';
-		//		}
-		//		for (int i = 0; i < max_size; i++) {
-		//			this->value_[i] = '\0';
-		//		}
-		//		for (int i = 0; i < messageId_size; i++) {
-		//			this->messageId_[i] = '\0';
-		//		}
+		
 	}
-
-	//	char* getValue() {
-	//		for (int i = beg_of_value_index; i < end_of_value_index; i++) {
-	//			this->value_[i - max_key_size] = this->data_[i];
-	//		}
-	//		return value_;
-	//	}
-	//
-	//	char* getkey() {
-	//		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
-	//			this->key_[i] = this->data_[i];
-	//		}
-	//
-	//		return key_;
-	//	}
 
 	string getKeyTypeAsString() {
 

@@ -43,8 +43,8 @@ public:
 	std::string json_form_of_message;
 	std::string hashCodeOfMessage;
 	long messageSize;
-
-	pico_message() {
+    bool shutDownNormally;
+	pico_message():shutDownNormally(false) {
 	}
 	pico_message(const pico_message& msg) {
 		mylogger << "\npico_message copy constructor being called.\n";
@@ -61,6 +61,7 @@ public:
 		this->json_form_of_message = msg.json_form_of_message;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
+        this->shutDownNormally = msg.shutDownNormally;
 	}
 	pico_message operator=(const pico_message& msg) {
 
@@ -78,7 +79,7 @@ public:
 		this->json_form_of_message = msg.json_form_of_message;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
-
+        this->shutDownNormally = msg.shutDownNormally;
 		return *this;
 	}
 
@@ -87,11 +88,14 @@ public:
 		Json::Reader reader;
 
 		bool parsingSuccessful = reader.parse(message_from_client, root);
+         assert(parsingSuccessful);
 		if (!parsingSuccessful) {
 			// report to the user the failure and their locations in the document.
 			//                mylogger << "Failed to parse message :"<<message_from_client<<"\n"
 			//              << reader.getFormattedErrorMessages();
-		}
+           		}
+       
+
 		this->json_form_of_message = message_from_client;
 		this->command = root.get("command", "unknown").asString();
 
@@ -106,15 +110,20 @@ public:
 
 		//this->json_key_value_pair = createTheKeyValuePair();
 		this->set_hash_code();
-
+        this->shutDownNormally = false;
 		//this->convert_key_value_buffered_message();
 	}
 
 	pico_message(const std::string json_message_from_client, bool simpleMessage,
 			string msgId) {
+        Json::Value root;   // will contains the root value after parsing.
+		Json::Reader reader;
+        
 		//this is for processing shell commands
 		this->messageId = msgId;
 		this->json_form_of_message = json_message_from_client;
+        bool parsingSuccessful = reader.parse(json_message_from_client, root);
+        assert(parsingSuccessful);
 		//this->json_key_value_pair = createTheKeyValuePair(); this line should always be commented because when the msg is simple
 		//it will mess up the parser
 		if (!json_message_from_client.empty()) {
@@ -122,6 +131,7 @@ public:
 
 			//		this->convert_key_value_buffered_message();
 		}
+        this->shutDownNormally = false;
 	}
 	std::string createTheKeyValuePair() {
 
@@ -142,28 +152,7 @@ public:
 		return msg;
 	}
 
-//	static pico_message build_complete_message_from_key_value_pair(string key,
-//			string value) {
-//		Json::Value root;   // will contains the root value after parsing.
-//		string messageId = convertToString(calc_request_id());
-//
-//		root["key"] = key;
-//		root["value"] = value;
-//		root["oldvalue"] = "unknown";
-//		root["db"] = "unknown";
-//		root["user"] = "unknown";
-//		root["collection"] = "unknown";
-//		root["command"] = "unknown";
-//		root["messageId"] = messageId;
-//		root["hashCode"] = "unknown";
-//
-//		Json::StyledWriter writer;
-//		// Make a new JSON document for the configuration. Preserve original comments.
-//		std::string output = writer.write(root);
-//		pico_message msg(output, messageId);
-//		return msg;
-//	}
-    
+
     bool operator==(const pico_message& msg){
         //this is used for removing the message
         //from the responseQueue
@@ -195,6 +184,7 @@ public:
 		//this->json_key_value_pair = msg.json_key_value_pair;
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		this->recorded_message = msg.recorded_message;
+        this->shutDownNormally = msg.shutDownNormally;
 		return *this;
 	}
 	std::string convert_message_to_json() {
@@ -227,7 +217,7 @@ public:
 		this->messageId = calc_request_id();
 		this->json_form_of_message = convert_message_to_json();
 		this->messageSize = json_form_of_message.size();
-
+        this->shutDownNormally = false;
 		set_hash_code();
 
 	}
@@ -244,7 +234,7 @@ public:
 		this->messageId = calc_request_id();
 		this->json_form_of_message = convert_message_to_json();
 		this->messageSize = json_form_of_message.size();
-
+this->shutDownNormally = false;
 		set_hash_code();
 
 	}
@@ -261,6 +251,7 @@ public:
 		this->messageId = messageIdArg;
 		this->json_form_of_message = convert_message_to_json();
 		this->messageSize = json_form_of_message.size();
+        this->shutDownNormally = false;
 		set_hash_code();
 
 	}
@@ -354,7 +345,7 @@ public:
         std::shared_ptr<pico_message> msgToReturnEmpty(new pico_message());
         
         
-        
+        assert(!all_buffers.msg_in_buffers->empty());
 		while (!all_buffers.msg_in_buffers->empty()) {
 			//get rid of all buffers that are not for this messageId
 			pico_record buf = all_buffers.msg_in_buffers->pop();
@@ -430,6 +421,12 @@ public:
 
 		}                //end of while
 
+        assert(
+               (type.compare(COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY)
+               == 0) ||
+               type.compare(LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY)
+               == 0);
+               
 		if (type.compare(COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY)
 				== 0) {
             assert(!allMessage.empty());
@@ -438,6 +435,7 @@ public:
             std::shared_ptr<pico_message> pico_msg(new pico_message(allMessage, messageIdArg));
             
             assert(!pico_msg->messageId.empty());
+            this->shutDownNormally = true;
 			return pico_msg;
 
 		} else if (type.compare(LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY)
@@ -452,20 +450,22 @@ public:
             //pico_message pico_msg(this->key, value, messageIdArg);
             std::shared_ptr<pico_message> pico_msg(new pico_message(this->key, value, messageIdArg));
             assert(!pico_msg->messageId.empty());
-			
+			this->shutDownNormally = true;
             return pico_msg;
 
 		}
 
 		mylogger
 				<< "pico_message : convertBuffersToMessage : should never reach here \n";
-
+        
 		return msgToReturnEmpty; //it should never reaches here
 	}
 	pico_buffered_message<pico_record> convert_message_to_records(
 			string theMessageToConvertToBuffers, bool addBEGKEY_CONKEY) {
-		pico_buffered_message<pico_record> buffersContainingMessage;
-		size_t sizeOfMessage = theMessageToConvertToBuffers.length();
+        pico_buffered_message<pico_record> buffersContainingMessage;
+
+        try{
+				size_t sizeOfMessage = theMessageToConvertToBuffers.length();
 		int numOfBuffersNeededForThisMessage = (sizeOfMessage
 				/ pico_record::max_value_size) + 1;
 
@@ -535,13 +535,23 @@ public:
 				buffersContainingMessage.getLastBuffer()); //removes the append marker from the last record
         
         assert(!pico_record::IsThisRecordAnAddOn(*buffersContainingMessage.getLastBuffer()));
-		
+		} catch (std::exception& e) {
+            std::cerr << "Exception: in pico_message: convert_message_to_records function " << e.what() << "\n";
+            raise(SIGABRT);
+        } catch (...) {
+            std::cerr << "Exception: unknown happened in pico_message: convert_message_to_records function" << "\n";
+            raise(SIGABRT);
+        }
+        
+        this->shutDownNormally = true;
         return buffersContainingMessage;
 	}
    
     
 	~pico_message() {
+        assert(shutDownNormally);
 		mylogger << ("pico_message being destroyed now.\n");
+        
 	}
 
     static  std::shared_ptr<pico_message> emptyInstance() //for template class

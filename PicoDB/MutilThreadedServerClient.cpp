@@ -118,7 +118,18 @@ void runConsumerThread();
 
 void dateExample();
 
-
+//template <class T>
+//struct DefaultDeleter {
+//    DefaultDeleter() {}
+//    template <typename U> DefaultDeleter(const DefaultDeleter<U>& other) {}
+//};
+// Specialization of DefaultDeleter for array types.
+//template <class T>
+//struct DefaultDeleter<T[]> {
+//    inline void operator()(T* ptr) const {
+//        enum { type_must_be_complete = sizeof(T) };
+//        delete[] ptr;
+//    }
 
 void serilizeClassAndLoadItViaBoost() {
 //	std::ofstream file("archive.txt");
@@ -492,11 +503,23 @@ void forwarding_example()
 //std::shared_ptr<boost::mutex>  logger::log_mutex (new boost::mutex());//initializing the staic member which is mutext with this syntax
 
 
+void printElementsOfMap(std::map <string, string>& map)
+{
+	typedef std::map<string, string>::iterator mapIterator;
 
+	for(mapIterator iterator = map.begin(); iterator != map.end(); iterator++) {
+		    // iterator->first = key
+		    // iterator->second = value
+		    // Repeat if you also want to iterate through the second map.
+        std::cout<<"map key is "<<iterator->first<<" : map value is "<<iterator->second<<"\n";
+
+	}
+}
 void clientServerExample() {
 	try {
        
-	
+		std::map <string, string> ThreadNamesMap;
+
         using namespace pico;
 
     //     std::shared_ptr<PonocoDriverHelper> sharedSyncHelper  (new PonocoDriverHelper);
@@ -505,11 +528,20 @@ std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
 //         DriverType* ptr = new DriverType(sharedSyncHelper);
         boost::thread serverThread(runServer);
        // sleepViaBoost(1);
+//        thread::native_handle_type hnd=serverThread.native_handle();
+//        pthread_setname_np
+//        string threadIdStr = convertToString(serverThread.get_id());
+//        string serverName("serverThread");
+//
+//        ThreadNamesMap[threadIdStr] =serverName;
+//        printElementsOfMap(ThreadNamesMap);
+        
 
         // boost::bind(runPonocoDriver,_1, _2)(*ptr,sharedSyncHelper);
 //auto func = std::bind(runPonocoDriver,_1, _2,ptr,sharedSyncHelper);
        
          PonocoRunnable driverThreadRunnable(ptr.get(),sharedSyncHelper);
+
        // boost::thread picoDriverThread(boost::bind(runPonocoDriver,_1, _2)(ptr,sharedSyncHelper));
        boost::thread  poncoDriverThread(boost::bind(&PonocoRunnable::runPonocoDriver,driverThreadRunnable));
        // sleepViaBoost(1);
@@ -981,7 +1013,7 @@ long PicoConfig::defaultTimeoutInSec(10);
 std::string pico_record::BEGKEY {"BEGKEY"};
 std::string pico_record::CONKEY {"CONKEY"};
 std::atomic<offsetType> OffsetManager::offset(-1);
-
+PonocoDriver* PonocoClient::driverPtr{0};
 string  pico_test::bigValue0("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it. They didn't use the word 'confirm.' So it could be that it's a real lead, but it could also not be. I think that, at the moment, everyone needs to wait for final, confirmed information.That view was echoed by Sarah Bajc, whose partner, Philip Wood, was among the passengers.Every time some official gives one of those absolute statements of 'We're sure it's the pings from the black boxes' or 'We're sure it's in the ocean,' we all crash, she told CNNs New Day.Our feet get knocked out from underneath us. But then it always ends up reversing itself, and they step back from it.She expressed skepticism about the way the investigation has been handled. The fox is very much in charge of the henhouse here, she told New Day. We've got a country leading the investigation who also has the primary liability in the case, and it makes us question every step that's taken.\" More cluesA senior Malaysian government official and another source involved in the investigation divulged new details about the flight to CNN on Thursday, including information about what radar detected, the last words from the cockpit and how high the plane was flying after it went off the grid.Malaysia Airlines Flight 370 disappeared from military radar for about 120 nautical miles after it crossed back over the Malay Peninsula, sources said. Based on available data, this means the plane must have dipped in altitude to between 4,000 and 5,000 feet, sources said.The dip could have been programmed into the computers controlling the plane as an emergency maneuver, said aviation expert David Soucie.The real issue here is it looks like -- more and more -- somebody in the cockpit was directing this plane and directing it away from land,said Peter Goelz, a CNN aviation analyst and former National Transportation Safety Board managing director.And it looks as though they were doing it to avoid any kind of detection.But former U.S. Department of Transportation Inspector General Mary Schiavo was not convinced. She said the reported dip could have occurred in response to a loss of pressure, to reach a level where pressurization was not needed and those aboard the plane would have been able to breathe without oxygen, or to get out of the way of commercial traffic123456endOfMessage");
 
 string  pico_test::bigValue1("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from ;radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it.endOfMessage");

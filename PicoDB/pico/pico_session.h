@@ -28,7 +28,7 @@ private:
 	typedef msgPtr queueType;
 public:
 	static string logFileName;
-	pico_session(std::shared_ptr<tcp::socket> r_socket) {
+            pico_session(std::shared_ptr<tcp::socket> r_socket) :shutDownNormally(false){
 		socket_ = r_socket;
 	}
 
@@ -47,30 +47,36 @@ public:
 	}
 	void readOneBuffer() {
 		if (mylogger.isTraceEnabled()) {
-			mylogger << "\nServer is going to read a buffer from client...\n";
+			mylogger << "\n Session is going to read a buffer from client...\n";
 		}
 
 		//we read until the whole message is read
 		//then we write until the whole message is written
 		auto self(shared_from_this());
+        assert(self);
 		//  cout << "session is trying to read messages" << endl;
 		std::shared_ptr<pico_record> currentBuffer =
 				asyncReader_.getOneBuffer();
+        if (mylogger.isTraceEnabled()) {
+			mylogger << "\n Session is going to call the async read...\n";
+		}
 		boost::asio::async_read(*socket_,
 				boost::asio::buffer(currentBuffer->getDataForRead(),
 						pico_record::max_size),
 				[this,self,currentBuffer](const boost::system::error_code& error,
 						std::size_t t ) {
-
+                    if (mylogger.isTraceEnabled()) {
+                        mylogger << "\n Session is done reading the buffer...\n";
+                    }
 					processTheBufferJustRead(currentBuffer,t);
-
+                    
 				});
 	}
 
 	void writeOneBuffer() {
 		if (mylogger.isTraceEnabled()) {
 			mylogger
-					<< "\nServer is going to send a buffer to client..going to acquire lock \n";
+					<< "\nSession is going to send a buffer to client..going to acquire lock \n";
 		}
 
 		std::unique_lock < std::mutex
@@ -78,13 +84,13 @@ public:
 		while (bufferQueue_.empty()) {
 			if (mylogger.isTraceEnabled()) {
 				mylogger
-						<< "\nServer's bufferQueue_ is empty...waiting for a message to come to queue. \n";
+						<< "\nSession bufferQueue_ is empty...waiting for a message to come to queue. \n";
 			}
 			bufferQueueIsEmpty.wait(writeOneBufferLock);
 		}
 		if (mylogger.isTraceEnabled()) {
 			mylogger
-					<< "\nServer is going to send a buffer to client.. lock obtained \n";
+					<< "\nSession is going to send a buffer to client.. lock obtained \n";
 		}
 
 		std::shared_ptr<pico_record> currentBuffer = bufferQueue_.pop();
@@ -100,8 +106,8 @@ public:
 					if(mylogger.isTraceEnabled())
 					{
 						mylogger << "\nSession Sent :  "<<t<<" bytes from Client ";
-						if(error) mylogger<<" server : a communication error happend...\n msg : "<<error.message();
-						mylogger<<" server : data sent to client is "<<str<<"\n";
+						if(error) mylogger<<" \nSession : a communication error happend...\n msg : "<<error.message();
+						mylogger<<" nSession : data sent to client is "<<str<<"\n";
 						mylogger<<("-------------------------");
 					}
 
@@ -113,10 +119,10 @@ public:
 						writeOneBuffer();
 						if(mylogger.isTraceEnabled())
 						{
-							mylogger<<"\n Server :I am going to send the next incomplete buffer \n";
+							mylogger<<"\n nSession :I am going to send the next incomplete buffer \n";
 						}
 					} else {
-						mylogger<<"\n Server :I am done sending a complete message now going to wait for the next requests \n";
+						mylogger<<"\n nSession :I am done sending a complete message now going to wait for the next requests \n";
 						readOneBuffer();
 					}
 				});
@@ -175,7 +181,7 @@ public:
 
 		try {
 			if (mylogger.isTraceEnabled()) {
-				mylogger << "\nServer read this message from client "
+				mylogger << "\nSession read this message from client "
 						<< messageFromOtherSide->toString() << "...\n";
 			}
 
@@ -184,10 +190,12 @@ public:
 			if (mylogger.isTraceEnabled()) {
 
 				mylogger
-						<< "server : putting reply to the queue this is the message that server read just now"
+						<< "\nSession : putting reply to the queue this is the message that Session read just now"
 						<< reply->toString();
-			}
-
+                    }
+            
+            assert(!reply->toString().empty());
+			
 			queueMessages(reply);
 
 		} catch (std::exception &e) {
@@ -201,26 +209,32 @@ public:
 
 		string str = currentBuffer->toString();
 
-		mylogger << "\nsession : this is the message that server read just now "
+		mylogger << "\nsession : this is the message that Session read just now "
 				<< str;
-
+        
 		if (pico_record::IsThisRecordAnAddOn(*currentBuffer)) {
 			mylogger
 					<< "\nsession: this buffer is an add on to the last message.."
 					<< "dont process anything..read the next buffer\n";
 
-			allBuffersReadFromTheOtherSide.append(*currentBuffer);
+			
 			readOneBuffer();		//read the next addon buffer
 		} else {
 
 			allBuffersReadFromTheOtherSide.append(*currentBuffer);
 
 			pico_message util;
+            mylogger << "\nsession : is going to call the convert_records_to_message \n";
+            assert(allBuffersReadFromTheOtherSide.size()>0);
+            mylogger << "\nsession : These are the input for  convert_records_to_message  function \n";
+            allBuffersReadFromTheOtherSide.print();
+            
             std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(
 					allBuffersReadFromTheOtherSide,
 					currentBuffer->getMessageIdAsString(),
 					COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
-			mylogger << "\nsever : this is the complete message read from Client "
+            assert(!last_read_message->toString().empty());
+			mylogger << "\nsession : this is the complete message read from Client "
 					<< last_read_message->toString();
 
 			processDataFromOtherSide(last_read_message);
@@ -228,57 +242,28 @@ public:
 			writeOneBuffer(); //going to writing mode to write the reply for this complete message
 
 		}
+        
 	}
-	bool sendmetherestofdata(string comparedTo) {
-		string ignore("sendmetherestofdata");
-
-		if (comparedTo.compare(ignore) == 0 || comparedTo.empty())
-			return true;
-		return false;
-	}
-//	void tellHimSendTheRestOfData(string messageId) {
-//		if (mylogger.isTraceEnabled()) {
-//			mylogger
-//					<< "\nServer is telling send the rest of data for this message Id  "
-//					<< messageId << " \n";
-//		}
-//
-//		string msg("sendmetherestofdata");
-//
-//		pico_message replyTemp = pico_message::build_message_from_string(msg,
-//				messageId);
-//
-//		if (mylogger.isTraceEnabled()) {
-//			mylogger << "\nServer is going to put this message to the queue "
-//					<< reply.toString() << " \n";
-//		}
-//        msgPtr reply(new pico_nessage(replyTemp));
-//		queueMessages(reply);
-//
-//	}
-
-//	void ignoreThisMessageAndWriterNextBuffer() {
-//
-//		if (mylogger.isTraceEnabled()) {
-//			mylogger
-//					<< "\nServer is going to ignore this message and do nothing and go to writing mode \n";
-//
-//		}
-//		writeOneBuffer();
-//
-//	}
-
+	
 	void print(const boost::system::error_code& error, std::size_t t,
 			string& str) {
 		//  if(error) mylogger<<" error msg : "<<error.message()<<std::endl;
 		if (mylogger.isTraceEnabled()) {
 
-			mylogger << "\nServer received " << t
+			mylogger << "\nSession received " << t
 					<< " bytes read from Client  data read from client is "
 					<< str;
 		}
 	}
-
+    virtual ~pico_session()
+            {
+                
+                mylogger << "\n Session going out of scope "
+                ;
+                assert(shutDownNormally);
+                
+            }
+            bool shutDownNormally;
 	asyncReader asyncReader_;
 	request_processor requestProcessor_;
 	pico_concurrent_list<queueType,list_traits<pico_message>> messageToClientQueue_;
@@ -293,67 +278,7 @@ public:
 
 	pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
 
-	//        void readWriteSync() {
-	//
-	//            string msgFromClient = read_messages_sync();
-	//            if (msgFromClient.compare("insert") == 0) {
-	//                cout << "server recienved insert message from client" << endl;
-	//                //insertData to client
-	//
-	//                mylogger << "server reading message : " << msgFromClient
-	//                //<< std::endl;
-	//                write_messages_sync();
-	//                boost::this_thread::sleep(boost::posix_time::seconds(4));
-	//            }
-	//        }
-	//
-	//        void write_messages_sync() {
-	//
-	//        }
-	//        string read_messages_sync() {
-	//
-	//            //		char* data = buffer.getData();
-	//            //		std::size_t dataSize = buffer.getSize();
-	//            //
-	//            //		mylogger << "data to send is : " << data //<< std::endl;
-	//            //		mylogger << "dataSize to send is : " << dataSize //<< std::endl;
-	//            //
-	//            //		boost::array<char, 128> buf;
-	//            //		boost::system::error_code error;
-	//            //
-	//            //		size_t len = socket_->read_some(boost::asio::buffer(buf), error);
-	//            //		return buffer.getString();
-	//            string empty;
-	//            return empty;
-	//        }
 
-	//        write_messages_async_normal(){
-	//		if (messageToClientQueue_.empty())
-	//			messageClientQueueIsEmpty.wait(writeMessageLock);
-	//
-	//		cout << " session : messageToClientQueue_ size is "
-	//				<< messageToClientQueue_.size() << endl;
-	//		string messageToClient = messageToClientQueue_.front();
-	//		messageToClientQueue_.pop_front();
-	//		msgPtr currentBuffer = writer_buffer_container_.getWriteBuffer();
-	//		currentBuffer->setData(messageToClient);
-	//		auto self(shared_from_this());
-	//		boost::asio::async_write(*socket_,
-	//				boost::asio::buffer(currentBuffer->getData(),
-	//						currentBuffer->getSize()),
-	//				[this,self,currentBuffer](const boost::system::error_code& error,
-	//						std::size_t t) {
-	//
-	//					string str = currentBuffer->getString();
-	//					mylogger << "Server sent "<<std::endl;
-	//					mylogger<<(t<<" bytes sent to client "<<std::endl;
-	//					if(error) mylogger<<(" error msg : "<<error.message()<<std::endl;
-	//					mylogger<<( " data sent to client is "<<str<<std::endl;
-	//					mylogger << "-------------------------"<<std::endl;
-	//					read_messages();
-	//				});
-
-	//        }
 };
 }
 

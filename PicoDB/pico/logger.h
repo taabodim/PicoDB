@@ -36,7 +36,7 @@ public:
         void log(std::string str )
         {
 
-            boost::unique_lock<boost::mutex> lock(log_mutex);
+          //  boost::unique_lock<boost::mutex> lock(log_mutex);
             append(str);
             
             
