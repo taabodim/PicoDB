@@ -17,7 +17,7 @@
 #include <pico/asyncReader.h>
 #include <pico/pico_message.h>
 #include <pico/pico_utils.h>
-#include <pico/pico_concurrent_list.h>
+#include <pico/ConcurrentVector.h>
 #include <pico/pico_buffered_message.h>
 #include <logger.h>
 #include <pico/pico_session.h> //for the checking if appended function and sendmetherestofdata function
@@ -45,8 +45,8 @@ private:
 	//  typedef  std::shared_ptr<PonocoDriverHelper> helperType;
 	typedef PonocoDriverHelper* helperType;
 	// helperType syncHelper;
-	pico_concurrent_list<queueType,list_traits<pico_messageForResponseQueue_>> responseQueue_;
-	std::shared_ptr<pico_concurrent_list<std::shared_ptr<pico_record>,list_traits<pico_record>>> bufferQueuePtr_;
+	ConcurrentVector<queueType,VectorTraits<pico_messageForResponseQueue_>> responseQueue_;
+	std::shared_ptr<ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>>> bufferQueuePtr_;
 
 	bool clientIsConnected;
 
@@ -69,7 +69,7 @@ public:
 
 	PonocoDriver(helperType syncHelperArg )
 
-	:bufferQueuePtr_(new pico_concurrent_list<std::shared_ptr<pico_record>,list_traits<pico_record>>)
+	:bufferQueuePtr_(new ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>>)
 	{
 		//            syncHelper = syncHelperArg;
 		boost::unique_lock<std::mutex> waitForClientToConnectLock(waitForClientToConnectMutex);
@@ -549,7 +549,7 @@ public:
 
 		}
 		responseQueueIsEmpty.notify_all();
-		responseQueue_.push(msg);
+		responseQueue_.push_back(msg);
 
 		if(clientLogger->isTraceEnabled())
 		{	*clientLogger<<"\n client : response pushed to responseQUEUE , queue size is "<<responseQueue_.size()<<" \n";
@@ -578,7 +578,7 @@ public:
 				}
 
 				std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
-				bufferQueuePtr_->push(curBufPtr);
+				bufferQueuePtr_->push_back(curBufPtr);
 			}
 
 			bufferQueueIsEmpty.notify_all();

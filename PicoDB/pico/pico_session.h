@@ -276,8 +276,8 @@ namespace pico {
         bool shutDownNormally;
         asyncReader asyncReader_;
         request_processor requestProcessor_;
-        ConcurrentVector<queueType,list_traits<pico_message>> messageToClientQueue_;
-        ConcurrentVector<std::shared_ptr<pico_record>,list_traits<pico_record>> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
+        ConcurrentVector<queueType,VectorTraits<pico_message>> messageToClientQueue_;
+        ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
         
         std::mutex sessionMutex;   // mutex for the condition variable
         std::mutex bufferQueueIsEmptyMutex;

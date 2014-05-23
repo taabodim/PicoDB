@@ -9,7 +9,7 @@
 #ifndef PicoDB_pico_buffered_message_h
 #define PicoDB_pico_buffered_message_h
 
-#include <pico/pico_concurrent_list.h>
+#include <pico/ConcurrentVector.h>
 #include <pico/pico_utils.h>
 #include <logger.h>
 #include <list>
@@ -22,13 +22,13 @@ namespace pico
     template <typename type>
     class pico_buffered_message{
     public:
-        pico_buffered_message():msg_in_buffers(new pico_concurrent_list<type,list_traits<type>>())
+        pico_buffered_message():msg_in_buffers(new ConcurrentVector<type,VectorTraits<type>>())
         {
             //    mylogger<<("empty pico_buffered_message being constructed.....\n");
             
         }
-        pico_buffered_message(std::shared_ptr<pico_concurrent_list<type,list_traits<type>>> list)
-        :msg_in_buffers(new pico_concurrent_list<type,list_traits<type>>()){
+        pico_buffered_message(std::shared_ptr<ConcurrentVector<type,VectorTraits<type>>> list)
+        :msg_in_buffers(new ConcurrentVector<type,VectorTraits<type>>()){
             //     mylogger<<("pico_buffered_message being constructed....\n");
             msg_in_buffers = list;
             
@@ -88,16 +88,16 @@ namespace pico
             return msg_in_buffers->toString();
         }
         
-        typename list<type>::iterator getLastBuffer()
+        typename vector<type>::iterator getLastBuffer()
         {
             return  msg_in_buffers->getLastBuffer();
         }
         
-        typename list<type>::iterator getFirstBuffer()
+        typename vector<type>::iterator getFirstBuffer()
         {
             return msg_in_buffers->getFirstBuffer();
         }
-        std::shared_ptr<pico_concurrent_list<type,list_traits<type>>> msg_in_buffers;
+        std::shared_ptr<ConcurrentVector<type,VectorTraits<type>>> msg_in_buffers;
         //since, a list cannot be copied, I create the list on the heap and copy the pointer to it
         //every time this object wants to copy
     };

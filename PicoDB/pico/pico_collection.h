@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <pico/pico_index.h>
 #include <logger.h>
-#include <pico/pico_concurrent_list.h>
+#include <pico/ConcurrentVector.h>
 #include <ThreadPool.h>
 #include <DeleteTaskRunnable.h>
 #include <pico/pico_utils.h>

@@ -24,13 +24,13 @@ namespace pico{
     class pico_message;
     class pico_record;
     template< typename T >
-    struct list_traits{
+    struct VectorTraits{
         static const bool is_shared_ptr = false; //for all cases its false, except the pico message
          static const bool is_pico_record=false;
     };
     
     template<>
-    struct list_traits<pico_message>{
+    struct VectorTraits<pico_message>{
         static const bool is_shared_ptr=true;
          static const bool is_pico_record=false;
        static  std::shared_ptr<pico_message> getEmptyInstance(){
@@ -39,7 +39,7 @@ namespace pico{
     };
     
     template<>
-    struct list_traits<pico_record>{
+    struct VectorTraits<pico_record>{
         static const bool is_shared_ptr=true;
          static const bool is_pico_record=true;
        static pico_record getEmptyInstance()
@@ -49,7 +49,7 @@ namespace pico{
         }
     };
     
-    template<> struct list_traits<std::shared_ptr<pico_message>>{
+    template<> struct VectorTraits<std::shared_ptr<pico_message>>{
         static const bool is_shared_ptr=true;
         static const bool is_pico_record=false;
         
@@ -62,7 +62,7 @@ namespace pico{
     class pico_messageForResponseQueue_;
     
     template<>
-    struct list_traits<pico_messageForResponseQueue_>{
+    struct VectorTraits<pico_messageForResponseQueue_>{
         static const bool is_shared_ptr=true;
         static const bool is_pico_record=false;
       static  std::shared_ptr<pico_message> getEmptyInstance(){
@@ -75,14 +75,14 @@ namespace pico{
     
     
     template <typename queueType,typename traits>
-    class pico_concurrent_list : public pico_logger_wrapper{
+    class pico_concurrent_listModified : public pico_logger_wrapper{
     private:
         boost::mutex mutex_;
         
     public:
         list<queueType> underlying_list;
         
-        pico_concurrent_list()
+        pico_concurrent_listModified()
         {
        //     mylogger<<("\npico_concurrent_list being constructed");
         }
@@ -272,7 +272,7 @@ namespace pico{
             mylogger<<"this is the string representation of the pico_buffered_message"<<str<<"\n";
             return str;
         }
-        virtual ~pico_concurrent_list()
+        virtual ~pico_concurrent_listModified()
         {
             mylogger<<("\npico_concurrent_list being destructed..\n");
         }

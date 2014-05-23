@@ -10,7 +10,7 @@
 
 #include <pico/pico_record.h>
 #include <pico/writer_buffer_container.h> //for typedef only
-#include <pico/pico_concurrent_list.h>
+#include <pico/ConcurrentVector.h>
 #include <pico/pico_utils.h>
 
 #include  <pico_logger_wrapper.h>
@@ -36,12 +36,12 @@ public:
         std::shared_ptr<pico_record> getOneBuffer() {
 
 		std::shared_ptr<pico_record> buf (new pico_record());
-		singleBufferList.push(buf);
+		singleBufferList.push_back(buf);
 		return buf;
 	}
 
-//	pico_concurrent_list<msgPtr> readerBufferList;
-	pico_concurrent_list<std::shared_ptr<pico_record>,list_traits<pico_record>  > singleBufferList;
+//	ConcurrentVector<msgPtr> readerBufferList;
+	ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>  > singleBufferList;
 
 private:
 //none as of now

@@ -12,7 +12,7 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include "Runnable.h"
 #include "SimpleRunnable.h"
-#include <pico/pico_concurrent_list.h>
+#include <pico/ConcurrentVector.h>
 #include <pico_logger_wrapper.h>
 namespace pico {
     
@@ -22,7 +22,7 @@ namespace pico {
         
         int numberOfJobsDoneByTheWorker;
        
-        std::shared_ptr<pico_concurrent_list<taskType,list_traits<taskType>>> queueOfTasks;//this queue must be common among the thread pool and all thread workers ,thus it should be in heap
+        std::shared_ptr<ConcurrentVector<taskType,VectorTraits<taskType>>> queueOfTasks;//this queue must be common among the thread pool and all thread workers ,thus it should be in heap
         std::size_t WorkerQueueLimit;
         bool free;
         
@@ -34,7 +34,7 @@ namespace pico {
 
         boost::thread threadHandle;
         
-        ThreadWorker(std::shared_ptr<pico_concurrent_list<taskType,list_traits<taskType>>> queueOfTasksArg) :bound_func(boost::bind(&ThreadWorker::runIndefinitely, this)),threadHandle(bound_func){
+        ThreadWorker(std::shared_ptr<ConcurrentVector<taskType,VectorTraits<taskType>>> queueOfTasksArg) :bound_func(boost::bind(&ThreadWorker::runIndefinitely, this)),threadHandle(bound_func){
            
             
             queueOfTasks = queueOfTasksArg;
@@ -57,7 +57,7 @@ namespace pico {
         }
         void assignJobToWorker(taskType task) {
             
-            queueOfTasks->push(task);
+            queueOfTasks->push_back(task);
             workerQueueIsEmpty.notify_all();
         }
         

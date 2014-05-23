@@ -28,48 +28,51 @@ namespace pico{
     struct VectorTraits{
         static const bool is_shared_ptr = false; //for all cases its false, except the pico message
         static const bool is_pico_record=false;
+        static  std::shared_ptr<pico_message> getEmptyInstance(){
+            return NULL;
+        }
     };
     
-//    template<>
-//    struct VectorTraits<pico_message>{
-//        static const bool is_shared_ptr=true;
-//        static const bool is_pico_record=false;
-//        static  std::shared_ptr<pico_message> getEmptyInstance(){
-//            return NULL;
-//        }
-//    };
-//    
-//    template<>
-//    struct VectorTraits<pico_record>{
-//        static const bool is_shared_ptr=true;
-//        static const bool is_pico_record=true;
-//        static pico_record getEmptyInstance()
-//        {
-//            pico_record r;
-//            return r;
-//        }
-//    };
-//    
-//    template<> struct VectorTraits<std::shared_ptr<pico_message>>{
-//        static const bool is_shared_ptr=true;
-//        static const bool is_pico_record=false;
-//        
-//        static  std::shared_ptr<pico_message> getEmptyInstance(){
-//            return NULL;
-//        }
-//        
-//    };
+    template<>
+    struct VectorTraits<pico_message>{
+        static const bool is_shared_ptr=true;
+        static const bool is_pico_record=false;
+        static  std::shared_ptr<pico_message> getEmptyInstance(){
+            return NULL;
+        }
+    };
     
-//    class pico_messageForResponseQueue_;
-//    
-//    template<>
-//    struct VectorTraits<pico_messageForResponseQueue_>{
-//        static const bool is_shared_ptr=true;
-//        static const bool is_pico_record=false;
-//        static  std::shared_ptr<pico_message> getEmptyInstance(){
-//            return NULL;
-//        }
-//    };
+    template<>
+    struct VectorTraits<pico_record>{
+        static const bool is_shared_ptr=true;
+        static const bool is_pico_record=true;
+        static pico_record getEmptyInstance()
+        {
+            pico_record r;
+            return r;
+        }
+    };
+    
+    template<> struct VectorTraits<std::shared_ptr<pico_message>>{
+        static const bool is_shared_ptr=true;
+        static const bool is_pico_record=false;
+        
+        static  std::shared_ptr<pico_message> getEmptyInstance(){
+            return NULL;
+        }
+        
+    };
+    
+    class pico_messageForResponseQueue_;
+    
+    template<>
+    struct VectorTraits<pico_messageForResponseQueue_>{
+        static const bool is_shared_ptr=true;
+        static const bool is_pico_record=false;
+        static  std::shared_ptr<pico_message> getEmptyInstance(){
+            return NULL;
+        }
+    };
     
     
     
@@ -130,7 +133,7 @@ namespace pico{
                             
                         }
                         queueType msg = *iter;
-                        underlying_list.remove(*iter);
+                        underlying_list.erase(*iter);
                         assert(!msg.toString().empty());
                         // mylogger<<"\npico_concurrent_list : poping from end of the list this item ..\n"<<msg.toString();
                         
@@ -146,7 +149,7 @@ namespace pico{
         {
             if(underlying_list.size()>0)
             {
-                underlying_list.remove(element);
+                underlying_list.erase(element);
             }
         }
         
@@ -209,7 +212,7 @@ namespace pico{
         void printAll()
         {
             mylogger << "printAll being called \n";
-            for (typename list<queueType>::iterator i = underlying_list.begin();
+            for (typename vector<queueType>::iterator i = underlying_list.begin();
                  i != underlying_list.end(); ++i) {
                 mylogger << "list iterator ==> " << i->toString() << "\n";
             }
@@ -233,7 +236,7 @@ namespace pico{
         void append(queueType t)
         {
             
-        	underlying_list.push_front(t);
+        	underlying_list.push_back(t);
         }
         int size()
         {
@@ -244,17 +247,17 @@ namespace pico{
             
             while(!underlying_list.empty())
             {
-                underlying_list.pop_front();
+                underlying_list.pop_back();
             }
             
         }
         
-        typename list<queueType>::iterator getLastBuffer()
+        typename vector<queueType>::iterator getLastBuffer()
         {
             return  underlying_list.begin();
         }
         
-        typename list<queueType>::iterator getFirstBuffer()
+        typename vector<queueType>::iterator getFirstBuffer()
         {
             return underlying_list.end();
         }
@@ -264,7 +267,7 @@ namespace pico{
             string str;
             
             
-            for(typename list<queueType>::iterator iter=underlying_list.begin();iter!=underlying_list.end();++iter)
+            for(typename vector<queueType>::iterator iter=underlying_list.begin();iter!=underlying_list.end();++iter)
             {
                 mylogger<<"ConcurrentVector : this is the string thats going to be appneded"<<iter->toString()<<"\n";
                 str.append(iter->toString());

@@ -9,7 +9,7 @@
 #ifndef PicoDB_ThreadPool_h
 #define PicoDB_ThreadPool_h
 #include <vector>
-#include <pico_concurrent_list.h>
+#include <ConcurrentVector.h>
 #include <ThreadWorker.h>
 #include <Runnable.h>
 #include <boost/enable_shared_from_this.hpp>
@@ -26,7 +26,7 @@ namespace pico {
     class ThreadPool :  public std::enable_shared_from_this<ThreadPool> , public pico_logger_wrapper
     {
         public :
-        std::shared_ptr<pico_concurrent_list<taskType,list_traits<taskType>>>  taskQueue;
+        std::shared_ptr<ConcurrentVector<taskType,VectorTraits<taskType>>>  taskQueue;
         bool stop;
         int numOfThreadWorkers;
         //as we use mutex in a ThreadWorker class and
@@ -40,7 +40,7 @@ namespace pico {
         boost::condition_variable poolShutDown;
         boost::unique_lock<boost::mutex> poolLock;
         
-        ThreadPool(int num) : taskQueue (new pico_concurrent_list<taskType,list_traits<taskType>>())
+        ThreadPool(int num) : taskQueue (new ConcurrentVector<taskType,VectorTraits<taskType>>())
         , poolLock(poolMutex)
         {
             stop = false;
