@@ -88,13 +88,13 @@ public:
 		Json::Reader reader;
 
 		bool parsingSuccessful = reader.parse(message_from_client, root);
-         assert(parsingSuccessful);
-		if (!parsingSuccessful) {
+        		if (!parsingSuccessful) {
 			// report to the user the failure and their locations in the document.
-			//                mylogger << "Failed to parse message :"<<message_from_client<<"\n"
-			//              << reader.getFormattedErrorMessages();
+			                mylogger << "Failed to parse message :"<<message_from_client<<"\n"
+			              << reader.getFormattedErrorMessages();
            		}
        
+        assert(parsingSuccessful);
 
 		this->json_form_of_message = message_from_client;
 		this->command = root.get("command", "unknown").asString();
@@ -286,7 +286,7 @@ this->shutDownNormally = false;
 	{
 		if (mylogger.isTraceEnabled()) {
 			mylogger
-					<< " pico_message : getCompleteMessageInJsonAsBuffers being called \n";
+					<< " \npico_message : getCompleteMessageInJsonAsBuffers being called \n";
 		}
         assert(!messageId.empty());
 		recorded_message = convert_message_to_records(
@@ -327,15 +327,14 @@ this->shutDownNormally = false;
 	//
 	//        }
     std::shared_ptr<pico_message>  convert_records_to_message(
-			pico_buffered_message<pico_record> all_buffers, string messageIdArg,
-			messageType type) {
+			pico_buffered_message<pico_record>& all_buffers, string messageIdArg,
+                                                              messageType type,std::shared_ptr<logger> mylogger) {
         assert(!messageIdArg.empty());
-		if (mylogger.isTraceEnabled()) {
-			mylogger
-					<< "\n pico_message :  this is the start of the convert_records_to_message function \n";
+		if (mylogger->isTraceEnabled()) {
+			*mylogger<< "\n pico_message :  this is the start of the convert_records_to_message function \n";
 		}
 		all_buffers.print();
-
+        assert(all_buffers.size()>0);
 		string allMessage;
 		string key;
 		string value;
@@ -344,17 +343,21 @@ this->shutDownNormally = false;
 		//pico_message msgToReturnEmpty;
         std::shared_ptr<pico_message> msgToReturnEmpty(new pico_message());
         
-        
+        int sequenceNumber = 0;
         assert(!all_buffers.msg_in_buffers->empty());
 		while (!all_buffers.msg_in_buffers->empty()) {
-			//get rid of all buffers that are not for this messageId
-			pico_record buf = all_buffers.msg_in_buffers->pop();
-			//if buffer is begingin key
-			if (mylogger.isTraceEnabled()) {
-				mylogger << " \n buffer popped is \n " << buf.toString();
+            
+			pico_record buf = all_buffers.msg_in_buffers->pop(sequenceNumber);//pop a a record
+           
+			if (mylogger->isTraceEnabled()) {
+				*mylogger << " \n buffer popped at sequence Number "<<sequenceNumber<<" is \n " << buf.toString();
 			}
+            
 
-			if (type.compare(
+            //with specific sequence
+            sequenceNumber++;
+			
+            			if (type.compare(
 					COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY)
 					== 0) {
 				string msgType(buf.getValueAsString());
@@ -365,25 +368,20 @@ this->shutDownNormally = false;
 
 				if (pico_record::recordStartsWithBEGKEY(buf)) {
 
-					if (mylogger.isTraceEnabled()) {
-						mylogger
-								<< "\n pico_message : convertBuffersToMessage : buffer starts with BEGKEY \n";
+					if (mylogger->isTraceEnabled()) {
+						*mylogger<< "\n pico_message : convertBuffersToMessage : buffer starts with BEGKEY \n";
 					}
 					if(this->key.empty())
                     {
                         this->key = buf.getKeyAsString();
                     }
-					if (mylogger.isTraceEnabled()) {
-						mylogger
-								<< "\n key extracted from key record as string is "
-								<< this->key;
+					if (mylogger->isTraceEnabled()) {
+						*mylogger<< "\n key extracted from key record as string is "<< this->key;
 					}
                     assert(!this->key.empty());
 					string valueExtracted = buf.getValueAsString();
-					if (mylogger.isTraceEnabled()) {
-						mylogger
-								<< "\n the value part of key record as string is "
-								<< valueExtracted;
+					if (mylogger->isTraceEnabled()) {
+						*mylogger<< "\n the value part of key record as string is "<< valueExtracted;
 					}
                     assert(!valueExtracted.empty());
 					
@@ -392,15 +390,12 @@ this->shutDownNormally = false;
 				//if buffer is continuing key
 				else if (pico_record::recordStartsWithConKEY(buf)) {
 					//remove the marker
-					if (mylogger.isTraceEnabled()) {
-						mylogger
-								<< "\n pico_message : convertBuffersToMessage : buffer starts with CONKEY ";
+					if (mylogger->isTraceEnabled()) {
+						*mylogger<< "\n pico_message : convertBuffersToMessage : buffer starts with CONKEY ";
 					}
 					string valueIncomplete = buf.getValueAsString();
-					if (mylogger.isTraceEnabled()) {
-						mylogger
-								<< "\n the incomplete value part of contining record as string is "
-								<< valueIncomplete;
+					if (mylogger->isTraceEnabled()) {
+						*mylogger<< "\n the incomplete value part of contining record as string is "<< valueIncomplete;
 					}
                     assert(!valueIncomplete.empty());
 					value.append(valueIncomplete);
@@ -408,14 +403,12 @@ this->shutDownNormally = false;
 					   //is not in db
 				{
 					//log error
-					mylogger
-							<< "\n  record is neither BEGKEY NOR CONKEY, its a serious error.......................... ";
+					*mylogger<< "\n  record is neither BEGKEY NOR CONKEY, its a serious error.......................... ";
 
 				}
 
 			} else {
-				mylogger
-						<< "\n  record is neither BEGKEY NOR CONKEY nor complete JSON message without KEYS, its a serious error.......................... ";
+				*mylogger<< "\n  record is neither BEGKEY NOR CONKEY nor complete JSON message without KEYS, its a serious error... ";
 
 			}
 
@@ -440,9 +433,7 @@ this->shutDownNormally = false;
 
 		} else if (type.compare(LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY)
 				== 0) {
-			mylogger
-					<< "pico_message : convert_records_to_message : extracted key is "
-					<< key << "\n value : " << value << "\n";
+			*mylogger<< "pico_message : convert_records_to_message : extracted key is "<< key << "\n value : " << value << "\n";
             assert(!this->key.empty());
             assert(!value.empty());
             assert(!messageIdArg.empty());
@@ -455,8 +446,7 @@ this->shutDownNormally = false;
 
 		}
 
-		mylogger
-				<< "pico_message : convertBuffersToMessage : should never reach here \n";
+		*mylogger<< "pico_message : convertBuffersToMessage : should never reach here \n";
         
 		return msgToReturnEmpty; //it should never reaches here
 	}
@@ -466,7 +456,7 @@ this->shutDownNormally = false;
 
         try{
 				size_t sizeOfMessage = theMessageToConvertToBuffers.length();
-		int numOfBuffersNeededForThisMessage = (sizeOfMessage
+		long numOfBuffersNeededForThisMessage = (sizeOfMessage
 				/ pico_record::max_value_size) + 1;
 
 		if (mylogger.isTraceEnabled()) {
@@ -477,7 +467,7 @@ this->shutDownNormally = false;
 		}
 		for (int i = 0, indexInJsonMessage = 0;
 				i < numOfBuffersNeededForThisMessage; i++) {
-
+            
 			string valueForThisBuffer;
 			if ((indexInJsonMessage + pico_record::max_value_size)
 					< sizeOfMessage) {
@@ -525,7 +515,7 @@ this->shutDownNormally = false;
             
 			pico_record::setTheValueInData(currentBuffer, valueForThisBuffer);
             pico_record::setTheMessageIdInData(currentBuffer, messageId);
-
+            pico_record::setTheSequenceNumberInData(currentBuffer,i); //i is the sequenceNumber
 			pico_record::addAppendMarkerToTheEnd(currentBuffer); //add append
 			buffersContainingMessage.append(currentBuffer);
             
@@ -549,6 +539,7 @@ this->shutDownNormally = false;
    
     
 	~pico_message() {
+        
         assert(shutDownNormally);
 		mylogger << ("pico_message being destroyed now.\n");
         

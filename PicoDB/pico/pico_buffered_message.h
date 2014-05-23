@@ -55,6 +55,10 @@ namespace pico
         {
             return msg_in_buffers->pop();
         }
+        type pop(int sequenceNumber)
+        {
+         return msg_in_buffers->pop(sequenceNumber);
+        }
         type peek()
         {
          return msg_in_buffers->peek();

@@ -1,14 +1,15 @@
 //
-//  pico_concurrent_list.h
+//  ConcurrentVector.h
 //  PicoDB
 //
-//  Created by Mahmoud Taabodi on 3/28/14.
+//  Created by Mahmoud Taabodi on 5/23/14.
 //  Copyright (c) 2014 Mahmoud Taabodi. All rights reserved.
 //
 
-#ifndef PicoDB_pico_concurrent_list_h
-#define PicoDB_pico_concurrent_list_h
-#include <list>
+#ifndef PicoDB_ConcurrentVector_h
+#define PicoDB_ConcurrentVector_h
+
+#include <vector>
 #include <pico/pico_utils.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
@@ -18,97 +19,97 @@
 using namespace std;
 namespace pico{
     
-
-
+    
+    
     
     class pico_message;
     class pico_record;
     template< typename T >
-    struct list_traits{
+    struct VectorTraits{
         static const bool is_shared_ptr = false; //for all cases its false, except the pico message
-         static const bool is_pico_record=false;
-    };
-    
-    template<>
-    struct list_traits<pico_message>{
-        static const bool is_shared_ptr=true;
-         static const bool is_pico_record=false;
-       static  std::shared_ptr<pico_message> getEmptyInstance(){
-            return NULL;
-        }
-    };
-    
-    template<>
-    struct list_traits<pico_record>{
-        static const bool is_shared_ptr=true;
-         static const bool is_pico_record=true;
-       static pico_record getEmptyInstance()
-        {
-            pico_record r;
-            return r;
-        }
-    };
-    
-    template<> struct list_traits<std::shared_ptr<pico_message>>{
-        static const bool is_shared_ptr=true;
         static const bool is_pico_record=false;
-        
-      static  std::shared_ptr<pico_message> getEmptyInstance(){
-            return NULL;
-        }
-        
     };
     
-    class pico_messageForResponseQueue_;
+//    template<>
+//    struct VectorTraits<pico_message>{
+//        static const bool is_shared_ptr=true;
+//        static const bool is_pico_record=false;
+//        static  std::shared_ptr<pico_message> getEmptyInstance(){
+//            return NULL;
+//        }
+//    };
+//    
+//    template<>
+//    struct VectorTraits<pico_record>{
+//        static const bool is_shared_ptr=true;
+//        static const bool is_pico_record=true;
+//        static pico_record getEmptyInstance()
+//        {
+//            pico_record r;
+//            return r;
+//        }
+//    };
+//    
+//    template<> struct VectorTraits<std::shared_ptr<pico_message>>{
+//        static const bool is_shared_ptr=true;
+//        static const bool is_pico_record=false;
+//        
+//        static  std::shared_ptr<pico_message> getEmptyInstance(){
+//            return NULL;
+//        }
+//        
+//    };
     
-    template<>
-    struct list_traits<pico_messageForResponseQueue_>{
-        static const bool is_shared_ptr=true;
-        static const bool is_pico_record=false;
-      static  std::shared_ptr<pico_message> getEmptyInstance(){
-            return NULL;
-        }
-    };
+//    class pico_messageForResponseQueue_;
+//    
+//    template<>
+//    struct VectorTraits<pico_messageForResponseQueue_>{
+//        static const bool is_shared_ptr=true;
+//        static const bool is_pico_record=false;
+//        static  std::shared_ptr<pico_message> getEmptyInstance(){
+//            return NULL;
+//        }
+//    };
     
-  
+    
     
     
     
     template <typename queueType,typename traits>
-    class pico_concurrent_list : public pico_logger_wrapper{
+    class ConcurrentVector : public pico_logger_wrapper{
     private:
         boost::mutex mutex_;
         
     public:
-        list<queueType> underlying_list;
+        vector<queueType> underlying_list;
         
-        pico_concurrent_list()
+        ConcurrentVector()
         {
-       //     mylogger<<("\npico_concurrent_list being constructed");
+            //     mylogger<<("\npico_concurrent_list being constructed");
         }
         
         queueType pop()//this method returns the end of queue and removes it from the end of queue
         {
             queueType msg;
-           while(true)
-           {
-            boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_,boost::interprocess::try_to_lock);
-               if(lock_)
-               {
-            if(underlying_list.size()>0)
+            while(true)
             {
-                msg = underlying_list.back();
-                underlying_list.pop_back();
-                
-                //mylogger<<"\npico_concurrent_list : poping from end of the list this item ..\n"<<msg.toString();
-                
-                return msg;
-            }else{
-                mylogger<<"pico_concurrent_list : returning empty message!!!\n";
-                return msg;//empty message
+                boost::interprocess::scoped_lock<boost::mutex> lock_( mutex_,boost::interprocess::try_to_lock);
+                if(lock_)
+                {
+                    if(underlying_list.size()>0)
+                    {
+                        msg = underlying_list.back();
+                        underlying_list.pop_back();
+                        
+                        //mylogger<<"\npico_concurrent_list : poping from end of the list this item ..\n"<<msg.toString();
+                        
+                        return msg;
+                    }else{
+                        mylogger<<"pico_concurrent_list : returning empty message!!!\n";
+                        return msg;//empty message
+                    }
+                }
             }
-               }
-           }
         }
         queueType pop(int sequenceNumber)//this method returns the end of queue and removes it from the end of queue
         {
@@ -122,7 +123,7 @@ namespace pico{
                     {
                         
                         auto iter = underlying_list.begin();
-//                        
+                        //
                         for(int i=0;i<sequenceNumber;i++)
                         {
                             ++iter;
@@ -135,7 +136,7 @@ namespace pico{
                         
                         return msg;
                     }else{
-                        mylogger<<"pico_concurrent_list : returning empty message!!!\n";
+                        mylogger<<"ConcurrentVector : returning empty message!!!\n";
                         return msg;//empty message
                     }
                 }
@@ -148,9 +149,9 @@ namespace pico{
                 underlying_list.remove(element);
             }
         }
-       
+        
         queueType peek()//this method returns the end of queue without deleting it
-       
+        
         {
             queueType msg;
             while(true)
@@ -167,7 +168,7 @@ namespace pico{
                     }else{
                         if(mylogger.isTraceEnabled())
                         {
-                            mylogger<<"pico_concurrent_list : returning empty message!!!\n";
+                            mylogger<<"ConcurrentVector : returning empty message!!!\n";
                         }
                         return msg;//empty message
                     }
@@ -176,19 +177,19 @@ namespace pico{
                 else{
                     if(mylogger.isTraceEnabled())
                     {
-                        mylogger<<"pico_concurrent_list :  trying to get the lock\n";
+                        mylogger<<"ConcurrentVector :  trying to get the lock\n";
                     }
-                     return traits::getEmptyInstance();
+                    return traits::getEmptyInstance();
                 }
             }
         }
-
-       
+        
+        
         bool empty()
         {
             return underlying_list.empty();
         }
-        void push(queueType msg)
+        void push_back(queueType msg)
         {
             while(true)
             {
@@ -200,7 +201,7 @@ namespace pico{
                 }
                 if(lock_)
                 {
-                    underlying_list.push_front(msg);
+                    underlying_list.push_back(msg);
                     break;
                 }
             }
@@ -261,21 +262,29 @@ namespace pico{
         string toString()
         {
             string str;
-           
-                
-                for(typename list<queueType>::iterator iter=underlying_list.begin();iter!=underlying_list.end();++iter)
-                {
-                    mylogger<<"pico_concurrent_list : this is the string thats going to be appneded"<<iter->toString()<<"\n";
-                    str.append(iter->toString());
-                }
+            
+            
+            for(typename list<queueType>::iterator iter=underlying_list.begin();iter!=underlying_list.end();++iter)
+            {
+                mylogger<<"ConcurrentVector : this is the string thats going to be appneded"<<iter->toString()<<"\n";
+                str.append(iter->toString());
+            }
             
             mylogger<<"this is the string representation of the pico_buffered_message"<<str<<"\n";
             return str;
         }
-        virtual ~pico_concurrent_list()
+        virtual ~ConcurrentVector()
         {
-            mylogger<<("\npico_concurrent_list being destructed..\n");
+            mylogger<<("\ConcurrentVector being destructed..\n");
+        }
+        
+        void testTheConcurrentVector()
+        {
+            
+        
         }
     };
 }
 #endif
+
+

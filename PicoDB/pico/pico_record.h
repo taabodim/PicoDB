@@ -41,6 +41,7 @@ public:
 
 	const static int beg_of_sequenceInMessage_index = end_of_messageId_index;
 	const static int sequenceInMessage = 4;
+    //this is the place of record in the array that makes the message
 	const static int end_of_sequenceInMessage_index =
 			beg_of_sequenceInMessage_index + sequenceInMessage;
 
@@ -102,6 +103,12 @@ public:
 
 		this->offset_of_record = buffer.offset_of_record;
 	}
+     bool operator==(const pico_record& buffer) {
+        
+		if(areRecordsEqual(buffer)) return true;
+        
+		return false;
+	}
 
 	pico_record operator=(const pico_record& buffer) {
 
@@ -116,14 +123,14 @@ public:
 
 		return *this;
 	}
-	bool areRecordsEqual(pico_record& buffer) {
+	bool areRecordsEqual(const pico_record& buffer) {
 
 		if (areValuesEqual(buffer) && areKeysEqual(buffer))
 			return true;
 
 		return false;
 	}
-	bool areValuesEqual(pico_record& buffer) {
+	bool areValuesEqual(const pico_record& buffer) {
 		for (int i = beg_of_value_index; i < end_of_value_index; i++) {
 			if (data_[i] != buffer.data_[i]) {
 				return false;
@@ -133,7 +140,7 @@ public:
 		return true;
 
 	}
-	bool areKeysEqual(pico_record& buffer) {
+	bool areKeysEqual(const pico_record& buffer) {
 		for (int i = beg_of_key_index; i < end_of_key_index; i++) {
 			if (data_[i] != buffer.data_[i]) {
 				return false;
@@ -150,24 +157,29 @@ public:
 		}
 		
 	}
-
+	string keyType; //the string form of keyType
 	string getKeyTypeAsString() {
-
-		string keyType; //the string form of keyType
-		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
+        if (keyType.empty()) {
+			getTheKeyTypeStringFromData();
+		}
+		assert(!keyType.empty());
+ 		return keyType;
+ 	}
+    void getTheKeyTypeStringFromData()
+    {
+        memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other
-
+        
 		for (int i = beg_key_type_index; i < end_key_type_index; i++) {
 			if (data_copy[i] != '\0') {
-
+                
 				keyType.push_back(data_copy[i]);
-
+                
 			} else {
 				break;
 			}
 		}
-		return keyType;
-	}
+    }
 	string key; //the string form of key
 	string getKeyAsString() {
 		if (key.empty()) {
@@ -367,6 +379,46 @@ public:
 		currentBuffer.setTheKeyString(key);
 
 	}
+    
+    static void setTheSequenceNumberInData(pico_record& currentBuffer, int sequenceNumber) {
+		int lastCharIndex = 0;
+        string sequenceNumberStr  = convertToString(sequenceNumber);
+		const char* temp_buffer_message = sequenceNumberStr.c_str();
+		for (int i = pico_record::beg_of_sequenceInMessage_index;
+             i < pico_record::end_of_sequenceInMessage_index; i++) {
+			
+            
+			if (*temp_buffer_message != 0) {
+				currentBuffer.data_[i] = *temp_buffer_message;
+			} else {
+				break;
+			}
+			++temp_buffer_message;
+			lastCharIndex++;
+		}
+        
+		for (int i = pico_record::beg_of_sequenceInMessage_index + lastCharIndex;
+             i < pico_record::end_of_sequenceInMessage_index; i++) {
+			currentBuffer.data_[i] = '\0';
+		}
+		currentBuffer.setTheSequenceNumberString(sequenceNumberStr);
+        
+	}
+    
+    string sequenceNumber;
+    void setTheSequenceNumberString(string sequenceNumberStr)
+    {
+    	memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
+		//by copying into the other string or assigning to other
+        
+		for (int i = beg_of_sequenceInMessage_index; i < end_of_sequenceInMessage_index; i++) {
+			if (data_copy[i] != '\0') {
+				sequenceNumber.push_back(data_copy[i]);
+			} else {
+				break;
+			}
+		}
+    }
 	void setTheMessageIdString(string messageId) {
 		memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
 		//by copying into the other string or assigning to other

@@ -13,8 +13,11 @@ namespace pico{
 
     class PicoConfig{
     public:
-        static string dataDir;
+        static std::string dataDir;
         static long defaultTimeoutInSec;
+
+        static std::string logDir;
+        static std::string logFileName;
     };
 
 }

@@ -15,7 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-
+#include <pico/PicoConfig.h>
 
 using namespace std;
 namespace pico{
@@ -36,14 +36,14 @@ public:
         void log(std::string str )
         {
 
-          //  boost::unique_lock<boost::mutex> lock(log_mutex);
+            boost::unique_lock<boost::mutex> lock(log_mutex);
             append(str);
             
             
         }
        logger(std::string filename){
         
-        string path("/Users/mahmoudtaabodi/Documents/");
+           string path(PicoConfig::logDir);
 		std::string ext(".log");
 		path.append(filename);
         path.append(ext);

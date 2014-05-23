@@ -226,7 +226,7 @@ namespace pico {
       
             assert(!messageIdForResponse.empty());
             std::shared_ptr<pico_message> msg = util.convert_records_to_message(
-                                                               all_records_for_this_message, messageIdForResponse,LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY);
+                                                               all_records_for_this_message, messageIdForResponse,LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY,sessionLogger);
             
             mylogger
             << "\n pico_collection : retrieveOneMessage this is the whole message retrieved "

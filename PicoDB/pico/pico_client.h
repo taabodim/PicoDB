@@ -78,9 +78,10 @@ public:
 		//            {
 		//                //wait until client is connected
 		//            }
-		if(mylogger.isTraceEnabled())
+		if(clientLogger->isTraceEnabled())
 		{
-			mylogger<< "Ponoco Instance is initializing  ";
+			*clientLogger<< "Ponoco Instance is initializing  ";
+            
 		}
 		setDefaultParameter();
 
@@ -96,16 +97,16 @@ public:
 		try {
 			socket_ = socket;
 			startResponseQueueNotifier();
-			if(mylogger.isTraceEnabled())
+			if(clientLogger->isTraceEnabled())
 			{
-				mylogger<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
+				*clientLogger<<" start_connect(tcp::resolver::iterator endpoint_iter) ";
 			}
 
 			if (endpoint_iter != tcp::resolver::iterator()) {
 
-				if(mylogger.isTraceEnabled())
+				if(clientLogger->isTraceEnabled())
 				{
-					mylogger<< "Trying "<<endpoint_iter->endpoint() << "...\n";
+					*clientLogger<< "Trying "<<endpoint_iter->endpoint() << "...\n";
 				}
 				// Start the asynchronous connect operation.
 				socket_->async_connect(endpoint_iter->endpoint(),
@@ -114,16 +115,16 @@ public:
 				// There are no more endpoints to try. Shut down the client.
 				//				stop();
 			}
-			if(mylogger.isTraceEnabled())
+			if(clientLogger->isTraceEnabled())
 			{
-				mylogger<< " start_connect ends ...\n";
+				*clientLogger<< " start_connect ends ...\n";
 			}
 
 		} catch(...)
 		{
-			if(mylogger.isTraceEnabled())
+			if(clientLogger->isTraceEnabled())
 			{
-				mylogger<< "client start_connect : start_connect : Exception: unknown thrown\n";
+				*clientLogger<< "client start_connect : start_connect : Exception: unknown thrown\n";
 			}
 
 			raise(SIGABRT);
@@ -139,7 +140,7 @@ public:
 		// of the asynchronous operation. If the socket is closed at this time then
 		// the timeout handler must have run first.
 		if (!socket_->is_open()) {
-			mylogger<<( "Connect timed out\n");
+			*clientLogger<<( "Connect timed out\n");
 
 			// Try the next available endpoint.
 			start_connect(this->socket_,++endpoint_iter);
@@ -148,7 +149,7 @@ public:
 
 	void start(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
-		//            mylogger<<"\nclient starting the process..going to write_message to server\n";
+		//            clientLogger<<"\nclient starting the process..going to write_message to server\n";
 
 		try {
 			if(!ec)
@@ -158,18 +159,18 @@ public:
 				writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
 			}
 			else {
-				if(mylogger.isTraceEnabled())
+				if(clientLogger->isTraceEnabled())
 				{
-					mylogger<<"\nclient : start : error is "<<ec.value()<<" error message is "<<ec.message();
-					mylogger <<"\n error name is "<< ec.category().name();}
+					*clientLogger<<"\nclient : start : error is "<<ec.value()<<" error message is "<<ec.message();
+					*clientLogger <<"\n error name is "<< ec.category().name();}
 			}
 
 		} catch (const std::exception& e) {
-			mylogger<<" exception : "<<e.what();
+			*clientLogger<<" exception : "<<e.what();
 			raise(SIGABRT);
 
 		} catch (...) {
-			mylogger<< "<----->unknown exception thrown.<------>\n";
+			*clientLogger<< "<----->unknown exception thrown.<------>\n";
 			raise(SIGABRT);
 
 		}
@@ -187,17 +188,17 @@ public:
 //			else if (error)
 //			throw boost::system::system_error(error);// Some other error.
 //
-//			mylogger << "\nclient got this " << buf.data();
+//			clientLogger << "\nclient got this " << buf.data();
 //		}
 //	}
 	void readOneBuffer() {
-		if(mylogger.isTraceEnabled())
+		if(clientLogger->isTraceEnabled())
 		{
-			mylogger<<"\nclient : going to read a buffer from server \n";
+			*clientLogger<<"\nclient : going to read a buffer from server \n";
 
 		}
 		auto self(shared_from_this());
-		// mylogger<<"client is trying to read one buffer\n" ;
+		// clientLogger<<"client is trying to read one buffer\n" ;
 		std::shared_ptr<pico_record> currentBuffer = asyncReader_.getOneBuffer();
 
 		boost::asio::async_read(*socket_,
@@ -213,8 +214,8 @@ public:
 	void writeOneBuffer()
 	{
 
-		if(mylogger.isTraceEnabled())
-		{	mylogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
+		if(clientLogger->isTraceEnabled())
+		{	*clientLogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
 
 		}
 		std::unique_lock<std::mutex> writeOneBufferLock(writeOneBufferMutex);
@@ -222,20 +223,20 @@ public:
 		while(bufferQueuePtr_->empty())
 		{
 
-			if(mylogger.isTraceEnabled())
-			{	mylogger<<"client : bufferQueue is empty..waiting ...\n";
+			if(clientLogger->isTraceEnabled())
+			{	*clientLogger<<"client : bufferQueue is empty..waiting ...\n";
 
 			}
 
 			bufferQueueIsEmpty.wait(writeOneBufferLock);
-			if(mylogger.isTraceEnabled())
-			{	mylogger<<"client : bufferQueue waking up because there is some data in the queue ...\n";
+			if(clientLogger->isTraceEnabled())
+			{	*clientLogger<<"client : bufferQueue waking up because there is some data in the queue ...\n";
 
 			}
 		}
 
-		if(mylogger.isTraceEnabled())
-		{	mylogger<<"client : is going to send some data over ...\n";
+		if(clientLogger->isTraceEnabled())
+		{	*clientLogger<<"client : is going to send some data over ...\n";
 
 		}
 		std::shared_ptr<pico_record> currentBuffer =bufferQueuePtr_->pop();
@@ -250,18 +251,19 @@ public:
 						std::size_t t) {
 					string str = currentBuffer->toString();
 
-					if(mylogger.isTraceEnabled())
+					if(clientLogger->isTraceEnabled())
 					{
-						mylogger<<t<<"Client  bytes to server \n";
+						*clientLogger<<t<<"Client  bytes to server \n";
 						if(error)
-						{	mylogger<<"\n error msg : "<<error.message();}
+						{
+                            *clientLogger<<"\n error msg : "<<error.message();}
 
 						if(str.empty())
 						{
-							mylogger<<"\n ERROR  Client : is going to send empty data \n";
+							*clientLogger<<"\n ERROR  Client : is going to send empty data \n";
 						}
 
-						mylogger<<"\n Client : data sent to server is "<<str<<" end of data!";
+						*clientLogger<<"\n Client : data sent to server is "<<str<<" end of data!";
 
 					}
 
@@ -272,12 +274,12 @@ public:
 					//of the whole message
 					{
 						writeOneBuffer();
-						if(mylogger.isTraceEnabled())
+						if(clientLogger->isTraceEnabled())
 						{
-							mylogger<<"\n Client :I am going to send the next incomplete buffer \n";
+							*clientLogger<<"\n Client :I am going to send the next incomplete buffer \n";
 						}
 					} else {
-						mylogger<<"\n Client :I am done sending a complete message now going to wait for the reply of the message \n";
+						*clientLogger<<"\n Client :I am done sending a complete message now going to wait for the reply of the message \n";
 						readOneBuffer();
 					}
 				});
@@ -286,17 +288,17 @@ public:
 	void processTheMessageJustRead(std::shared_ptr<pico_record> currentBuffer,std::size_t t) {
 		//            currentBuffer->loadTheKeyValueFromData();
 		string str =currentBuffer->toString();
-		if(mylogger.isTraceEnabled())
+		if(clientLogger->isTraceEnabled())
 		{
 
-			mylogger<<"\n client : this is the message that client read just now  : "<<str;
+			*clientLogger<<"\n client : this is the message that client read just now  : "<<str;
 		}
 
 		if(pico_record::IsThisRecordAnAddOn(*currentBuffer))
 		{
-			if(mylogger.isTraceEnabled())
+			if(clientLogger->isTraceEnabled())
 			{
-				mylogger<<"\n Client : this buffer is an add on to the last message, messageId for this buffer is \n"
+				*clientLogger<<"\n Client : this buffer is an add on to the last message, messageId for this buffer is \n"
 				<<currentBuffer->getMessageIdAsString()<<
 				"..dont process anything..read the next buffer\n";
 
@@ -309,12 +311,12 @@ public:
 			allBuffersReadFromTheOtherSide.append(*currentBuffer);
 
 			pico_message util;
-			std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY);
-			if(mylogger.isTraceEnabled())
+			std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY,clientLogger);
+			if(clientLogger->isTraceEnabled())
 			{
-				mylogger<<"\n client : this is the complete message read from server \n";
-				mylogger<<"\n client : last_read_message messageId is "<<last_read_message->messageId;
-				mylogger<<"\n client : the content of last message read from server  "<<last_read_message->toString();
+				*clientLogger<<"\n client : this is the complete message read from server \n";
+				*clientLogger<<"\n client : last_read_message messageId is "<<last_read_message->messageId;
+				*clientLogger<<"\n client : the content of last message read from server  "<<last_read_message->toString();
 			}
 			processDataFromOtherSide(last_read_message);
 			allBuffersReadFromTheOtherSide.clear();
@@ -327,9 +329,9 @@ public:
 
 		try {
 
-			if(mylogger.isTraceEnabled())
+			if(clientLogger->isTraceEnabled())
 			{
-				mylogger<<"\n client this is the complete message from server : "<<messageFromOtherSide->toString();
+				*clientLogger<<"\n client this is the complete message from server : "<<messageFromOtherSide->toString();
 			}
 			//process the data from server and queue the right message or dont
 
@@ -338,10 +340,10 @@ public:
 
 			queueTheResponse(messageFromOtherSide);
 
-			if(mylogger.isTraceEnabled())
+			if(clientLogger->isTraceEnabled())
 			{
 
-				mylogger<<"\n Client : got the response with this messageId :  "<<
+				*clientLogger<<"\n Client : got the response with this messageId :  "<<
 				messageFromOtherSide->messageId<<" and put it in ResponseQueue \n this is the full response : "<<messageFromOtherSide->toString();
 				assert(messageFromOtherSide->toString().size()>0);
 			}
@@ -354,10 +356,10 @@ public:
 	void print(const boost::system::error_code& error,
 			std::size_t t,string& str)
 	{
-		if(mylogger.isTraceEnabled())
+		if(clientLogger->isTraceEnabled())
 		{
-			mylogger<<"\nClient Received :  "<<t<<" bytes from server ";
-			if(error) mylogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------\n";
+			*clientLogger<<"\nClient Received :  "<<t<<" bytes from server ";
+			if(error) *clientLogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------\n";
 
 		}
 
@@ -372,9 +374,9 @@ public:
 		queueType msg (new pico_message(key,value,command,database,user,col ));
 		queueRequestMessages(msg);
 
-		if(mylogger.isTraceEnabled())
+		if(clientLogger->isTraceEnabled())
 		{
-			mylogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
+			*clientLogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
 
 		}
 		return getTheResponseOfRequest(msg);
@@ -390,9 +392,9 @@ public:
 		queueType msg (new pico_message(key,value,command,database,user,col ));
 		queueRequestMessages(msg);
 
-		if(mylogger.isTraceEnabled())
+		if(clientLogger->isTraceEnabled())
 		{
-			mylogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
+			*clientLogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
 
 		}
 		return getTheResponseOfRequest(msg);
@@ -408,9 +410,9 @@ public:
 		queueType msg (new pico_message(key,value,command,database,user,col ));
 		queueRequestMessages(msg);
 
-		if(mylogger.isTraceEnabled())
+		if(clientLogger->isTraceEnabled())
 		{
-			mylogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
+			*clientLogger<<"\nClient : one message was pushed to requestQueue with this messageId "<< msg->messageId<<"\n";
 
 		}
 		return getTheResponseOfRequest(msg);
@@ -440,15 +442,15 @@ public:
 	{
 		bool testPassed = false;
 		steady_clock::time_point t1 = steady_clock::now(); //time that we started waiting for result
-		mylogger<<"Client : waiting for our response from server...msg.messageId = "<< msg->messageId<< " \n";
+		*clientLogger<<"Client : waiting for our response from server...msg.messageId = "<< msg->messageId<< " \n";
 		steady_clock::time_point t2 = steady_clock::now();//time that we are going to check to determine timeout
 		while(true)
 		{
 
 			if(responseQueue_.empty())
 			{
-				if(mylogger.isTraceEnabled()) {
-					mylogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
+				if(clientLogger->isTraceEnabled()) {
+					*clientLogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
 //				auto now = std::chrono::system_clock::now();
 //                std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
 //                responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
@@ -464,8 +466,8 @@ public:
 			{
 				responseQueue_.remove(response); //remove this from the responseQueue_
 				//this is our response
-				if(mylogger.isTraceEnabled()) {
-					mylogger<<"Client : got our response"<<response->messageId<<"\n"<<
+				if(clientLogger->isTraceEnabled()) {
+					*clientLogger<<"Client : got our response"<<response->messageId<<"\n"<<
 					"this is our response "<<response->toString();
 				}
 
@@ -489,7 +491,7 @@ public:
 					if(timeoutInSeconds>=userTimeOut)
 					{
 						//we ran out of time, get failed....
-						if(mylogger.isTraceEnabled()) {mylogger<<"Client : "<<msg->command<<" Operation TIMED OUT!!\n";}
+						if(clientLogger->isTraceEnabled()) {*clientLogger<<"Client : "<<msg->command<<" Operation TIMED OUT!!\n";}
 						break;
 
 					}
@@ -523,7 +525,7 @@ public:
 
 		} catch(std::exception& e)
 		{
-			std::cout<<" Exception in notifierThread "<<e.what()<<"\n";
+			*clientLogger<<" Exception in notifierThread "<<e.what()<<"\n";
 		}
 
 	}
@@ -541,16 +543,16 @@ public:
 	void queueTheResponse(queueType msg)
 
 	{
-		if(mylogger.isTraceEnabled())
+		if(clientLogger->isTraceEnabled())
 		{
-			mylogger<<"client : putting the response in the queue "<<msg->toString();
+			*clientLogger<<"client : putting the response in the queue "<<msg->toString();
 
 		}
 		responseQueueIsEmpty.notify_all();
 		responseQueue_.push(msg);
 
-		if(mylogger.isTraceEnabled())
-		{	mylogger<<"\n client : response pushed to responseQUEUE , queue size is "<<responseQueue_.size()<<" \n";
+		if(clientLogger->isTraceEnabled())
+		{	*clientLogger<<"\n client : response pushed to responseQUEUE , queue size is "<<responseQueue_.size()<<" \n";
 		}
 
 	}
@@ -565,13 +567,13 @@ public:
 			while(!msg_in_buffers.empty())
 			{
 
-				if(mylogger.isTraceEnabled())
-				{	mylogger<<"\nPonocoDriver : queueRequestMessages : popping current Buffer \n";
+				if(clientLogger->isTraceEnabled())
+				{	*clientLogger<<"\nPonocoDriver : queueRequestMessages : popping current Buffer \n";
 
 				}
 				pico_record buf = msg_in_buffers.pop();
-				if(mylogger.isTraceEnabled())
-				{	mylogger<<"nPonocoDriver : popping current Buffer this is current buffer and pushing it to the bufferQueue to send "<<buf.toString()<<" \n";
+				if(clientLogger->isTraceEnabled())
+				{	*clientLogger<<"nPonocoDriver : popping current Buffer this is current buffer and pushing it to the bufferQueue to send "<<buf.toString()<<" \n";
 
 				}
 
@@ -581,7 +583,7 @@ public:
 
 			bufferQueueIsEmpty.notify_all();
 		} catch (...) {
-			std::cerr << "Exception: queueRequestMessages  message : unknown thrown" << "\n";
+			*clientLogger<< "Exception: queueRequestMessages  message : unknown thrown" << "\n";
 			raise(SIGABRT);
 
 		}
