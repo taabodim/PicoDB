@@ -26,6 +26,7 @@
 #include <ClientResponseProcessor.h>
 #include <PonocoDriverHelper.h>
 #include <PicoConfig.h>
+#include <pico/MessageSender.h>
 using boost::asio::ip::tcp;
 using namespace std;
 using namespace std::chrono;
@@ -50,34 +51,34 @@ private:
 
 	bool clientIsConnected;
 
-	std::mutex writeOneBufferMutex;   // mutex for the condition variable
-	std::mutex allowedToWriteLockMutex;
-	std::mutex queueRequestMessagesMutex;
-	std::mutex responseQueueMutex;
-	std::mutex waitForClientToConnectMutex;
+//	std::mutex writeOneBufferMutex;   // mutex for the condition variable
+//	std::mutex allowedToWriteLockMutex;
+//	std::mutex queueRequestMessagesMutex;
+//	std::mutex responseQueueMutex;
+//	std::mutex waitForClientToConnectMutex;
 
-	std::condition_variable clientIsConnectedCV;
-	std::condition_variable clientIsAllowedToWrite;
+//	std::condition_variable clientIsConnectedCV;
+//	std::condition_variable clientIsAllowedToWrite;
+    std::mutex queueMessagesMutext;
 	std::condition_variable bufferQueueIsEmpty;
 	std::condition_variable responseQueueIsEmpty;
+    std::mutex bufferQueueIsEmptyMutex;
 
 	string database;
 	string user;
 	string col;
+    MessageSender* messageSender;
+    pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
+    bool shutDownNormally;
+	asyncReader asyncReader_;
 
 public:
 
 	PonocoDriver(helperType syncHelperArg )
 
 	:bufferQueuePtr_(new ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>>)
+    ,messageSender(new MessageSender()),shutDownNormally(false)
 	{
-		//            syncHelper = syncHelperArg;
-		boost::unique_lock<std::mutex> waitForClientToConnectLock(waitForClientToConnectMutex);
-		//clientIsConnectedCV.wait(waitForClientToConnectLock);
-		//            while(!clientIsConnected)
-		//            {
-		//                //wait until client is connected
-		//            }
 		if(clientLogger->isTraceEnabled())
 		{
 			*clientLogger<< "Ponoco Instance is initializing  ";
@@ -191,139 +192,141 @@ public:
 //			clientLogger << "\nclient got this " << buf.data();
 //		}
 //	}
-	void readOneBuffer() {
-		if(clientLogger->isTraceEnabled())
-		{
-			*clientLogger<<"\nclient : going to read a buffer from server \n";
-
-		}
-		auto self(shared_from_this());
+    int numberOfCharsToRead=10;
+    
+    void readOneBuffer(int dataSizeToReadNext) {
+        assert(dataSizeToReadNext>0);
+ 
+        auto self(shared_from_this());
 		// clientLogger<<"client is trying to read one buffer\n" ;
 		std::shared_ptr<pico_record> currentBuffer = asyncReader_.getOneBuffer();
-
+        numberOfCharsToRead = dataSizeToReadNext;
+        
+        if (clientLogger->isTraceEnabled()) {
+            *clientLogger<< "\n Client is going to read "<<numberOfCharsToRead<<" chars into buffer from server...\n";
+        }
+        
 		boost::asio::async_read(*socket_,
-				boost::asio::buffer(currentBuffer->getDataForRead(),
-						pico_record::max_size),
+				boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead),
+						numberOfCharsToRead),
 				[this,self,currentBuffer](const boost::system::error_code& error,
 						std::size_t t ) {
-
-					self->processTheMessageJustRead(currentBuffer,t);
+                    if (clientLogger->isTraceEnabled()) {
+                        *clientLogger<< "\n Client is done reading  "<<numberOfCharsToRead<<" chars from server...\n";
+                    }
+                    
+                    self->processTheBufferJustRead(currentBuffer,t);
 				});
 
 	}
 	void writeOneBuffer()
 	{
 
-		if(clientLogger->isTraceEnabled())
-		{	*clientLogger<<"client : writeOneBuffer BEFORE getting the lock ...\n";
-
-		}
-		std::unique_lock<std::mutex> writeOneBufferLock(writeOneBufferMutex);
-
-		while(bufferQueuePtr_->empty())
-		{
-
-			if(clientLogger->isTraceEnabled())
-			{	*clientLogger<<"client : bufferQueue is empty..waiting ...\n";
-
-			}
-
-			bufferQueueIsEmpty.wait(writeOneBufferLock);
-			if(clientLogger->isTraceEnabled())
-			{	*clientLogger<<"client : bufferQueue waking up because there is some data in the queue ...\n";
-
-			}
-		}
-
-		if(clientLogger->isTraceEnabled())
-		{	*clientLogger<<"client : is going to send some data over ...\n";
-
-		}
-		std::shared_ptr<pico_record> currentBuffer =bufferQueuePtr_->pop();
-
-		char* data = currentBuffer->getDataForWrite();
-		std::size_t dataSize = currentBuffer->getSize();
-
-		auto self(shared_from_this());
-
-		boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
-				[this,self,currentBuffer](const boost::system::error_code& error,
-						std::size_t t) {
-					string str = currentBuffer->toString();
-
-					if(clientLogger->isTraceEnabled())
-					{
-						*clientLogger<<t<<"Client  bytes to server \n";
-						if(error)
-						{
-                            *clientLogger<<"\n error msg : "<<error.message();}
-
-						if(str.empty())
-						{
-							*clientLogger<<"\n ERROR  Client : is going to send empty data \n";
-						}
-
-						*clientLogger<<"\n Client : data sent to server is "<<str<<" end of data!";
-
-					}
-
-					assert(t!=0);
-
-					if(pico_record::IsThisRecordAnAddOn(*currentBuffer)) //write to server until
-					//buffer is an addon,if its not, go to reading mode to and wait for reply of
-					//of the whole message
-					{
-						writeOneBuffer();
-						if(clientLogger->isTraceEnabled())
-						{
-							*clientLogger<<"\n Client :I am going to send the next incomplete buffer \n";
-						}
-					} else {
-						*clientLogger<<"\n Client :I am done sending a complete message now going to wait for the reply of the message \n";
-						readOneBuffer();
-					}
-				});
-
+        if (clientLogger->isTraceEnabled()) {
+            *clientLogger<< "\n client is going to send a buffer to server..going to acquire lock \n";
+        }
+        
+        std::unique_lock < std::mutex
+        > writeOneBufferLock(bufferQueueIsEmptyMutex);
+        while (bufferQueuePtr_->empty()) {
+            if (clientLogger->isTraceEnabled()) {
+                *clientLogger<< "\n client bufferQueue_ is empty...waiting for a message to come to queue. \n";
+            }
+            bufferQueueIsEmpty.wait(writeOneBufferLock);
+        }
+        if (clientLogger->isTraceEnabled()) {
+            *clientLogger<< "\n client is going to send a buffer to server.. lock obtained \n";
+        }
+        
+        std::shared_ptr<pico_record> currentBuffer = bufferQueuePtr_->pop();
+        // cout << " session is writing one buffer to client : " <<currentBuffer->toString()//<< std::endl;
+        string data = currentBuffer->getDataForWrite();
+        std::size_t dataSize = currentBuffer->getSize();
+        
+        string dataSizeAsStr = convertToString(dataSize);
+        
+        string properMessageAboutSize;
+        getProperMessageAboutSize(dataSizeAsStr,properMessageAboutSize);
+        writeOneMessageToOtherSide(properMessageAboutSize.c_str(),10,true,data,dataSize);
+        
+        readOneBuffer(numberOfCharsToRead);
+        
 	}
-	void processTheMessageJustRead(std::shared_ptr<pico_record> currentBuffer,std::size_t t) {
-		//            currentBuffer->loadTheKeyValueFromData();
-		string str =currentBuffer->toString();
-		if(clientLogger->isTraceEnabled())
-		{
-
-			*clientLogger<<"\n client : this is the message that client read just now  : "<<str;
-		}
-
-		if(pico_record::IsThisRecordAnAddOn(*currentBuffer))
-		{
-			if(clientLogger->isTraceEnabled())
-			{
-				*clientLogger<<"\n Client : this buffer is an add on to the last message, messageId for this buffer is \n"
-				<<currentBuffer->getMessageIdAsString()<<
-				"..dont process anything..read the next buffer\n";
-
-			}
-			allBuffersReadFromTheOtherSide.append(*currentBuffer);
-			readOneBuffer();					//read the next addon buffer
-		}
-		else {
-
-			allBuffersReadFromTheOtherSide.append(*currentBuffer);
-
-			pico_message util;
-			std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY,clientLogger);
-			if(clientLogger->isTraceEnabled())
-			{
-				*clientLogger<<"\n client : this is the complete message read from server \n";
-				*clientLogger<<"\n client : last_read_message messageId is "<<last_read_message->messageId;
-				*clientLogger<<"\n client : the content of last message read from server  "<<last_read_message->toString();
-			}
-			processDataFromOtherSide(last_read_message);
-			allBuffersReadFromTheOtherSide.clear();
-			writeOneBuffer();							//write the response
-		}
-
-	}
+    
+    void processTheBufferJustRead(std::shared_ptr<pico_record> currentBuffer,
+                                  std::size_t t) {
+       // messageNumber++;
+        string str = currentBuffer->toString();
+        *clientLogger << "\nClient : data read just now is  \n"<<str;
+        if(pico_record::IsThisRecordASizeInfo(currentBuffer))
+        {
+            string sizeOfNextBufferToReadStr;
+            for(int i=0;i<currentBuffer->getSize();i++)
+            {
+                if(currentBuffer->getChar(i)!='#')
+                    sizeOfNextBufferToReadStr.push_back(currentBuffer->getChar(i));
+            }
+            long nextDataSize = convertToSomething<long>(sizeOfNextBufferToReadStr.c_str());
+            *clientLogger << "\nClient : dataSize read just now says that next data size is   \n"<<nextDataSize;
+            
+            readOneBuffer(nextDataSize);
+            
+        }
+        else{
+            *clientLogger << "\nClient : data read just now is not a dataSize Info   \n";
+            *clientLogger << "\nClient : this is the complete message read from server ";
+            msgPtr last_read_message(new pico_message(str));
+            processDataFromOtherSide(last_read_message);
+            writeOneBuffer(); //going to writing mode to write the reply for this complete message
+        }
+        //            else
+        //                            {
+        //                                *sessionLogger << "\nsession : ERROR : reading empty message  \n";
+        //                                readOneBuffer();		//read the next addon buffer
+        //
+        //                            }
+        
+    }
+    
+//	void processTheMessageJustRead(std::shared_ptr<pico_record> currentBuffer,std::size_t t) {
+//		//            currentBuffer->loadTheKeyValueFromData();
+//		string str =currentBuffer->toString();
+//		if(clientLogger->isTraceEnabled())
+//		{
+//
+//			*clientLogger<<"\n client : this is the message that client read just now  : "<<str;
+//		}
+//
+//		if(pico_record::IsThisRecordAnAddOn(*currentBuffer))
+//		{
+//			if(clientLogger->isTraceEnabled())
+//			{
+//				*clientLogger<<"\n Client : this buffer is an add on to the last message, messageId for this buffer is \n"
+//				<<currentBuffer->getMessageIdAsString()<<
+//				"..dont process anything..read the next buffer\n";
+//
+//			}
+//			allBuffersReadFromTheOtherSide.append(*currentBuffer);
+//			readOneBuffer();					//read the next addon buffer
+//		}
+//		else {
+//
+//			allBuffersReadFromTheOtherSide.append(*currentBuffer);
+//
+//			pico_message util;
+//			std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY,clientLogger);
+//			if(clientLogger->isTraceEnabled())
+//			{
+//				*clientLogger<<"\n client : this is the complete message read from server \n";
+//				*clientLogger<<"\n client : last_read_message messageId is "<<last_read_message->messageId;
+//				*clientLogger<<"\n client : the content of last message read from server  "<<last_read_message->toString();
+//			}
+//			processDataFromOtherSide(last_read_message);
+//			allBuffersReadFromTheOtherSide.clear();
+//			writeOneBuffer();							//write the response
+//		}
+//
+//	}
 
 	void processDataFromOtherSide(queueType messageFromOtherSide) {
 
@@ -354,14 +357,17 @@ public:
 	}
 
 	void print(const boost::system::error_code& error,
-			std::size_t t,string& str)
+			std::size_t t,const char* data)
 	{
-		if(clientLogger->isTraceEnabled())
-		{
-			*clientLogger<<"\nClient Received :  "<<t<<" bytes from server ";
-			if(error) *clientLogger<<" error msg : "<<error.message()<<" data  read from server is "<<str<<"-------------------------\n";
-
-		}
+        if(clientLogger->isTraceEnabled())
+        {
+            string str(data);
+            *clientLogger<< "\n Client Sent :  "<<t<<" bytes to Server ";
+            if(error) *clientLogger<<" \nClient : a communication error happend...\n msg : "<<error.message();
+            *clientLogger<<" nClient : data sent to server is "<<str<<"\n";
+            *clientLogger<<("-------------------------");
+        }
+		
 
 	}
 
@@ -449,8 +455,8 @@ public:
 
 			if(responseQueue_.empty())
 			{
-				if(clientLogger->isTraceEnabled()) {
-					*clientLogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
+			//	if(clientLogger->isTraceEnabled()) {
+			//		*clientLogger<<"Client : waiting for our responseQueue_ to be filled again  !\n";}
 //				auto now = std::chrono::system_clock::now();
 //                std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
 //                responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
@@ -556,41 +562,37 @@ public:
 		}
 
 	}
-	void queueRequestMessages(queueType message) {
-
-		try {
-			//TODO put a lock here to make the all the buffers in a message go after each other.
-			boost::unique_lock<std::mutex> writeOneBufferMutexLock(writeOneBufferMutex);
-			pico_buffered_message<pico_record> msg_in_buffers =
-			message->getCompleteMessageInJsonAsBuffers();
-
-			while(!msg_in_buffers.empty())
-			{
-
-				if(clientLogger->isTraceEnabled())
-				{	*clientLogger<<"\nPonocoDriver : queueRequestMessages : popping current Buffer \n";
-
-				}
-				pico_record buf = msg_in_buffers.pop();
-				if(clientLogger->isTraceEnabled())
-				{	*clientLogger<<"nPonocoDriver : popping current Buffer this is current buffer and pushing it to the bufferQueue to send "<<buf.toString()<<" \n";
-
-				}
-
-				std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
-				bufferQueuePtr_->push_back(curBufPtr);
-			}
-
-			bufferQueueIsEmpty.notify_all();
-		} catch (...) {
-			*clientLogger<< "Exception: queueRequestMessages  message : unknown thrown" << "\n";
-			raise(SIGABRT);
-
-		}
-	}
-	pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
-
-	asyncReader asyncReader_;
+    void queueRequestMessages(queueType message) {
+        //TODO put a lock here to make the all the buffers in a message go after each other.
+        
+        std::unique_lock < std::mutex> queueMessagesLock(queueMessagesMutext);
+        std::shared_ptr<pico_record> curBufPtr =  message->getCompleteMessageInJsonAsOnBuffer();
+        bufferQueuePtr_->push_back(curBufPtr);
+        bufferQueueIsEmpty.notify_all();
+        
+    }
+    void writeOneMessageToOtherSide(const char* data,std::size_t dataSize,bool sendTheRealData,const string& realData,std::size_t realDataSize)
+    {
+        auto self(shared_from_this());
+        
+        boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
+                                 [this,self,data,sendTheRealData,realData,realDataSize](const boost::system::error_code& error,
+                                                  std::size_t t) {
+                                     
+                                     print(error,t,data);
+                                     if(sendTheRealData)
+                                     {
+                                         writeOneMessageToOtherSide(realData.c_str(),realDataSize,false,"",-1);//this is the real data
+                                     }
+                                     
+                                 });
+        
+    }
+    ~PonocoDriver()
+    {
+        assert(shutDownNormally);
+        *clientLogger<<"\nPoncoDriver being destroyed";
+    }
 }; //end of class
 }
  //end of namespace

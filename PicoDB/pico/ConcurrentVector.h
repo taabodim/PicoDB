@@ -46,9 +46,9 @@ namespace pico{
     struct VectorTraits<pico_record>{
         static const bool is_shared_ptr=true;
         static const bool is_pico_record=true;
-        static pico_record getEmptyInstance()
+        static pico_record* getEmptyInstance()
         {
-            pico_record r;
+            pico_record* r = new pico_record();
             return r;
         }
     };
@@ -61,6 +61,7 @@ namespace pico{
             return NULL;
         }
         
+        
     };
     
     class pico_messageForResponseQueue_;
@@ -72,6 +73,7 @@ namespace pico{
         static  std::shared_ptr<pico_message> getEmptyInstance(){
             return NULL;
         }
+        
     };
     
     
@@ -133,7 +135,7 @@ namespace pico{
                             
                         }
                         queueType msg = *iter;
-                        underlying_list.erase(*iter);
+                        underlying_list.erase(iter);
                         assert(!msg.toString().empty());
                         // mylogger<<"\npico_concurrent_list : poping from end of the list this item ..\n"<<msg.toString();
                         
@@ -149,7 +151,15 @@ namespace pico{
         {
             if(underlying_list.size()>0)
             {
-                underlying_list.erase(element);
+                auto iter = underlying_list.begin();
+                for(int i=0;i<underlying_list.size();i++,++iter)
+                {
+                    if(underlying_list.at(i)==element)
+                    {
+                        underlying_list.erase(iter);
+                    }
+                }
+                
             }
         }
         
@@ -278,7 +288,7 @@ namespace pico{
         }
         virtual ~ConcurrentVector()
         {
-            mylogger<<("\ConcurrentVector being destructed..\n");
+            mylogger<<"\ConcurrentVector being destructed..\n";
         }
         
         void testTheConcurrentVector()

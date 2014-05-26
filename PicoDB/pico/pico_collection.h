@@ -23,9 +23,9 @@
 //this is a wrapper around the file that represents the collection
 namespace pico {
     struct recordInDatabase{
-        char typeHolder [pico_record::max_key_type_size];
-        char keyHolder[pico_record::max_key_size];
-        char valueHolder[pico_record::max_value_size];
+//        char typeHolder [pico_record::max_key_type_size];
+//        char keyHolder[pico_record::max_key_size];
+//        char valueHolder[pico_record::max_value_size];
     };
     
     //these the parts of record that are saved in file
@@ -93,14 +93,14 @@ namespace pico {
             return filename;
         }
         void queue_record_for_deletion(
-                                       pico_record& firstRecordOfMessageToBeDeleted) {
+                                       std::shared_ptr<pico_record> firstRecordOfMessageToBeDeleted) {
             auto deleteTask = std::make_shared < DeleteTaskRunnable
             > (shared_from_this(), firstRecordOfMessageToBeDeleted);
             
             //mylogger<<"hello"<<"I am here"<<" "<<3<<3.23<<"\n";
             delete_thread_pool->submitTask(deleteTask);
         }
-        void deleteRecord(pico_record& firstRecordOfMessageToBeDeleted,bool async) {
+        void deleteRecord(std::shared_ptr<pico_record> firstRecordOfMessageToBeDeleted,bool async) {
             //this function gets called by request processor, it finds the first record of the message
             //that has the same key and delete all the records that follows that first record until the next
             //first record in the file
@@ -109,13 +109,13 @@ namespace pico {
             //when we are inserting to the file, we check if the record exists , we update it( the update is just deleting and inserting again)
             read_offset_of_this_record(firstRecordOfMessageToBeDeleted); //offset of record is found using index.search
             pico_record_node node = *index.convert_pico_record_to_index_node(
-                                                                             firstRecordOfMessageToBeDeleted);
-            firstRecordOfMessageToBeDeleted.offset_of_record = node.offset;
+                                                                             *firstRecordOfMessageToBeDeleted);
+            firstRecordOfMessageToBeDeleted->offset_of_record = node.offset;
             
             if(async) {queue_record_for_deletion(firstRecordOfMessageToBeDeleted);
             }
             else {
-            deletion_function(firstRecordOfMessageToBeDeleted);
+//            deletion_function(firstRecordOfMessageToBeDeleted);
             }
             index.remove(node);
             
@@ -146,14 +146,14 @@ namespace pico {
                 
                 std::shared_ptr<pico_record> nextRecord = retrieve(nextOffset);
                 
-                if (pico_record::recordStartsWithBEGKEY(*nextRecord) && ignoreFirstBEGKEYRecordOffset==false ) {
-                   break;
-                } else {
-                    all_offsets_for_this_message.push_back(nextOffset);
-                    nextOffset += max_database_record_size;
-                    ignoreFirstBEGKEYRecordOffset = false;
-                    
-                }
+//                if (pico_record::recordStartsWithBEGKEY(*nextRecord) && ignoreFirstBEGKEYRecordOffset==false ) {
+//                   break;
+//                } else {
+//                    all_offsets_for_this_message.push_back(nextOffset);
+//                    nextOffset += max_database_record_size;
+//                    ignoreFirstBEGKEYRecordOffset = false;
+//                    
+//                }
             } while (nextOffset < endOffset);
             
             while (!all_offsets_for_this_message.empty()) {
@@ -183,7 +183,7 @@ namespace pico {
             assert(nextOffset>=0);
             
             std::shared_ptr<pico_record> nextRecord = retrieve(nextOffset); //get the first record of this message
-            all_records_for_this_message.append(*nextRecord);
+//            all_records_for_this_message.append(*nextRecord);
             
             nextOffset += max_database_record_size;
             do {
@@ -192,30 +192,30 @@ namespace pico {
                 assert(!nextRecord->toString().empty());
                 
 //                assert(pico_record::recordStartsWithBEGKEY(nextRecord) || pico_record::recordStartsWithConKEY(nextRecord));
-                if (pico_record::recordStartsWithConKEY(*nextRecord)) //this for the next message
-                {
-                    if (mylogger.isTraceEnabled()) {
-                        mylogger<< "\npico_collection : retrieveOneMessage :  this buffer starts with CONKEY  \n";
-                    }
-                    
-                    all_records_for_this_message.append(*nextRecord);
-                    if (mylogger.isTraceEnabled()) {
-                        mylogger
-                        << "\npico_collection : retrieveOneMessage : "
-                        " this record was retrived from db and appended to list  "
-                        << nextRecord->toString() << "\n";
-                    }
-                }
-                else
-                {
-                    if (mylogger.isTraceEnabled()) {
-                        mylogger<< "\npico_collection : retrieveOneMessage : this buffer doesnt start with CONKEY  \n"
-                        << nextRecord->toString() << "\n";
-                    }
-                    
-                    break;
-                }
-                
+//                if (pico_record::recordStartsWithConKEY(*nextRecord)) //this for the next message
+//                {
+//                    if (mylogger.isTraceEnabled()) {
+//                        mylogger<< "\npico_collection : retrieveOneMessage :  this buffer starts with CONKEY  \n";
+//                    }
+//                    
+//                    all_records_for_this_message.append(*nextRecord);
+//                    if (mylogger.isTraceEnabled()) {
+//                        mylogger
+//                        << "\npico_collection : retrieveOneMessage : "
+//                        " this record was retrived from db and appended to list  "
+//                        << nextRecord->toString() << "\n";
+//                    }
+//                }
+//                else
+//                {
+//                    if (mylogger.isTraceEnabled()) {
+//                        mylogger<< "\npico_collection : retrieveOneMessage : this buffer doesnt start with CONKEY  \n"
+//                        << nextRecord->toString() << "\n";
+//                    }
+//                    
+//                    break;
+//                }
+//                
                 
                 nextOffset += max_database_record_size;
                 
@@ -225,12 +225,13 @@ namespace pico {
             << "\n pico_collection : about to convert all the buffers read from db to a nice pico_message \n ";
       
             assert(!messageIdForResponse.empty());
-            std::shared_ptr<pico_message> msg = util.convert_records_to_message(
-                                                               all_records_for_this_message, messageIdForResponse,LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY,sessionLogger);
-            
-            mylogger
-            << "\n pico_collection : retrieveOneMessage this is the whole message retrieved "
-            << msg->toString();
+            std::shared_ptr<pico_message> msg ;
+//            std::shared_ptr<pico_message> msg = util.convert_records_to_message(
+//                                                               all_records_for_this_message, messageIdForResponse,LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY,sessionLogger);
+//            
+//            mylogger
+//            << "\n pico_collection : retrieveOneMessage this is the whole message retrieved "
+//            << msg->toString();
             return msg;
             
         }
@@ -238,7 +239,7 @@ namespace pico {
         msgPtr getMessageByKey(pico_record& record,
                                      string messageIdForResponse) {
             string result;
-            assert(!pico_record::isRecordEmpty(record));
+//            assert(!pico_record::isRecordEmpty(record));
             
             if(mylogger.isTraceEnabled())
             {
@@ -299,10 +300,10 @@ namespace pico {
                 
             	std::shared_ptr<pico_record> record_read_from_file = retrieve(offset);
                 
-                if (pico_record::recordStartsWithBEGKEY(*record_read_from_file)) {
-                    list_of_offsets.push_back(offset);
-                }
-                //
+//                if (pico_record::recordStartsWithBEGKEY(*record_read_from_file)) {
+//                    list_of_offsets.push_back(offset);
+//                }
+//                //
                 //            else{
                 //                mylogger<<("warning : read_all_records_offsets : key is empty!");
                 //            }
@@ -331,11 +332,11 @@ namespace pico {
                     << offset << "\n the record read is "
                     << record_read_from_file->toString();
                     
-                    if (pico_record::recordStartsWithBEGKEY(
-                                                            *record_read_from_file)) {
-                        list_.push_back(*record_read_from_file);
-                    }
-                    
+//                    if (pico_record::recordStartsWithBEGKEY(
+//                                                            *record_read_from_file)) {
+//                        list_.push_back(*record_read_from_file);
+//                    }
+//                    
                 }
             } catch (...) {
                 std::cerr << "Exception: read_all_messages_records: unknown thrown"
@@ -347,12 +348,12 @@ namespace pico {
             return list_;
         }
         
-        void read_offset_of_this_record(pico_record& record) {
-            nodeType node = index.search(record);
+        void read_offset_of_this_record(std::shared_ptr<pico_record> record) {
+            nodeType node = index.search(*record);
             if (node == nullptr)
-                record.offset_of_record = -1;
+                record->offset_of_record = -1;
             else {
-                record.offset_of_record = node->offset;
+                record->offset_of_record = node->offset;
                 
             }
             
@@ -376,17 +377,17 @@ namespace pico {
                 return;
             
             string empty("");
-            pico_record empty_record;
-            pico_record::setTheKeyInData(empty_record,empty);
-            pico_record::setTheValueInData(empty_record,empty);
-            pico_record::setTheRecordTypeInData(empty_record,empty);
-            
+//            pico_record empty_record;
+//            pico_record::setTheKeyInData(empty_record,empty);
+//            pico_record::setTheValueInData(empty_record,empty);
+//            pico_record::setTheRecordTypeInData(empty_record,empty);
+//            
             //            (empty,empty);
            // pico_record current_record = retrieve(offsetOfToBeDeletedRecord);
             //        nodeType node = index.createANodeBasedOnOffset(offset);
             //		index.deleteNode(node);
             
-            overwrite(empty_record, offsetOfToBeDeletedRecord);
+//            overwrite(empty_record, offsetOfToBeDeletedRecord);
             
             // index.remove(*index.convert_pico_record_to_index_node(current_record));//passing the key of the record that was deleted
             //to calculate the right
@@ -415,27 +416,27 @@ namespace pico {
                 
                 std::shared_ptr<pico_record> currentRecord = retrieve(record_offset);
                 
-                if(mylogger.isTraceEnabled()) //just to test if overwrite worked properly
-                {
-                	std::shared_ptr<pico_record> read_from_file  = retrieve(record_offset);
-                    assert(currentRecord->areRecordsEqual(*read_from_file));
-                }
-                
-                if (currentRecord->areRecordsEqual(record)) {
-                    break;
-                } else {
-                    
-                    mylogger << "overwrite didnt work on offset " << record_offset
-                    << "\n" << " currentRecord.getKeyAsString() is "
-                    << currentRecord->getKeyAsString()
-                    << " vs record.getKeyAsString is "
-                    << record.getKeyAsString()
-                    << "currentRecord.getValueAsString() is "
-                    << currentRecord->getValueAsString()
-                    << " vs record.getValueAsString() is "
-                    << record.getValueAsString();
-                    tryNum++;
-                }
+//                if(mylogger.isTraceEnabled()) //just to test if overwrite worked properly
+//                {
+//                	std::shared_ptr<pico_record> read_from_file  = retrieve(record_offset);
+//                    assert(currentRecord->areRecordsEqual(*read_from_file));
+//                }
+//                
+//                if (currentRecord->areRecordsEqual(record)) {
+//                    break;
+//                } else {
+//                    
+//                    mylogger << "overwrite didnt work on offset " << record_offset
+//                    << "\n" << " currentRecord.getKeyAsString() is "
+//                    << currentRecord->getKeyAsString()
+//                    << " vs record.getKeyAsString is "
+//                    << record.getKeyAsString()
+//                    << "currentRecord.getValueAsString() is "
+//                    << currentRecord->getValueAsString()
+//                    << " vs record.getValueAsString() is "
+//                    << record.getValueAsString();
+//                    tryNum++;
+//                }
             } while (tryNum<20);
         }
         void insert(pico_record& record) { //this appends to the end of file
@@ -466,22 +467,22 @@ namespace pico {
             fread(&my_record,sizeof(struct recordInDatabase),1,ptr_myfile);
             
             
-            for(int i=pico_record::beg_key_type_index;i<pico_record::end_key_type_index;i++)
-            {
-                
-                read_from_file->data_[i]=my_record.typeHolder[i-pico_record::beg_key_type_index];
-                
-            }
-            for(int i=pico_record::beg_of_key_index;i<pico_record::end_of_key_index;i++)
-            {
-                read_from_file->data_[i]=my_record.keyHolder[i-pico_record::beg_of_key_index];
-                
-            }
-            for(int i=pico_record::beg_of_value_index;i<pico_record::end_of_value_index;i++)
-            {
-                read_from_file->data_[i]=my_record.valueHolder[i-pico_record::beg_of_value_index];
-                
-            }
+//            for(int i=pico_record::beg_key_type_index;i<pico_record::end_key_type_index;i++)
+//            {
+//                
+//                read_from_file->data_[i]=my_record.typeHolder[i-pico_record::beg_key_type_index];
+//                
+//            }
+//            for(int i=pico_record::beg_of_key_index;i<pico_record::end_of_key_index;i++)
+//            {
+//                read_from_file->data_[i]=my_record.keyHolder[i-pico_record::beg_of_key_index];
+//                
+//            }
+//            for(int i=pico_record::beg_of_value_index;i<pico_record::end_of_value_index;i++)
+//            {
+//                read_from_file->data_[i]=my_record.valueHolder[i-pico_record::beg_of_value_index];
+//                
+//            }
             
             
             fclose(ptr_myfile);
@@ -506,22 +507,22 @@ namespace pico {
             }
 
             assert(ptr_myfile);
-            for(int i=pico_record::beg_key_type_index;i<pico_record::max_key_type_size;i++)
-            {
-                
-                my_record.typeHolder[i-pico_record::beg_key_type_index]=record.data_[i];
-                
-            }
-            for(int i=pico_record::beg_of_key_index;i<pico_record::end_of_key_index;i++)
-            {
-                my_record.keyHolder[i-pico_record::beg_of_key_index]=record.data_[i];
-                
-            }
-            for(int i=pico_record::beg_of_value_index;i<pico_record::end_of_value_index;i++)
-            {
-                my_record.valueHolder[i-pico_record::beg_of_value_index]=record.data_[i];
-                
-            }
+//            for(int i=pico_record::beg_key_type_index;i<pico_record::max_key_type_size;i++)
+//            {
+//                
+//                my_record.typeHolder[i-pico_record::beg_key_type_index]=record.data_[i];
+//                
+//            }
+//            for(int i=pico_record::beg_of_key_index;i<pico_record::end_of_key_index;i++)
+//            {
+//                my_record.keyHolder[i-pico_record::beg_of_key_index]=record.data_[i];
+//                
+//            }
+//            for(int i=pico_record::beg_of_value_index;i<pico_record::end_of_value_index;i++)
+//            {
+//                my_record.valueHolder[i-pico_record::beg_of_value_index]=record.data_[i];
+//                
+//            }
             
             fseek ( ptr_myfile , record_offset , SEEK_SET );
             fwrite(&my_record, sizeof(struct recordInDatabase), 1, ptr_myfile);
@@ -530,26 +531,26 @@ namespace pico {
             
             offsetManager->setEndOfFileOffset(record_offset+max_database_record_size);
             
-            if (pico_record::recordStartsWithBEGKEY(record)) {
-                if(index.search(record)==nullptr)
-                {
-                     mylogger<<"pico_collection : Adding the BEGKEY record to the index !";
-                    
-                    int initSize = index.size();
-                    record.offset_of_record=record_offset;
-                    index.add_to_tree(record);
-                    assert(index.size()==(initSize+1));
-                }
-                else{
-                    mylogger<<"pico_collection : BEGKEY already exists in the tree !";
-
-                }
-            }
+//            if (pico_record::recordStartsWithBEGKEY(record)) {
+//                if(index.search(record)==nullptr)
+//                {
+//                     mylogger<<"pico_collection : Adding the BEGKEY record to the index !";
+//                    
+//                    int initSize = index.size();
+//                    record.offset_of_record=record_offset;
+//                    index.add_to_tree(record);
+//                    assert(index.size()==(initSize+1));
+//                }
+//                else{
+//                    mylogger<<"pico_collection : BEGKEY already exists in the tree !";
+//
+//                }
+//            }
             
             if(mylogger.isTraceEnabled()) //just to test if append worked properly
             {
                std::shared_ptr<pico_record> read_from_file  = retrieve(record_offset);
-               assert(record.areRecordsEqual(*read_from_file));
+//               assert(record.areRecordsEqual(*read_from_file));
             }
            
         }
@@ -591,7 +592,7 @@ namespace pico {
         str.append(
                    convertToString<boost::thread::id>(boost::this_thread::get_id()));
         
-        collection->deletion_function(record);
+//        collection->deletion_function(record);
         numberOfoutputs++;
         long x = numberOfoutputs.load(std::memory_order_relaxed);
         

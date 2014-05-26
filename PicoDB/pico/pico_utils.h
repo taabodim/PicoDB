@@ -173,6 +173,21 @@ namespace pico {
         fullname.append(ext);
         return fullname;
     }
+    void getProperMessageAboutSize(string data,string& properMessageAboutSize)
+    {
+        const char* dataPtr = data.c_str();
+        
+        for(size_t i=0;i<4;i++)
+        {
+            properMessageAboutSize.push_back('#');
+        }
+        for(int i=0;i<data.size();i++,dataPtr++)
+        {
+        properMessageAboutSize.push_back(*dataPtr);
+        }
+        
+        
+    }
     
     
 }

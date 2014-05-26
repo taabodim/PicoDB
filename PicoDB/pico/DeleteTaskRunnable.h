@@ -26,9 +26,9 @@ namespace pico {
         //i dont use std shared here because it will call the collection destrcutor
         //pico_collection* collection;
         std::shared_ptr<pico_collection> collection;
-        pico_record  record;//this is the record that will be deleted until the next start offset
+        std::shared_ptr<pico_record>  record;//this is the record that will be deleted until the next start offset
         std::atomic_long numberOfoutputs;
-        DeleteTaskRunnable(std::shared_ptr<pico_collection> collectionArg,pico_record  recordArg) :collection(collectionArg) , Runnable()
+        DeleteTaskRunnable(std::shared_ptr<pico_collection> collectionArg,std::shared_ptr<pico_record>  recordArg) :collection(collectionArg) , Runnable()
         {
             this->collection=collectionArg;
             this->record = recordArg;

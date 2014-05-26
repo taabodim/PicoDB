@@ -18,7 +18,7 @@
 #include <pico_buffered_message.h>
 #include <atomic>
 #include <pico/ConcurrentVector.h>
-
+#include <pico/MessageSender.h>
 using boost::asio::ip::tcp;
 using namespace std;
 namespace pico {
@@ -30,21 +30,38 @@ namespace pico {
         std::shared_ptr<tcp::socket> socket_;
         typedef msgPtr queueType;
         std::atomic<long> messageNumber;
+        MessageSender* messageSender;
+        bool shutDownNormally;
+        asyncReader asyncReader_;
+        request_processor requestProcessor_;
+        ConcurrentVector<queueType,VectorTraits<pico_message>> messageToClientQueue_;
+        ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
+        
+        std::mutex sessionMutex;   // mutex for the condition variable
+        std::mutex bufferQueueIsEmptyMutex;
+        std::mutex queueMessagesMutext;
+        std::condition_variable bufferQueueIsEmpty;
+        
+        std::condition_variable clientIsAllowedToWrite;
+        
+        pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
+        
     public:
         static string logFileName;
         
         
         
         //constructor
-        pico_session(std::shared_ptr<tcp::socket> r_socket) :shutDownNormally(false),messageNumber(0){
+        pico_session(std::shared_ptr<tcp::socket> r_socket) :shutDownNormally(false),messageNumber(0),messageSender(new MessageSender()){
             socket_ = r_socket;
+            
         }
-        
+        int numberOfCharsToRead=10;
         void start() {
             
             try {
                 cout << " session started already..\n";
-                readOneBuffer();
+                readOneBuffer(numberOfCharsToRead);
             } catch (const std::exception& e) {
                 cout << " exception : " << e.what() << endl;
             } catch (...) {
@@ -53,11 +70,8 @@ namespace pico {
                 raise (SIGABRT);
             }
         }
-        void readOneBuffer() {
-            if (sessionLogger->isTraceEnabled()) {
-                *sessionLogger<< "\n Session is going to read a buffer from client...\n";
-            }
-            
+        void readOneBuffer(long dataSizeToReadNext) {
+            assert(dataSizeToReadNext>0);
             //we read until the whole message is read
             //then we write until the whole message is written
             auto self(shared_from_this());
@@ -65,19 +79,22 @@ namespace pico {
             //  cout << "session is trying to read messages" << endl;
             std::shared_ptr<pico_record> currentBuffer =
             asyncReader_.getOneBuffer();
+            
+            numberOfCharsToRead = dataSizeToReadNext;
+            
             if (sessionLogger->isTraceEnabled()) {
-                *sessionLogger<< "\n Session is going to call the async read...\n";
+                *sessionLogger<< "\n Session is going to read "<<numberOfCharsToRead<<" chars into buffer from client...\n";
             }
-            boost::asio::async_read(*socket_,
-                                    boost::asio::buffer(currentBuffer->getDataForRead(),
-                                                        pico_record::max_size),
+            
+            boost::asio::async_read(*socket_,boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead),
+                                                                 numberOfCharsToRead),
                                     [this,self,currentBuffer](const boost::system::error_code& error,
                                                               std::size_t t ) {
                                         if (sessionLogger->isTraceEnabled()) {
-                                            *sessionLogger<< "\n Session is done reading the buffer...\n";
+                                            *sessionLogger<< "\n Session is done reading  "<<numberOfCharsToRead<<" chars from client...\n";
                                         }
                                         processTheBufferJustRead(currentBuffer,t);
-                                        
+                                         //writeOneBuffer();
                                     });
         }
         
@@ -100,61 +117,28 @@ namespace pico {
             
             std::shared_ptr<pico_record> currentBuffer = bufferQueue_.pop();
             // cout << " session is writing one buffer to client : " <<currentBuffer->toString()//<< std::endl;
-            char* data = currentBuffer->getDataForWrite();
+            string data = currentBuffer->getDataForWrite();
             std::size_t dataSize = currentBuffer->getSize();
-            auto self(shared_from_this());
             
-            boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
-                                     [this,self,currentBuffer](const boost::system::error_code& error,
-                                                               std::size_t t) {
-                                         string str = currentBuffer->toString();
-                                         if(sessionLogger->isTraceEnabled())
-                                         {
-                                             *sessionLogger<< "\nSession Sent :  "<<t<<" bytes from Client ";
-                                             if(error) *sessionLogger<<" \nSession : a communication error happend...\n msg : "<<error.message();
-                                             *sessionLogger<<" nSession : data sent to client is "<<str<<"\n";
-                                             *sessionLogger<<("-------------------------");
-                                         }
-                                         
-                                         assert(t!=0);
-                                         
-                                         if(pico_record::IsThisRecordAnAddOn(*currentBuffer)) //write to client until
-                                             //buffer is an addon,if its not, go to reading mode to and wait for other requests
-                                         {
-                                             writeOneBuffer();
-                                             if(sessionLogger->isTraceEnabled())
-                                             {
-                                                 *sessionLogger<<"\n nSession :I am going to send the next incomplete buffer \n";
-                                             }
-                                         } else {
-                                             *sessionLogger<<"\n nSession :I am done sending a complete message now going to wait for the next requests \n";
-                                             readOneBuffer();
-                                         }
-                                     });
+            const char* dataSizeAsStr = convertToString(dataSize).c_str();
+            
+            string properMessageAboutSize;
+            getProperMessageAboutSize(dataSizeAsStr,properMessageAboutSize);
+            writeOneMessageToOtherSide(properMessageAboutSize.c_str(),10,true,data,dataSize);
+            
+            readOneBuffer(numberOfCharsToRead);
+            
             
         }
         
+        
         void queueMessages(queueType message) {
             //TODO put a lock here to make the all the buffers in a message go after each other.
-            while (true) {
-                std::unique_lock < std::mutex
-                > queueMessagesLock(queueMessagesMutext);
-                //put all the buffers in the message in the buffer queue
-                pico_buffered_message<pico_record> msg_in_buffers =
-                message->getCompleteMessageInJsonAsBuffers();
-                while (!msg_in_buffers.empty()) {
-                    
-                    *sessionLogger << "pico_session : popping current Buffer ";
-                    pico_record buf = msg_in_buffers.pop();
-                    //                    sessionLogger<<"PonocoDriver : popping current Buffer this is current buffer ";
-                    
-                    std::shared_ptr<pico_record> curBufPtr(new pico_record(buf));
-                    bufferQueue_.push_back(curBufPtr);
-                    
-                }
-                bufferQueueIsEmpty.notify_all();
-                break;
-            }
+            
+            std::unique_lock < std::mutex> queueMessagesLock(queueMessagesMutext);
+            std::shared_ptr<pico_record> curBufPtr =  message->getCompleteMessageInJsonAsOnBuffer();
+            bufferQueue_.push_back(curBufPtr);
+            bufferQueueIsEmpty.notify_all();
             
         }
         
@@ -189,10 +173,11 @@ namespace pico {
                     *sessionLogger << "\nSession read this message from client "
                     << messageFromOtherSide->toString() << "...\n";
                 }
-                
-                msgPtr reply = requestProcessor_.processRequest(
-                                                                messageFromOtherSide);
-                if (sessionLogger->isTraceEnabled()) {
+                //the requestProcessor part will be done after multi threadin
+                //socket part is done and tested
+//              msgPtr reply = requestProcessor_.processRequest(messageFromOtherSide);
+                msgPtr reply =messageFromOtherSide;
+                if(sessionLogger->isTraceEnabled()) {
                     
                     *sessionLogger
                     << "\nSession : putting reply to the queue this is the message that Session read just now"
@@ -208,60 +193,69 @@ namespace pico {
             }
             
         }
-        
         void processTheBufferJustRead(std::shared_ptr<pico_record> currentBuffer,
                                       std::size_t t) {
             messageNumber++;
             string str = currentBuffer->toString();
-            *sessionLogger << "\nsession : allBuffersReadFromTheOtherSide is  \n"<<allBuffersReadFromTheOtherSide.toString();
-            
-            allBuffersReadFromTheOtherSide.append(*currentBuffer);
-            
-            *sessionLogger << "\nsession : this is the "<<messageNumber.load()<<"th message that Session read just now "<< str;
-            
-            if (pico_record::IsThisRecordAnAddOn(*currentBuffer)) {
-                *sessionLogger
-                << "\nsession: this buffer is an add on to the last message.."
-                << "dont process anything..read the next buffer\n";
-                
-                
-                
-                readOneBuffer();		//read the next addon buffer
-            } else if(!str.empty() && str.compare("")!=0 ) {
-                
-                *sessionLogger << "\nsession : is going to call the convert_records_to_message \n";
-                assert(allBuffersReadFromTheOtherSide.size()>0);
-                *sessionLogger << "\nsession : These are the input for  convert_records_to_message  function \n";
-                allBuffersReadFromTheOtherSide.print();
-                pico_message util;
-                std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(
-                                                                                                  allBuffersReadFromTheOtherSide,
-                                                                                                  currentBuffer->getMessageIdAsString(),
-                                                                                                  COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY,sessionLogger);
-                assert(!last_read_message->toString().empty());
-                *sessionLogger << "\nsession : this is the complete message read from Client "
-                << last_read_message->toString();
-                
-                processDataFromOtherSide(last_read_message);
-                allBuffersReadFromTheOtherSide.clear();
-                writeOneBuffer(); //going to writing mode to write the reply for this complete message
-                
-            }else
+            *sessionLogger << "\nsession : data read just now is  \n"<<str;
+            if(pico_record::IsThisRecordASizeInfo(currentBuffer))
             {
-                *sessionLogger << "\nsession : ERROR : reading empty message  \n";
-                readOneBuffer();		//read the next addon buffer
+                string sizeOfNextBufferToReadStr;
+                for(int i=0;i<currentBuffer->getSize();i++)
+                {
+                    if(currentBuffer->getChar(i)!='#')
+                        sizeOfNextBufferToReadStr.push_back(currentBuffer->getChar(i));
+                }
+                long nextDataSize = convertToSomething<long>(sizeOfNextBufferToReadStr.c_str());
+                *sessionLogger << "\nsession : dataSize read just now says that next data size is   \n"<<nextDataSize;
+                
+                readOneBuffer(nextDataSize);
                 
             }
+            else{
+                *sessionLogger << "\nsession : data read just now is not a dataSize Info   \n";
+                *sessionLogger << "\nsession : this is the complete message read from Client ";
+                msgPtr last_read_message(new pico_message(str));
+                processDataFromOtherSide(last_read_message);
+                writeOneBuffer(); //going to writing mode to write the reply for this complete message
+                }
+//            else
+//                            {
+//                                *sessionLogger << "\nsession : ERROR : reading empty message  \n";
+//                                readOneBuffer();		//read the next addon buffer
+//                
+//                            }
+            
+            }
+           
+            
+        void writeOneMessageToOtherSide(const char* data,std::size_t dataSize,bool sendTheRealData,const string& realData,std::size_t realDataSize)
+        {
+            auto self(shared_from_this());
+            
+            boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
+                                     [this,self,data,sendTheRealData,realData,realDataSize](const boost::system::error_code& error,
+                                                                                            std::size_t t) {
+                                         
+                                         print(error,t,data);
+                                         if(sendTheRealData)
+                                         {
+                                             writeOneMessageToOtherSide(realData.c_str(),realDataSize,false,"",-1);//this is the real data
+                                         }
+                                         
+                                     });
             
         }
         
+    
         void print(const boost::system::error_code& error, std::size_t t,
-                   string& str) {
-            //  if(error) sessionLogger<<" error msg : "<<error.message()<<std::endl;
+                   const char* data) {
             if (sessionLogger->isTraceEnabled()) {
-                
+            
+                string str(data);
+                if(error) *sessionLogger<<" error msg : "<<error.message()<<"\n";
                 *sessionLogger << "\nSession received " << t
-                << " bytes read from Client  data read from client is "
+                << " bytes read from Client \n data read from client is "
                 << str;
             }
         }
@@ -273,21 +267,7 @@ namespace pico {
             assert(shutDownNormally);
             
         }
-        bool shutDownNormally;
-        asyncReader asyncReader_;
-        request_processor requestProcessor_;
-        ConcurrentVector<queueType,VectorTraits<pico_message>> messageToClientQueue_;
-        ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
-        
-        std::mutex sessionMutex;   // mutex for the condition variable
-        std::mutex bufferQueueIsEmptyMutex;
-        std::mutex queueMessagesMutext;
-        std::condition_variable bufferQueueIsEmpty;
-        
-        std::condition_variable clientIsAllowedToWrite;
-        
-        pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
-        
+    
         
     };
 }

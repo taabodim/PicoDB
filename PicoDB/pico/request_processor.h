@@ -180,15 +180,15 @@ public:
 		//i am using collection pointer because, it should be passed to the
 		//deleter thread , so it should be in heap
 
-		pico_buffered_message<pico_record> msg_in_buffers =
-				picoMsg->getKeyValueOfMessageInRecords();
-
-		pico_record firstrecord = msg_in_buffers.pop();
-		mylogger
-				<< "\n request_processor : record that is going to be deleted from this : "
-				<< firstrecord.toString();
-
-		collectionPtr->deleteRecord(firstrecord, async);
+//		pico_buffered_message<pico_record> msg_in_buffers =
+//				picoMsg->getKeyValueOfMessageInRecords();
+//
+//		pico_record firstrecord = msg_in_buffers.pop();
+//		mylogger
+//				<< "\n request_processor : record that is going to be deleted from this : "
+//				<< firstrecord.toString();
+//
+//		collectionPtr->deleteRecord(firstrecord, async);
 		string result("one message was deleted from database in unknown(todo)");
 		result.append(" seperate records");
 		std::string key("SUCCESS");
@@ -203,10 +203,11 @@ public:
 				<< "\nrequest_processor : record that is going to be updated is this : "
 				<< picoMsg->toString();
 
-		pico_buffered_message<pico_record> msg_in_buffers =
-				picoMsg->getKeyValueOfMessageInRecords();
+		pico_buffered_message<pico_record> msg_in_buffers ;
+//        =picoMsg->getKeyValueOfMessageInRecords();
 
-		pico_record firstrecord = msg_in_buffers.pop();
+		pico_record firstrecord;
+//        = msg_in_buffers.pop();
 		if (optionCollection.ifRecordExists(firstrecord)) {
 			//if the record is found
 			deleteRecords(picoMsg, false); //delete it synchronously, wait for completion
@@ -245,7 +246,7 @@ public:
 		string result;
 
 		while (!all_records.empty()) {
-			pico_record rec = all_records.front();
+//			pico_record rec = all_records.front();
 			//TODO add all records to a huge json array and return it as the reply
 			all_records.pop_front();
 		}
@@ -258,10 +259,11 @@ public:
 		std::shared_ptr<pico_collection> collectionPtr =
 				collectionManager->getTheCollection(requestMessage->collection);
 
-		pico_buffered_message<pico_record> msg_in_buffers =
-				requestMessage->getKeyValueOfMessageInRecords();
+		pico_buffered_message<pico_record> msg_in_buffers;
+//        =requestMessage->getKeyValueOfMessageInRecords();
 
-		pico_record firstrecord = msg_in_buffers.pop();
+		pico_record firstrecord;
+//        = msg_in_buffers.pop();
 		mylogger
 				<< "\n request_processor : record that is going to be fetched  from this : "
 				<< firstrecord.toString() << " \n offset of record is "

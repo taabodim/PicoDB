@@ -272,9 +272,9 @@ public:
 	nodeType convert_pico_record_to_index_node(pico_record & record) {
 		nodeType node(new pico_record_node());
 		std::hash < std::string > hash_fn;
-		std::size_t key_hash = hash_fn(record.getKeyAsString()); //record key will be used to make the node key
+//		std::size_t key_hash = hash_fn(record.getKeyAsString()); //record key will be used to make the node key
 
-		node->key = key_hash;
+//		node->key = key_hash;
 		// node->key = offset;//for testing the tree, just use the offset for now
 
 		node->offset = record.offset_of_record; //this is the record offset that will be saved in the index

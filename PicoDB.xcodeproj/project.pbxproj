@@ -26,6 +26,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A50E3E8F1931700300B4DF11 /* pico_record_deprecated.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pico_record_deprecated.h; sourceTree = "<group>"; };
+		A50E3E911931BA6400B4DF11 /* MessageSender.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MessageSender.h; sourceTree = "<group>"; };
 		A511D64818E35D6C00628059 /* PicoDB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PicoDB; sourceTree = BUILT_PRODUCTS_DIR; };
 		A511D64D18E35D6C00628059 /* PicoDB.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = PicoDB.1; sourceTree = "<group>"; };
 		A511D65618E3628700628059 /* currency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = currency.h; sourceTree = "<group>"; };
@@ -189,6 +191,8 @@
 				A5E32EAF1921540200050E2E /* PicoConfig.h */,
 				A555AC901921652E00885D32 /* OffsetManager.h */,
 				E24AABB4192FD23900A995D6 /* ConcurrentVector.h */,
+				A50E3E8F1931700300B4DF11 /* pico_record_deprecated.h */,
+				A50E3E911931BA6400B4DF11 /* MessageSender.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";

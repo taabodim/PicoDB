@@ -90,7 +90,7 @@ public:
 	}
 
 	void write1000smallRandomDataUsing100Threads() {
-		int numOfThreads = 1;
+		int numOfThreads = 100;
 		PicoConfig::defaultTimeoutInSec = 2;
 		vector<boost::thread*> allThreads;
 		//sleepViaBoost(2); this throws exception
