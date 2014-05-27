@@ -192,7 +192,6 @@ public:
 //			clientLogger << "\nclient got this " << buf.data();
 //		}
 //	}
-    int numberOfCharsToRead=10;
     
     void readOneBuffer(int dataSizeToReadNext) {
         assert(dataSizeToReadNext>0);
@@ -200,7 +199,7 @@ public:
         auto self(shared_from_this());
 		// clientLogger<<"client is trying to read one buffer\n" ;
 		std::shared_ptr<pico_record> currentBuffer = asyncReader_.getOneBuffer();
-        numberOfCharsToRead = dataSizeToReadNext;
+        int numberOfCharsToRead = dataSizeToReadNext;
         
         if (clientLogger->isTraceEnabled()) {
             *clientLogger<< "\n Client is going to read "<<numberOfCharsToRead<<" chars into buffer from server...\n";
@@ -209,7 +208,7 @@ public:
 		boost::asio::async_read(*socket_,
 				boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead),
 						numberOfCharsToRead),
-				[this,self,currentBuffer](const boost::system::error_code& error,
+				[this,self,currentBuffer,numberOfCharsToRead](const boost::system::error_code& error,
 						std::size_t t ) {
                     if (clientLogger->isTraceEnabled()) {
                         *clientLogger<< "\n Client is done reading  "<<numberOfCharsToRead<<" chars from server...\n";
@@ -249,7 +248,7 @@ public:
         getProperMessageAboutSize(dataSizeAsStr,properMessageAboutSize);
         writeOneMessageToOtherSide(properMessageAboutSize.c_str(),10,true,data,dataSize);
         
-        readOneBuffer(numberOfCharsToRead);
+        readOneBuffer(10);
         
 	}
     
@@ -287,46 +286,6 @@ public:
         //                            }
         
     }
-    
-//	void processTheMessageJustRead(std::shared_ptr<pico_record> currentBuffer,std::size_t t) {
-//		//            currentBuffer->loadTheKeyValueFromData();
-//		string str =currentBuffer->toString();
-//		if(clientLogger->isTraceEnabled())
-//		{
-//
-//			*clientLogger<<"\n client : this is the message that client read just now  : "<<str;
-//		}
-//
-//		if(pico_record::IsThisRecordAnAddOn(*currentBuffer))
-//		{
-//			if(clientLogger->isTraceEnabled())
-//			{
-//				*clientLogger<<"\n Client : this buffer is an add on to the last message, messageId for this buffer is \n"
-//				<<currentBuffer->getMessageIdAsString()<<
-//				"..dont process anything..read the next buffer\n";
-//
-//			}
-//			allBuffersReadFromTheOtherSide.append(*currentBuffer);
-//			readOneBuffer();					//read the next addon buffer
-//		}
-//		else {
-//
-//			allBuffersReadFromTheOtherSide.append(*currentBuffer);
-//
-//			pico_message util;
-//			std::shared_ptr<pico_message> last_read_message = util.convert_records_to_message(allBuffersReadFromTheOtherSide,currentBuffer->getMessageIdAsString(),COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY,clientLogger);
-//			if(clientLogger->isTraceEnabled())
-//			{
-//				*clientLogger<<"\n client : this is the complete message read from server \n";
-//				*clientLogger<<"\n client : last_read_message messageId is "<<last_read_message->messageId;
-//				*clientLogger<<"\n client : the content of last message read from server  "<<last_read_message->toString();
-//			}
-//			processDataFromOtherSide(last_read_message);
-//			allBuffersReadFromTheOtherSide.clear();
-//			writeOneBuffer();							//write the response
-//		}
-//
-//	}
 
 	void processDataFromOtherSide(queueType messageFromOtherSide) {
 

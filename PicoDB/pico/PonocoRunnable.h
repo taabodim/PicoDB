@@ -55,9 +55,12 @@ namespace  pico  {
             boost::asio::io_service io_service;
             tcp::resolver r(io_service);
             
-            std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service));
+            std::shared_ptr<tcp::socket> socketWriter1(new tcp::socket(io_service));
+            std::shared_ptr<tcp::socket> socketWriter2(new tcp::socket(io_service));
+            std::shared_ptr<tcp::socket> socketReader1(new tcp::socket(io_service));
+            std::shared_ptr<tcp::socket> socketReader2(new tcp::socket(io_service));
             
-            driverPtr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
+            driverPtr->start_connect(socketWriter1,r.resolve(tcp::resolver::query(localhost, port)));
             //		boost::thread shellThread(
             //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
             //and client sends to server

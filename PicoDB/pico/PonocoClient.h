@@ -78,7 +78,8 @@ public:
 //				mylogger
 //						<< "driverPtr->insert(randomSmallKey,pico_test::bigValue0 );";
 //			}
-			driverPtr->insert(randomSmallKey, pico_test::bigValue0);
+//			driverPtr->insert(randomSmallKey, pico_test::bigValue0);
+			driverPtr->insert(randomSmallKey, randomSmallKey);
 
 		}
 
@@ -90,7 +91,7 @@ public:
 	}
 
 	void write1000smallRandomDataUsing100Threads() {
-		int numOfThreads = 100;
+		int numOfThreads = 3;
 		PicoConfig::defaultTimeoutInSec = 2;
 		vector<boost::thread*> allThreads;
 		//sleepViaBoost(2); this throws exception

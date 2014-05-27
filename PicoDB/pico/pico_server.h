@@ -66,9 +66,9 @@ public:
 
 	void initClientHandler(std::shared_ptr<tcp::socket> socket) {
 		mylogger<<"\nserver accepted a connection...going to start the session";
-		std::shared_ptr<pico_session> clientPtr (new pico_session (socket));
+		std::shared_ptr<pico_session> sessionPtr (new pico_session (socket));
 		//add clients to a set
-		clientPtr->start();
+		sessionPtr->start();
 	}
 
 };
@@ -83,9 +83,10 @@ void runServer() {
 
 	tcp::endpoint endpoint(tcp::v4(), std::atoi(port.c_str()));
 
-	std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service));
+	std::shared_ptr<tcp::socket> socketWriter1(new tcp::socket(io_service));
+    std::shared_ptr<tcp::socket> socketReader1(new tcp::socket(io_service));
 
-	std::shared_ptr<pico_server> serverPtr (new pico_server (io_service, endpoint, socket));
+	std::shared_ptr<pico_server> serverPtr (new pico_server (io_service, endpoint, socketWriter1));
 	servers.push_back(serverPtr);
     io_service.run();
 	
