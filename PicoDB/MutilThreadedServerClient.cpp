@@ -1023,7 +1023,7 @@ string  pico_test::bigValue0("Families skepticalFamilies of the 239 people who w
 
 string  pico_test::bigValue1("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from ;radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it.endOfMessage");
 int main(int argc, char** argv) {
-    bool homeSetting = true;
+    bool homeSetting = false;
     
     if(homeSetting)
     {
