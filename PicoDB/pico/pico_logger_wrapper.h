@@ -30,7 +30,20 @@ namespace pico
         return wrapper;
     }
     
+    template <typename Type>
+    void log(logger& wrapper, Type str )
+    {
+        string realStr = convertToString(str);
+        wrapper.log(realStr);
+    }
 
+    
+    void log(logger& wrapper,std::string str )
+    {
+        wrapper.log(str);
+
+    }
+    
     class pico_logger_wrapper {
     
     public:

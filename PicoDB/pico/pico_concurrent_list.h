@@ -205,12 +205,11 @@ namespace pico{
                 }
             }
         }
-        void printAll()
+        void printAll(string msg)
         {
-            mylogger << "printAll being called \n";
             for (typename list<queueType>::iterator i = underlying_list.begin();
                  i != underlying_list.end(); ++i) {
-                mylogger << "list iterator ==> " << i->toString() << "\n";
+                mylogger << msg << i->toString() << "\n";
             }
         }
         queueType get(int index)

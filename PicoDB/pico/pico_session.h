@@ -35,7 +35,9 @@ namespace pico {
         asyncReader asyncReader_;
         request_processor requestProcessor_;
         ConcurrentVector<queueType,VectorTraits<pico_message>> messageToClientQueue_;
-        ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>> bufferQueue_; //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
+        ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>> bufferQueue_;
+        ConcurrentVector<string,VectorTraits<string>> listOfAllMessagesReadInOrder;
+        //bufferQueue should containt pointer because each data should be in heap until the data is read completely and it should be raw pointer because shared pointer will go out of scope
         
         std::mutex sessionMutex;   // mutex for the condition variable
         std::mutex bufferQueueIsEmptyMutex;
@@ -74,45 +76,68 @@ namespace pico {
             assert(dataSizeToReadNext>0);
             //we read until the whole message is read
             //then we write until the whole message is written
-            auto self(shared_from_this());
-            assert(self);
-            //  cout << "session is trying to read messages" << endl;
-            std::shared_ptr<pico_record> currentBuffer =
-            asyncReader_.getOneBuffer();
             
+            
+            if (sessionLogger->isTraceEnabled()) {
+                string logMsg( "\n Session is going to read ");
+                logMsg.append(toStr(numberOfCharsToRead));
+                logMsg.append(" chars into buffer from client...\n");
+                sessionLogger->log(logMsg);
+            }
+           
+            
+            readSync(dataSizeToReadNext);
+        }
+        void readSync(long dataSizeToReadNext) {
+            std::shared_ptr<pico_record> currentBuffer = asyncReader_.getOneBuffer();
             numberOfCharsToRead = dataSizeToReadNext;
             
-            if (sessionLogger->isTraceEnabled()) {
-                *sessionLogger<< "\n Session is going to read "<<numberOfCharsToRead<<" chars into buffer from client...\n";
-            }
-            
-            boost::asio::async_read(*socket_,boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead),
-                                                                 numberOfCharsToRead),
-                                    [this,self,currentBuffer](const boost::system::error_code& error,
-                                                              std::size_t t ) {
-                                        if (sessionLogger->isTraceEnabled()) {
-                                            *sessionLogger<< "\n Session is done reading  "<<numberOfCharsToRead<<" chars from client...\n";
-                                        }
-                                        processTheBufferJustRead(currentBuffer,t);
-                                         //writeOneBuffer();
-                                    });
+            boost::system::error_code error;
+            size_t length = socket_->read_some(boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead), numberOfCharsToRead), error);
+             if (sessionLogger->isTraceEnabled()) {
+                 string logMsg( "\n Session is done reading  ");
+                 logMsg.append(toStr(numberOfCharsToRead));
+                 logMsg.append(" chars from client...\n");
+                 sessionLogger->log(logMsg);
+               }
+             processTheBufferJustRead(currentBuffer,length);
+             //printHistoryOfMessages();//print all the messages after you are done with processing it
         }
         
+        void readAsync() {
+            
+//            auto self(shared_from_this());
+//            assert(self);
+            //  cout << "session is trying to read messages" << endl;
+            
+            
+//            boost::asio::read(*socket_,boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead),
+//                                                           numberOfCharsToRead),
+//                              [this,self,currentBuffer](const boost::system::error_code& error,
+//                                                        std::size_t t ) {
+//                                  if (sessionLogger->isTraceEnabled()) {
+//                                      sessionLogger->log( "\n Session is done reading  "<<numberOfCharsToRead<<" chars from client...\n";
+//                                  }
+//                                  processTheBufferJustRead(currentBuffer,t);
+//                                  //printHistoryOfMessages();//print all the messages after you are done with processing it
+//                              });
+        }
         void writeOneBuffer() {
             if (sessionLogger->isTraceEnabled()) {
-                *sessionLogger<< "\nSession is going to send a buffer to client..going to acquire lock \n";
+                sessionLogger->log( "\nSession is going to send a buffer to client..going to acquire lock \n");
             }
             
-            std::unique_lock < std::mutex
-            > writeOneBufferLock(bufferQueueIsEmptyMutex);
+            
             while (bufferQueue_.empty()) {
                 if (sessionLogger->isTraceEnabled()) {
-                    *sessionLogger<< "\nSession bufferQueue_ is empty...waiting for a message to come to queue. \n";
+                    sessionLogger->log( "\nSession bufferQueue_ is empty...waiting for a message to come to queue. \n");
                 }
+                std::unique_lock <std::mutex> writeOneBufferLock(bufferQueueIsEmptyMutex);
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
+                
             }
             if (sessionLogger->isTraceEnabled()) {
-                *sessionLogger<< "\nSession is going to send a buffer to client.. lock obtained \n";
+                sessionLogger->log( "\nSession is going to send a buffer to client.. lock obtained \n");
             }
             
             std::shared_ptr<pico_record> currentBuffer = bufferQueue_.pop();
@@ -163,15 +188,17 @@ namespace pico {
             //            optionCollection.update(x1, x2);
             //optionCollection.deleteRecord(x1);
             
-            *sessionLogger << "\nend of function readingAndWritingRecordData() ";
+            sessionLogger->log( "\nend of function readingAndWritingRecordData() ");
             
         }
         void processDataFromOtherSide(msgPtr messageFromOtherSide) {
             
             try {
                 if (sessionLogger->isTraceEnabled()) {
-                    *sessionLogger << "\nSession read this message from client "
-                    << messageFromOtherSide->toString() << "...\n";
+                    string logMsg( "\nSession read this message from client ");
+                    logMsg.append(messageFromOtherSide->toString());
+                    logMsg.append(" ...\n");
+                    sessionLogger->log(logMsg);
                 }
                 //the requestProcessor part will be done after multi threadin
                 //socket part is done and tested
@@ -179,9 +206,10 @@ namespace pico {
                 msgPtr reply =messageFromOtherSide;
                 if(sessionLogger->isTraceEnabled()) {
                     
-                    *sessionLogger
-                    << "\nSession : putting reply to the queue this is the message that Session read just now"
-                    << reply->toString();
+                    string logMsg( "\nSession : putting reply to the queue this is the message that Session read just now");
+                    logMsg.append(reply->toString());
+                    sessionLogger->log(logMsg);
+                    
                 }
                 
                 assert(!reply->toString().empty());
@@ -197,7 +225,13 @@ namespace pico {
                                       std::size_t t) {
             messageNumber++;
             string str = currentBuffer->toString();
-            *sessionLogger << "\nsession : data read just now is  \n"<<str;
+            if (sessionLogger->isTraceEnabled()) {
+            string logMsg( "\nsession : data read just now is  \n");
+            logMsg.append(str);
+            sessionLogger->log(logMsg);
+            }
+            
+            listOfAllMessagesReadInOrder.push_back(str);
             if(pico_record::IsThisRecordASizeInfo(currentBuffer))
             {
                 string sizeOfNextBufferToReadStr;
@@ -207,67 +241,95 @@ namespace pico {
                         sizeOfNextBufferToReadStr.push_back(currentBuffer->getChar(i));
                 }
                 long nextDataSize = convertToSomething<long>(sizeOfNextBufferToReadStr.c_str());
-                *sessionLogger << "\nsession : dataSize read just now says that next data size is   \n"<<nextDataSize;
                 
+                if (sessionLogger->isTraceEnabled()) {
+                    string logMsg( "\nsession : dataSize read just now says that next data size is \n");
+                    logMsg.append(toStr(nextDataSize));
+                    sessionLogger->log(logMsg);
+                }
                 readOneBuffer(nextDataSize);
                 
             }
             else{
-                *sessionLogger << "\nsession : data read just now is not a dataSize Info   \n";
-                *sessionLogger << "\nsession : this is the complete message read from Client ";
+                sessionLogger->log( "\nsession : data read just now is not a dataSize Info   \n");
+                sessionLogger->log( "\nsession : this is the complete message read from Client ");
                 msgPtr last_read_message(new pico_message(str));
                 processDataFromOtherSide(last_read_message);
                 writeOneBuffer(); //going to writing mode to write the reply for this complete message
                 }
 //            else
 //                            {
-//                                *sessionLogger << "\nsession : ERROR : reading empty message  \n";
+//                                sessionLogger->log( "\nsession : ERROR : reading empty message  \n";
 //                                readOneBuffer();		//read the next addon buffer
 //                
 //                            }
             
             }
-           
-            
         void writeOneMessageToOtherSide(const char* data,std::size_t dataSize,bool sendTheRealData,const string& realData,std::size_t realDataSize)
         {
-            auto self(shared_from_this());
+            boost::asio::write(*socket_, boost::asio::buffer(data, dataSize));
+            sessionLogger->log( "\nsession : done with writing");
+            dataSize Info   \n");
             
-            boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
-                                     [this,self,data,sendTheRealData,realData,realDataSize](const boost::system::error_code& error,
-                                                                                            std::size_t t) {
-                                         
-                                         print(error,t,data);
-                                         if(sendTheRealData)
-                                         {
-                                             writeOneMessageToOtherSide(realData.c_str(),realDataSize,false,"",-1);//this is the real data
-                                         }
-                                         
-                                     });
-            
+            if(sendTheRealData)
+            {
+                writeOneMessageToOtherSide(realData.c_str(),realDataSize,false,"",-1);//this is the real data
+            }
         }
+        
+//        void writeOneMessageToOtherSideAsync(const char* data,std::size_t dataSize,bool sendTheRealData,const string& realData,std::size_t realDataSize)
+//        {
+//            auto self(shared_from_this());
+//            
+//            boost::asio::async_write(*socket_, boost::asio::buffer(data, dataSize),
+//                                     [this,self,data,sendTheRealData,realData,realDataSize](const boost::system::error_code& error,
+//                                                                                            std::size_t t) {
+//                                         
+//                                         print(error,t,data);
+//                                         if(sendTheRealData)
+//                                         {
+//                                             writeOneMessageToOtherSide(realData.c_str(),realDataSize,false,"",-1);//this is the real data
+//                                         }
+//                                         
+//                                     });
+//            
+//        }
         
     
         void print(const boost::system::error_code& error, std::size_t t,
                    const char* data) {
             if (sessionLogger->isTraceEnabled()) {
-            
+
+                {
+                    if (error) {
+                    string logMsg(" error msg : ");
+                    logMsg.append(error.message());
+                    logMsg.append("\n");
+                    sessionLogger->log(logMsg);
+                    }
+                }
                 string str(data);
-                if(error) *sessionLogger<<" error msg : "<<error.message()<<"\n";
-                *sessionLogger << "\nSession received " << t
-                << " bytes read from Client \n data read from client is "
-                << str;
+               
+                string logMsg( "\nSession received ");
+                logMsg.append(toStr(t));
+                logMsg.append(" bytes read from Client \n data read from client is ");
+                logMsg.append(str);
+                sessionLogger->log(logMsg);
+            
             }
         }
         virtual ~pico_session()
         {
             
-            *sessionLogger << "\n Session going out of scope "
-            ;
+            sessionLogger->log( "\n Session going out of scope ");
+            printHistoryOfMessages();
             assert(shutDownNormally);
             
         }
-    
+    void printHistoryOfMessages() {
+        sessionLogger->log( "\n Session These are all the messages that session read from client");
+        listOfAllMessagesReadInOrder.printAll();
+        }
         
     };
 }

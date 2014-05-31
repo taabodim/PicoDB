@@ -31,6 +31,7 @@ namespace pico{
         static  std::shared_ptr<pico_message> getEmptyInstance(){
             return NULL;
         }
+        
     };
     
     template<>
@@ -60,8 +61,21 @@ namespace pico{
         static  std::shared_ptr<pico_message> getEmptyInstance(){
             return NULL;
         }
-        
-        
+    };
+    
+    template<>
+    struct VectorTraits<string>{
+        static const bool is_shared_ptr=false;
+        static const bool is_pico_record=false;
+        static string getEmptyInstance()
+        {
+            string emptyString {""};
+            return emptyString;
+        }
+        string toString(string str)
+        {
+            return str;
+        }
     };
     
     class pico_messageForResponseQueue_;
@@ -87,7 +101,7 @@ namespace pico{
         
     public:
         vector<queueType> underlying_list;
-        
+        traits vectorTraits_;
         ConcurrentVector()
         {
             //     mylogger<<("\npico_concurrent_list being constructed");
@@ -221,10 +235,9 @@ namespace pico{
         }
         void printAll()
         {
-            mylogger << "printAll being called \n";
             for (typename vector<queueType>::iterator i = underlying_list.begin();
                  i != underlying_list.end(); ++i) {
-                mylogger << "list iterator ==> " << i->toString() << "\n";
+                mylogger << "list iterator ==> " << vectorTraits_.toString(*i) << "\n";
             }
         }
         queueType get(int index)

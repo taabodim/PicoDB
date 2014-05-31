@@ -23,7 +23,7 @@ namespace pico {
     
     typedef long offsetType;
     typedef std::string messageType;
-    bool log = true;
+   // bool log = true;
     enum class comMsg {
         STOP, SEND_ME_MORE, END_OF_MESSAGE
     };
@@ -94,6 +94,19 @@ namespace pico {
     
     template<typename T>
     T convertToSomething(std::string sth) {
+        T str = boost::lexical_cast < T > (sth);
+        return str;
+        
+    }
+    
+    template<typename T>
+    std::string toStr(T i) {
+        std::string str = boost::lexical_cast < std::string > (i);
+        return str;
+    }
+    
+    template<typename T>
+    T toStr(std::string sth) {
         T str = boost::lexical_cast < T > (sth);
         return str;
         

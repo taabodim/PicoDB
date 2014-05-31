@@ -71,9 +71,9 @@ public:
 	}
 	void insertOneBigRandomData() {
 		std::string key(pico_test::smallKey0);
-		for (int i = 0; i < 1; i++) {
-			string randomSmallKey = random_string(key, 10).append(
-					random_string(key, 10));
+		for (int i = 0; i < 10; i++) {
+			string randomSmallKey = convertToString(i).append(random_string(key, 10).append(
+					random_string(key, 10)));
 //			if (mylogger.isTraceEnabled()) {
 //				mylogger
 //						<< "driverPtr->insert(randomSmallKey,pico_test::bigValue0 );";
