@@ -80,7 +80,7 @@ namespace pico {
             
             if (sessionLogger->isTraceEnabled()) {
                 string logMsg( "\n Session is going to read ");
-                logMsg.append(toStr(numberOfCharsToRead));
+                logMsg.append(toStr(dataSizeToReadNext));
                 logMsg.append(" chars into buffer from client...\n");
                 sessionLogger->log(logMsg);
             }
@@ -101,6 +101,7 @@ namespace pico {
                  sessionLogger->log(logMsg);
                }
              processTheBufferJustRead(currentBuffer,length);
+             numberOfCharsToRead=10;
              //printHistoryOfMessages();//print all the messages after you are done with processing it
         }
         
@@ -151,7 +152,7 @@ namespace pico {
             getProperMessageAboutSize(dataSizeAsStr,properMessageAboutSize);
             writeOneMessageToOtherSide(properMessageAboutSize.c_str(),10,true,data,dataSize);
             
-            readOneBuffer(numberOfCharsToRead);
+            readOneBuffer(10);//read the next message size
             
             
         }
@@ -268,8 +269,9 @@ namespace pico {
         void writeOneMessageToOtherSide(const char* data,std::size_t dataSize,bool sendTheRealData,const string& realData,std::size_t realDataSize)
         {
             boost::asio::write(*socket_, boost::asio::buffer(data, dataSize));
-            sessionLogger->log( "\nsession : done with writing");
-            dataSize Info   \n");
+            string logMsg( "\nsession : done with writing");
+            logMsg.append(toStr(dataSize));
+            logMsg.append("\n");
             
             if(sendTheRealData)
             {
