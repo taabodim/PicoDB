@@ -26,7 +26,7 @@
 #include <PonocoDriverHelper.h>
 #include <PicoConfig.h>
 #include <pico/MessageSender.h>
-#include <pico/pico_session.h>//for format function, i dont know why
+//#include <pico/pico_session.h>//for format function, i dont know why
 #include <boost/format.hpp>
 #include <AtomicCounter.h>
 using boost::asio::ip::tcp;
@@ -114,7 +114,7 @@ public:
 				{
                     string logMsg("Trying ");
                     logMsg.append(convertToString(endpoint_iter->endpoint()));
-                    logMsg.append("...\n");
+                    logMsg.append("...");
 					clientLogger->log(logMsg );
                     
 				}
@@ -127,14 +127,14 @@ public:
 			}
 			if(clientLogger->isTraceEnabled())
 			{
-				clientLogger->log( " start_connect ends ...\n");
+				clientLogger->log( " start_connect ends ...");
 			}
 
 		} catch(...)
 		{
 			if(clientLogger->isTraceEnabled())
 			{
-				clientLogger->log( "client start_connect : start_connect : Exception: unknown thrown\n");
+				clientLogger->log( "client start_connect : start_connect : Exception: unknown thrown");
 			}
 
 			raise(SIGABRT);
@@ -150,7 +150,7 @@ public:
 		// of the asynchronous operation. If the socket is closed at this time then
 		// the timeout handler must have run first.
 		if (!socket_->is_open()) {
-			clientLogger->log( "Connect timed out\n");
+			clientLogger->log( "Connect timed out");
 
 			// Try the next available endpoint.
 			start_connect(this->socket_,++endpoint_iter);
@@ -159,7 +159,7 @@ public:
 
 	void start(const boost::system::error_code& ec,
 			tcp::resolver::iterator endpoint_iter) {
-		//            clientLogger<<"\nclient starting the process..going to write_message to server\n";
+		//            clientLogger<<"client starting the process..going to write_message to server";
 
 		try {
 			if(!ec)
@@ -176,11 +176,11 @@ public:
 			else {
 				if(clientLogger->isTraceEnabled())
 				{
-                    string logMsg("\nclient : start : error is");
+                    string logMsg("client : start : error is");
                     logMsg.append(convertToString(ec.value()));
                     logMsg.append(" error message is ");
                     logMsg.append(ec.message());
-                    logMsg.append("\n error name is ");
+                    logMsg.append(" error name is ");
                     logMsg.append(ec.category().name());
                 	clientLogger->log(logMsg);
                 }
@@ -193,7 +193,7 @@ public:
 			raise(SIGABRT);
 
 		} catch (...) {
-			clientLogger->log( "<----->unknown exception thrown.<------>\n");
+			clientLogger->log( "<----->unknown exception thrown.<------>");
 			raise(SIGABRT);
 
 		}
@@ -211,7 +211,7 @@ public:
 //			else if (error)
 //			throw boost::system::system_error(error);// Some other error.
 //
-//			clientLogger << "\nclient got this " << buf.data();
+//			clientLogger << "client got this " << buf.data();
 //		}
 //	}
     
@@ -219,14 +219,14 @@ public:
         assert(dataSizeToReadNext>0);
  
         auto self(shared_from_this());
-		// clientLogger<<"client is trying to read one buffer\n" ;
+		// clientLogger<<"client is trying to read one buffer" ;
 		std::shared_ptr<pico_record> currentBuffer = asyncReader_.getOneBuffer();
         int numberOfCharsToRead = dataSizeToReadNext;
         
         if (clientLogger->isTraceEnabled()) {
-            string logMsg("\n Client is going to read ");
+            string logMsg(" Client is going to read ");
             logMsg.append(toStr(numberOfCharsToRead));
-            logMsg.append(" chars into buffer from server...\n");
+            logMsg.append(" chars into buffer from server...");
             clientLogger->log(logMsg);
         }
         
@@ -239,9 +239,9 @@ public:
 
         if (clientLogger->isTraceEnabled()) {
             
-            string logMsg("\n Client is done reading  ");
+            string logMsg(" Client is done reading  ");
             logMsg.append(toStr(numberOfCharsToRead));
-            logMsg.append(" chars from server...\n");
+            logMsg.append(" chars from server...");
             clientLogger->log(logMsg);
         
         }
@@ -255,7 +255,7 @@ public:
 //				[this,self,currentBuffer,numberOfCharsToRead](const boost::system::error_code& error,
 //						std::size_t t ) {
 //                    if (clientLogger->isTraceEnabled()) {
-//                        clientLogger->log( "\n Client is done reading  "<<numberOfCharsToRead<<" chars from server...\n";
+//                        clientLogger->log( " Client is done reading  "<<numberOfCharsToRead<<" chars from server...";
 //                    }
 //                    
 //                    self->processTheBufferJustRead(currentBuffer,t);
@@ -266,18 +266,18 @@ public:
 	{
 
         if (clientLogger->isTraceEnabled()) {
-            clientLogger->log( "\n client is going to send a buffer to server..going to acquire lock \n");
+            clientLogger->log( " client is going to send a buffer to server..going to acquire lock ");
         }
         
       while (bufferQueuePtr_->empty()) {
             if (clientLogger->isTraceEnabled()) {
-                clientLogger->log( "\n client bufferQueue_ is empty...waiting for a message to come to queue. \n");
+                clientLogger->log( " client bufferQueue_ is empty...waiting for a message to come to queue. ");
             }
             std::unique_lock <std::mutex> writeOneBufferLock(bufferQueueIsEmptyMutex);
             bufferQueueIsEmpty.wait(writeOneBufferLock);
         }
         if (clientLogger->isTraceEnabled()) {
-            clientLogger->log( "\n client is going to send a buffer to server.. lock obtained \n");
+            clientLogger->log( " client is going to send a buffer to server.. lock obtained ");
         }
         
         std::shared_ptr<pico_record> currentBuffer = bufferQueuePtr_->pop();
@@ -297,7 +297,7 @@ public:
     void processTheBufferJustRead(std::shared_ptr<pico_record> currentBuffer,
                                   std::size_t t) {
         string str = currentBuffer->toString();
-        *clientLogger << "\nClient : data read just now is  \n"<<str;
+        *clientLogger << "Client : data read just now is  "<<str;
         if(pico_record::IsThisRecordASizeInfo(currentBuffer))
         {
             string sizeOfNextBufferToReadStr;
@@ -307,21 +307,21 @@ public:
                     sizeOfNextBufferToReadStr.push_back(currentBuffer->getChar(i));
             }
             long nextDataSize = convertToSomething<long>(sizeOfNextBufferToReadStr.c_str());
-            *clientLogger << "\nClient : dataSize read just now says that next data size is   \n"<<nextDataSize;
+            *clientLogger << "Client : dataSize read just now says that next data size is   "<<nextDataSize;
             
             readOneBuffer(nextDataSize);
             
         }
         else{
-            *clientLogger << "\nClient : data read just now is not a dataSize Info   \n";
-            *clientLogger << "\nClient : this is the complete message read from server ";
+            *clientLogger << "Client : data read just now is not a dataSize Info   ";
+            *clientLogger << "Client : this is the complete message read from server ";
             msgPtr last_read_message(new pico_message(str));
             processDataFromOtherSide(last_read_message);
     
         }
         //            else
         //                            {
-        //                                *sessionLogger << "\nsession : ERROR : reading empty message  \n";
+        //                                *sessionLogger << "session : ERROR : reading empty message  ";
         //                                readOneBuffer();		//read the next addon buffer
         //
         //                            }
@@ -336,7 +336,7 @@ public:
 			if(clientLogger->isTraceEnabled())
 			{
                 
-                clientLogger->log(toStr(format("\n client this is the complete message from server : %1% ,its the %2% message read from server") % messageFromOtherSide->toString() % numberOfMessageRead.get()));
+                clientLogger->log(toStr(boost::format(" client this is the complete message from server : %1% ,its the %2% message read from server") % messageFromOtherSide->toString() % numberOfMessageRead.get()));
                 
             }
 			//process the data from server and queue the right message or dont
@@ -349,9 +349,9 @@ public:
 			if(clientLogger->isTraceEnabled())
 			{
                 
-                string logMsg("\n Client : got the response with this messageId :  ");
+                string logMsg(" Client : got the response with this messageId :  ");
                 logMsg.append(messageFromOtherSide->messageId);
-                logMsg.append(" and put it in ResponseQueue \n this is the full response : ");
+                logMsg.append(" and put it in ResponseQueue  this is the full response : ");
                 logMsg.append(messageFromOtherSide->toString());
                 clientLogger->log(logMsg);
                 assert(messageFromOtherSide->toString().size()>0);
@@ -370,7 +370,7 @@ public:
             string str(data);
             
             
-            string logMsg("\n Client Sent :  ");
+            string logMsg(" Client Sent :  ");
             logMsg.append(toStr(t));
             logMsg.append(" bytes to Server ");
             clientLogger->log(logMsg);
@@ -379,16 +379,16 @@ public:
           
             if(error)
             {
-                string logMsg(" \nClient : a communication error happend...\n msg : ");
+                string logMsg(" Client : a communication error happend... msg : ");
                 logMsg.append(error.message());
                 clientLogger->log(logMsg);
             }
             
             
             {
-                string logMsg("\nClient : data sent to server is ");
+                string logMsg("Client : data sent to server is ");
                 logMsg.append(str);
-                logMsg.append("\n");
+                logMsg.append("");
                 
                 clientLogger->log(logMsg);
                 
@@ -414,9 +414,9 @@ public:
 		if(clientLogger->isTraceEnabled())
 		{
             
-            string logMsg("\nClient : one message was pushed to requestQueue with this messageId ");
+            string logMsg("Client : one message was pushed to requestQueue with this messageId ");
             logMsg.append(msg->messageId);
-            logMsg.append("\n");
+            logMsg.append("");
             clientLogger->log(logMsg);
         
         }
@@ -436,9 +436,9 @@ public:
 		if(clientLogger->isTraceEnabled())
 		{
             
-            string logMsg("\nClient : one message was pushed to requestQueue with this messageId ");
+            string logMsg("Client : one message was pushed to requestQueue with this messageId ");
             logMsg.append(msg->messageId);
-            logMsg.append("\n");
+            logMsg.append("");
             clientLogger->log(logMsg);
             
 		}
@@ -458,9 +458,9 @@ public:
 		if(clientLogger->isTraceEnabled())
 		{
             
-            string logMsg("\nClient : one message was pushed to requestQueue with this messageId ");
+            string logMsg("Client : one message was pushed to requestQueue with this messageId ");
             logMsg.append(msg->messageId);
-            logMsg.append("\n");
+            logMsg.append("");
             clientLogger->log(logMsg);
     
             
@@ -499,7 +499,7 @@ public:
             
             string logMsg("Client : waiting for our response from server...msg.messageId = ");
             logMsg.append(msg->messageId);
-            logMsg.append("\n");
+            logMsg.append("");
             clientLogger->log(logMsg);
             
             
@@ -513,7 +513,7 @@ public:
 //			{
 //                
 //			//	if(clientLogger->isTraceEnabled()) {
-//			//		clientLogger->log("Client : waiting for our responseQueue_ to be filled again  !\n";}
+//			//		clientLogger->log("Client : waiting for our responseQueue_ to be filled again  !";}
 ////				auto now = std::chrono::system_clock::now();
 ////                std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
 ////                responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
@@ -523,7 +523,7 @@ public:
 
             if(!responseQueue_.empty())
             {
-                string logMsg(toStr(format("Client : response queue sisze is %1% %2% %3% \n") % responseQueue_.size() % "oo" % "O"));
+                string logMsg(toStr(boost::format("Client : response queue sisze is %1% %2% %3% ") % responseQueue_.size() % "oo" % "O"));
                 clientLogger->log(logMsg);
 
                 queueType response = responseQueue_.peek();
@@ -537,7 +537,7 @@ public:
                     
                     string logMsg("Client : got our response");
                     logMsg.append(response->messageId);
-                    logMsg.append("\n");
+                    logMsg.append("");
                     logMsg.append("this is our response ");
                     logMsg.append(response->toString());
                     clientLogger->log(logMsg);
@@ -568,7 +568,7 @@ public:
 						
                         string logMsg("Client : ");
                         logMsg.append(msg->command);
-                        logMsg.append("Operation TIMED OUT!!\n");
+                        logMsg.append("Operation TIMED OUT!!");
                         clientLogger->log(logMsg);
                         
   						break;
@@ -606,7 +606,7 @@ public:
 		{
             string logMsg(" Exception in notifierThread ");
             logMsg.append(e.what());
-            logMsg.append("\n");
+            logMsg.append("");
             clientLogger->log(logMsg);
         }
 
@@ -643,9 +643,9 @@ public:
 		if(clientLogger->isTraceEnabled())
  		{
             
-            string logMsg("\n client : response pushed to responseQUEUE , queue size is");
+            string logMsg(" client : response pushed to responseQUEUE , queue size is");
             logMsg.append(toStr(responseQueue_.size()));
-            logMsg.append("\n");
+            logMsg.append("");
             clientLogger->log(logMsg);
             
 		}
@@ -675,7 +675,7 @@ public:
         if(clientLogger->isTraceEnabled())
         {
             
-            clientLogger->log(toStr(format("Client : sent the %2%th message to server %1% \n") % data %numberOfMessageSent.get()));
+            clientLogger->log(toStr(boost::format("Client : sent the %2%th message to server %1% ") % data %numberOfMessageSent.get()));
             
         }
     }
@@ -700,7 +700,7 @@ public:
     ~PonocoDriver()
     {
         assert(shutDownNormally);
-        clientLogger->log("\nPoncoDriver being destroyed");
+        clientLogger->log("PoncoDriver being destroyed");
     }
 }; //end of class
 }

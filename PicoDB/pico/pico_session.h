@@ -66,7 +66,7 @@ namespace pico {
         void start() {
             
             try {
-                cout << " session started already..\n";
+                cout << " session started already..";
                 
                 while(true)
                 {
@@ -89,9 +89,9 @@ namespace pico {
             
             
             if (sessionLogger->isTraceEnabled()) {
-                string logMsg( "\n Session is going to read ");
+                string logMsg( " Session is going to read ");
                 logMsg.append(toStr(dataSizeToReadNext));
-                logMsg.append(" chars into buffer from client...\n");
+                logMsg.append(" chars into buffer from client...");
                 sessionLogger->log(logMsg);
             }
            
@@ -105,9 +105,9 @@ namespace pico {
             boost::system::error_code error;
             size_t length = socket_->read_some(boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead), numberOfCharsToRead), error);
              if (sessionLogger->isTraceEnabled()) {
-                 string logMsg( "\n Session is done reading  ");
+                 string logMsg( " Session is done reading  ");
                  logMsg.append(toStr(numberOfCharsToRead));
-                 logMsg.append(" chars from client...\n");
+                 logMsg.append(" chars from client...");
                  sessionLogger->log(logMsg);
                }
              processTheBufferJustRead(currentBuffer,length);
@@ -127,7 +127,7 @@ namespace pico {
 //                              [this,self,currentBuffer](const boost::system::error_code& error,
 //                                                        std::size_t t ) {
 //                                  if (sessionLogger->isTraceEnabled()) {
-//                                      sessionLogger->log( "\n Session is done reading  "<<numberOfCharsToRead<<" chars from client...\n";
+//                                      sessionLogger->log( " Session is done reading  "<<numberOfCharsToRead<<" chars from client...";
 //                                  }
 //                                  processTheBufferJustRead(currentBuffer,t);
 //                                  //printHistoryOfMessages();//print all the messages after you are done with processing it
@@ -135,20 +135,20 @@ namespace pico {
         }
         void writeOneBuffer() {
             if (sessionLogger->isTraceEnabled()) {
-                sessionLogger->log( "\nSession is going to send a buffer to client..going to acquire lock \n");
+                sessionLogger->log( "Session is going to send a buffer to client..going to acquire lock ");
             }
             
             
             while (bufferQueue_.empty()) {
                 if (sessionLogger->isTraceEnabled()) {
-                    sessionLogger->log( "\nSession bufferQueue_ is empty...waiting for a message to come to queue. \n");
+                    sessionLogger->log( "Session bufferQueue_ is empty...waiting for a message to come to queue. ");
                 }
                 std::unique_lock <std::mutex> writeOneBufferLock(bufferQueueIsEmptyMutex);
                 bufferQueueIsEmpty.wait(writeOneBufferLock);
                 
             }
             if (sessionLogger->isTraceEnabled()) {
-                sessionLogger->log( "\nSession is going to send a buffer to client.. lock obtained \n");
+                sessionLogger->log( "Session is going to send a buffer to client.. lock obtained ");
             }
             
             std::shared_ptr<pico_record> currentBuffer = bufferQueue_.pop();
@@ -192,13 +192,13 @@ namespace pico {
             //                optionCollection.insert(x1);
             //            }
             cout << " number of records are : "
-            << optionCollection.getNumberOfMessages() << " \n";
-            //            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
-            //            cout << " record 4 : " << optionCollection.get(3).toString() << " \n";
+            << optionCollection.getNumberOfMessages() << " ";
+            //            cout << " record 4 : " << optionCollection.get(3).toString() << " ";
+            //            cout << " record 4 : " << optionCollection.get(3).toString() << " ";
             //            optionCollection.update(x1, x2);
             //optionCollection.deleteRecord(x1);
             
-            sessionLogger->log( "\nend of function readingAndWritingRecordData() ");
+            sessionLogger->log( "end of function readingAndWritingRecordData() ");
             
         }
         void processDataFromOtherSide(msgPtr messageFromOtherSide) {
@@ -208,7 +208,7 @@ namespace pico {
                 
                 if (sessionLogger->isTraceEnabled()) {
                    
-                    sessionLogger->log(toStr(format( "\nSession read the %1%th message from client : %2% ") %numberOfMessageRead.get() %messageFromOtherSide->toString()));
+                    sessionLogger->log(toStr(boost::format( "Session read the %1%th message from client : %2% ") %numberOfMessageRead.get() %messageFromOtherSide->toString()));
                 }
                 //the requestProcessor part will be done after multi threadin
                 //socket part is done and tested
@@ -216,7 +216,7 @@ namespace pico {
                 msgPtr reply =messageFromOtherSide;
                 if(sessionLogger->isTraceEnabled()) {
                     
-                    string logMsg( "\nSession : putting reply to the queue this is the message that Session read just now");
+                    string logMsg( "Session : putting reply to the queue this is the message that Session read just now");
                     logMsg.append(reply->toString());
                     sessionLogger->log(logMsg);
                     
@@ -235,7 +235,7 @@ namespace pico {
             messageNumber++;
             string str = currentBuffer->toString();
             if (sessionLogger->isTraceEnabled()) {
-            string logMsg( "\nsession : data read just now is  \n");
+            string logMsg( "session : data read just now is  ");
             logMsg.append(str);
             sessionLogger->log(logMsg);
             }
@@ -252,7 +252,7 @@ namespace pico {
                 long nextDataSize = convertToSomething<long>(sizeOfNextBufferToReadStr.c_str());
                 
                 if (sessionLogger->isTraceEnabled()) {
-                    string logMsg( "\nsession : dataSize read just now says that next data size is \n");
+                    string logMsg( "session : dataSize read just now says that next data size is ");
                     logMsg.append(toStr(nextDataSize));
                     sessionLogger->log(logMsg);
                 }
@@ -260,15 +260,15 @@ namespace pico {
                 
             }
             else{
-                sessionLogger->log( "\nsession : data read just now is not a dataSize Info   \n");
-                sessionLogger->log( "\nsession : this is the complete message read from Client ");
+                sessionLogger->log( "session : data read just now is not a dataSize Info   ");
+                sessionLogger->log( "session : this is the complete message read from Client ");
                 msgPtr last_read_message(new pico_message(str));
                 processDataFromOtherSide(last_read_message);
                // writeOneBuffer(); //going to writing mode to write the reply for this complete message
                 }
 //            else
 //                            {
-//                                sessionLogger->log( "\nsession : ERROR : reading empty message  \n";
+//                                sessionLogger->log( "session : ERROR : reading empty message  ";
 //                                readOneBuffer();		//read the next addon buffer
 //                
 //                            }
@@ -285,7 +285,7 @@ namespace pico {
             }
             if(sessionLogger->isTraceEnabled())
             {
-                sessionLogger->log(toStr(format("Session : sent the %2%th message to client %1% \n") % data %numberOfMessageSent.get()));
+                sessionLogger->log(toStr(format("Session : sent the %2%th message to client %1% ") % data %numberOfMessageSent.get()));
             }
 
         }
@@ -317,15 +317,15 @@ namespace pico {
                     if (error) {
                     string logMsg(" error msg : ");
                     logMsg.append(error.message());
-                    logMsg.append("\n");
+                    logMsg.append("");
                     sessionLogger->log(logMsg);
                     }
                 }
                 string str(data);
                
-                string logMsg( "\nSession received ");
+                string logMsg( "Session received ");
                 logMsg.append(toStr(t));
-                logMsg.append(" bytes read from Client \n data read from client is ");
+                logMsg.append(" bytes read from Client  data read from client is ");
                 logMsg.append(str);
                 sessionLogger->log(logMsg);
             
@@ -334,13 +334,13 @@ namespace pico {
         virtual ~pico_session()
         {
             
-            sessionLogger->log( "\n Session going out of scope ");
+            sessionLogger->log( " Session going out of scope ");
             printHistoryOfMessages();
             assert(shutDownNormally);
             
         }
     void printHistoryOfMessages() {
-        sessionLogger->log( "\n Session These are all the messages that session read from client");
+        sessionLogger->log( " Session These are all the messages that session read from client");
         listOfAllMessagesReadInOrder.printAll();
         }
         

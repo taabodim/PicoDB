@@ -9,27 +9,24 @@
 #define PICO_UTILS_H_
 #include <boost/lexical_cast.hpp>
 #include <chrono>
-#include <pico_logger_wrapper.h>
 #include <PicoConfig.h>
 #include <assert.h>
+#include <chrono>
+#include <ctime>
+#include <ratio>
+#include <stdio.h>      // for sprintf()
+
+#include <iostream>     // for console output
+#include <string>       // for std::string
+
+#include <boost/date_time/posix_time/posix_time.hpp>
 using namespace std;
 
 namespace pico {
     
-    string COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY(
-                                                                 "COMPLETE_MESSAGE_AS_JSON_FORMAT_WITHOUT_BEGKEY_CONKEY");
-    string LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY(
-                                                          "LONG_MESSAGE_JUST_KEY_VALUE_WITH_BEGKEY_CONKEY");
     
     typedef long offsetType;
     typedef std::string messageType;
-   // bool log = true;
-    enum class comMsg {
-        STOP, SEND_ME_MORE, END_OF_MESSAGE
-    };
-    enum log_level {
-        debug, trace, all, error, warning
-    };
     
     std::string random_string(size_t length) {
         auto randchar = []() -> char
@@ -178,7 +175,16 @@ namespace pico {
         //    std::this_thread::sleep_for( dura );
         
     }
-    
+    string getTimeNowAsString_Old() {
+        using std::chrono::system_clock;
+        system_clock::time_point today = system_clock::now();
+        
+        std::time_t tt;
+        tt = system_clock::to_time_t ( today );
+        string timeStr =toStr( ctime(&tt));
+        return timeStr;
+        
+    }
     string getFullCollectionName(string name) {
         string fullname = PicoConfig::dataDir;
         std::string ext(".dat");
@@ -202,6 +208,54 @@ namespace pico {
         
     }
     
+    //-----------------------------------------------------------------------------
+    // Format current time (calculated as an offset in current day) in this form:
+    //
+    //     "hh:mm:ss.SSS" (where "SSS" are milliseconds)
+    //-----------------------------------------------------------------------------
+    std::string getTimeNowAsString()
+    {
+        // Get current time from the clock, using microseconds resolution
+        const boost::posix_time::ptime now =
+        boost::posix_time::microsec_clock::local_time();
+        
+        // Get the time offset in current day
+        const boost::posix_time::time_duration td = now.time_of_day();
+        
+        //
+        // Extract hours, minutes, seconds and milliseconds.
+        //
+        // Since there is no direct accessor ".milliseconds()",
+        // milliseconds are computed _by difference_ between total milliseconds
+        // (for which there is an accessor), and the hours/minutes/seconds
+        // values previously fetched.
+        //
+        const long hours        = td.hours();
+        const long minutes      = td.minutes();
+        const long seconds      = td.seconds();
+        const long milliseconds = td.total_milliseconds() -
+        ((hours * 3600 + minutes * 60 + seconds) * 1000);
+        
+        //
+        // Format like this:
+        //
+        //      hh:mm:ss.SSS
+        //
+        // e.g. 02:15:40:321
+        //
+        //      ^          ^
+        //      |          |
+        //      123456789*12
+        //      ---------10-     --> 12 chars + \0 --> 13 chars should suffice
+        //
+        // 
+        char buf[40];
+        sprintf(buf, "%02ld:%02ld:%02ld.%03ld", 
+                hours, minutes, seconds, milliseconds);
+        
+        return buf;
+    }
+
     
 }
 
