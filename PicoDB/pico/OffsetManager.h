@@ -53,6 +53,7 @@ public:
 	}
 
 };
-}
+    
+    }
 
 #endif

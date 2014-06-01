@@ -20,13 +20,15 @@
 #include <pico/ConcurrentVector.h>
 #include <pico/pico_buffered_message.h>
 #include <logger.h>
-#include <pico/pico_session.h> //for the checking if appended function and sendmetherestofdata function
 #include <pico/pico_test.h>
 #include <pico/pico_logger_wrapper.h>
 #include <ClientResponseProcessor.h>
 #include <PonocoDriverHelper.h>
 #include <PicoConfig.h>
 #include <pico/MessageSender.h>
+#include <pico/pico_session.h>//for format function, i dont know why
+#include <boost/format.hpp>
+#include <AtomicCounter.h>
 using boost::asio::ip::tcp;
 using namespace std;
 using namespace std::chrono;
@@ -43,11 +45,11 @@ class PonocoDriver: public std::enable_shared_from_this<PonocoDriver>,
 private:
 	std::shared_ptr<tcp::socket> socket_;
 	ResponseProcessor responseProcessor;
-	//  typedef  std::shared_ptr<PonocoDriverHelper> helperType;
 	typedef PonocoDriverHelper* helperType;
-	// helperType syncHelper;
+
 	ConcurrentVector<queueType,VectorTraits<pico_messageForResponseQueue_>> responseQueue_;
-	std::shared_ptr<ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>>> bufferQueuePtr_;
+	
+    std::shared_ptr<ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>>> bufferQueuePtr_;
 
 	bool clientIsConnected;
 
@@ -71,10 +73,12 @@ private:
     pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
     bool shutDownNormally;
 	asyncReader asyncReader_;
-
+    AtomicCounter numberOfMessageRead;
+    AtomicCounter numberOfMessageSent;
+    
 public:
 
-	PonocoDriver(helperType syncHelperArg )
+	PonocoDriver()
 
 	:bufferQueuePtr_(new ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>>)
     ,messageSender(new MessageSender()),shutDownNormally(false)
@@ -84,6 +88,7 @@ public:
 			clientLogger->log( "Ponoco Instance is initializing  ");
             
 		}
+        
 		setDefaultParameter();
 
 	}
@@ -161,7 +166,12 @@ public:
 			{
 				//clientIsConnectedCV.notify_all();
 				clientIsConnected=true;
-				writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
+				while(true)
+                {
+                    writeOneBuffer();//this starts the writing, if bufferQueue is empty it waits for it.
+                    readOneBuffer(10);//read the reply
+                    
+                }
 			}
 			else {
 				if(clientLogger->isTraceEnabled())
@@ -223,7 +233,10 @@ public:
         numberOfCharsToRead = dataSizeToReadNext;
         
         boost::system::error_code error;
+//        size_t length = boost::asio::read(*socket_,boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead), numberOfCharsToRead), error);
+
         size_t length = socket_->read_some(boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead), numberOfCharsToRead), error);
+
         if (clientLogger->isTraceEnabled()) {
             
             string logMsg("\n Client is done reading  ");
@@ -278,13 +291,11 @@ public:
         getProperMessageAboutSize(dataSizeAsStr,properMessageAboutSize);
         writeOneMessageToOtherSide(properMessageAboutSize.c_str(),10,true,data,dataSize);
         
-        readOneBuffer(10);
         
 	}
     
     void processTheBufferJustRead(std::shared_ptr<pico_record> currentBuffer,
                                   std::size_t t) {
-       // messageNumber++;
         string str = currentBuffer->toString();
         *clientLogger << "\nClient : data read just now is  \n"<<str;
         if(pico_record::IsThisRecordASizeInfo(currentBuffer))
@@ -306,7 +317,7 @@ public:
             *clientLogger << "\nClient : this is the complete message read from server ";
             msgPtr last_read_message(new pico_message(str));
             processDataFromOtherSide(last_read_message);
-            writeOneBuffer(); //going to writing mode to write the other messages
+    
         }
         //            else
         //                            {
@@ -320,12 +331,13 @@ public:
 	void processDataFromOtherSide(queueType messageFromOtherSide) {
 
 		try {
-
+            numberOfMessageRead.increment();
+            
 			if(clientLogger->isTraceEnabled())
 			{
-                string logMsg("\n client this is the complete message from server : ");
-                logMsg.append(messageFromOtherSide->toString());
-                clientLogger->log(logMsg);
+                
+                clientLogger->log(toStr(format("\n client this is the complete message from server : %1% ,its the %2% message read from server") % messageFromOtherSide->toString() % numberOfMessageRead.get()));
+                
             }
 			//process the data from server and queue the right message or dont
 
@@ -497,19 +509,23 @@ public:
 		while(true)
 		{
 
-			if(responseQueue_.empty())
-			{
-			//	if(clientLogger->isTraceEnabled()) {
-			//		clientLogger->log("Client : waiting for our responseQueue_ to be filled again  !\n";}
-//				auto now = std::chrono::system_clock::now();
-//                std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
-//                responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
-//				if(responseQueue_.empty()) {break;}
-
-			}
+//			if(responseQueue_.empty())
+//			{
+//                
+//			//	if(clientLogger->isTraceEnabled()) {
+//			//		clientLogger->log("Client : waiting for our responseQueue_ to be filled again  !\n";}
+////				auto now = std::chrono::system_clock::now();
+////                std::unique_lock<std::mutex> responseQueueIsEmptyLock(responseQueueMutex);
+////                responseQueueIsEmpty.wait_until(responseQueueIsEmptyLock, t2 +std::chrono::milliseconds(userTimeOut*1000));
+////				if(responseQueue_.empty()) {break;}
+//
+//			}
 
             if(!responseQueue_.empty())
             {
+                string logMsg(toStr(format("Client : response queue sisze is %1% %2% %3% \n") % responseQueue_.size() % "oo" % "O"));
+                clientLogger->log(logMsg);
+
                 queueType response = responseQueue_.peek();
 
 			if(msg!=NULL && response!=nullptr && response->messageId.compare(msg->messageId)==0)
@@ -525,10 +541,10 @@ public:
                     logMsg.append("this is our response ");
                     logMsg.append(response->toString());
                     clientLogger->log(logMsg);
-
                     
 				}
-
+                return response;
+                
 				testPassed = true;
 				if(response->value.compare("NODATAFOUND")==0)
 				{
@@ -540,7 +556,7 @@ public:
 				}
 				return response;
 			}
-//
+
             }
 //
             
@@ -550,8 +566,6 @@ public:
 					{
 						//we ran out of time, get failed....
 						
-                        
-                        
                         string logMsg("Client : ");
                         logMsg.append(msg->command);
                         logMsg.append("Operation TIMED OUT!!\n");
@@ -560,7 +574,7 @@ public:
   						break;
 
 					}
-			
+//
 
 		} //while
 		  //assert(testPassed);
@@ -585,8 +599,8 @@ public:
 	void startResponseQueueNotifier()
 	{
 		try {
-//			boost::thread notifierThread(
-//					boost::bind(&PonocoDriver::notifierService,this));
+			boost::thread notifierThread(
+					boost::bind(&PonocoDriver::notifierService,this));
 
 		} catch(std::exception& e)
 		{
@@ -599,14 +613,19 @@ public:
 	}
 	void notifierService()
 	{
-//		while(true)
-//		{
-//			if(!responseQueue_.empty())
-//			{
-//				responseQueueIsEmpty.notify_all();
-//			}
-//
-//		}
+        
+		while(true)
+		{
+			if(!responseQueue_.empty())
+			{
+				responseQueueIsEmpty.notify_all();
+			}
+            if(!bufferQueuePtr_->empty())
+            {
+                bufferQueueIsEmpty.notify_all();
+            }
+
+		}
 	}
 	void queueTheResponse(queueType msg)
 
@@ -637,6 +656,7 @@ public:
         
 //        std::unique_lock < std::mutex> queueMessagesLock(queueMessagesMutext);
         std::shared_ptr<pico_record> curBufPtr =  message->getCompleteMessageInJsonAsOnBuffer();
+        
         bufferQueuePtr_->push_back(curBufPtr);
         bufferQueueIsEmpty.notify_all();
         
@@ -644,10 +664,19 @@ public:
     
     void writeOneMessageToOtherSide(const char* data,std::size_t dataSize,bool sendTheRealData,const string& realData,std::size_t realDataSize)
     {
+        numberOfMessageSent.increment();
+        
         boost::asio::write(*socket_, boost::asio::buffer(data, dataSize));
+        
         if(sendTheRealData)
         {
-            writeOneMessageToOtherSide(realData.c_str(),realDataSize,false,"",-1);//this is the real data
+           writeOneMessageToOtherSide(realData.c_str(),realDataSize,false,"",-1);//this is the real data
+        }
+        if(clientLogger->isTraceEnabled())
+        {
+            
+            clientLogger->log(toStr(format("Client : sent the %2%th message to server %1% \n") % data %numberOfMessageSent.get()));
+            
         }
     }
     

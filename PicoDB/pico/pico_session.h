@@ -19,6 +19,8 @@
 #include <atomic>
 #include <pico/ConcurrentVector.h>
 #include <pico/MessageSender.h>
+#include <boost/format.hpp>
+#include <pico/AtomicCounter.h>
 using boost::asio::ip::tcp;
 using namespace std;
 namespace pico {
@@ -47,6 +49,8 @@ namespace pico {
         std::condition_variable clientIsAllowedToWrite;
         
         pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
+        AtomicCounter numberOfMessageRead;
+        AtomicCounter numberOfMessageSent;
         
     public:
         static string logFileName;
@@ -63,7 +67,13 @@ namespace pico {
             
             try {
                 cout << " session started already..\n";
-                readOneBuffer(numberOfCharsToRead);
+                
+                while(true)
+                {
+                    readOneBuffer(10);
+                    writeOneBuffer();//write the reply
+
+                }
             } catch (const std::exception& e) {
                 cout << " exception : " << e.what() << endl;
             } catch (...) {
@@ -152,7 +162,6 @@ namespace pico {
             getProperMessageAboutSize(dataSizeAsStr,properMessageAboutSize);
             writeOneMessageToOtherSide(properMessageAboutSize.c_str(),10,true,data,dataSize);
             
-            readOneBuffer(10);//read the next message size
             
             
         }
@@ -195,11 +204,11 @@ namespace pico {
         void processDataFromOtherSide(msgPtr messageFromOtherSide) {
             
             try {
+                numberOfMessageRead.increment();
+                
                 if (sessionLogger->isTraceEnabled()) {
-                    string logMsg( "\nSession read this message from client ");
-                    logMsg.append(messageFromOtherSide->toString());
-                    logMsg.append(" ...\n");
-                    sessionLogger->log(logMsg);
+                   
+                    sessionLogger->log(toStr(format( "\nSession read the %1%th message from client : %2% ") %numberOfMessageRead.get() %messageFromOtherSide->toString()));
                 }
                 //the requestProcessor part will be done after multi threadin
                 //socket part is done and tested
@@ -216,8 +225,7 @@ namespace pico {
                 assert(!reply->toString().empty());
                 
                 queueMessages(reply);
-                
-            } catch (std::exception &e) {
+                } catch (std::exception &e) {
                 cout << " this is the error : " << e.what() << endl;
             }
             
@@ -256,7 +264,7 @@ namespace pico {
                 sessionLogger->log( "\nsession : this is the complete message read from Client ");
                 msgPtr last_read_message(new pico_message(str));
                 processDataFromOtherSide(last_read_message);
-                writeOneBuffer(); //going to writing mode to write the reply for this complete message
+               // writeOneBuffer(); //going to writing mode to write the reply for this complete message
                 }
 //            else
 //                            {
@@ -268,15 +276,18 @@ namespace pico {
             }
         void writeOneMessageToOtherSide(const char* data,std::size_t dataSize,bool sendTheRealData,const string& realData,std::size_t realDataSize)
         {
+            numberOfMessageSent.increment();
             boost::asio::write(*socket_, boost::asio::buffer(data, dataSize));
-            string logMsg( "\nsession : done with writing");
-            logMsg.append(toStr(dataSize));
-            logMsg.append("\n");
-            
+           
             if(sendTheRealData)
             {
                 writeOneMessageToOtherSide(realData.c_str(),realDataSize,false,"",-1);//this is the real data
             }
+            if(sessionLogger->isTraceEnabled())
+            {
+                sessionLogger->log(toStr(format("Session : sent the %2%th message to client %1% \n") % data %numberOfMessageSent.get()));
+            }
+
         }
         
 //        void writeOneMessageToOtherSideAsync(const char* data,std::size_t dataSize,bool sendTheRealData,const string& realData,std::size_t realDataSize)

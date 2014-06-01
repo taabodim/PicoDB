@@ -62,6 +62,7 @@
 		A511D67F18E3839700628059 /* Readme.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
 		A511D68018E3843E00628059 /* gcc-atomic.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = "gcc-atomic.hpp"; path = "../../Downloads/boost_1_55_0/gcc-atomic.hpp"; sourceTree = "<group>"; };
 		A511D68118E45E6600628059 /* Examples.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Examples.h; sourceTree = "<group>"; };
+		A514C9F4193AAB340026D227 /* AtomicCounter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AtomicCounter.h; sourceTree = "<group>"; };
 		A51D61D61920647D00C482E9 /* RecordInserter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RecordInserter.h; sourceTree = "<group>"; };
 		A53700F718F3166600C1F898 /* chat_server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_server.h; sourceTree = "<group>"; };
 		A537010D18F3193400C1F898 /* chat_message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = chat_message.h; sourceTree = "<group>"; };
@@ -193,6 +194,7 @@
 				E24AABB4192FD23900A995D6 /* ConcurrentVector.h */,
 				A50E3E8F1931700300B4DF11 /* pico_record_deprecated.h */,
 				A50E3E911931BA6400B4DF11 /* MessageSender.h */,
+				A514C9F4193AAB340026D227 /* AtomicCounter.h */,
 			);
 			path = pico;
 			sourceTree = "<group>";

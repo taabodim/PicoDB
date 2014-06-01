@@ -431,7 +431,7 @@ void runPicoDriver(PonocoDriverHelper* syncHelper) {
         tcp::resolver r(io_service);
         
 		std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service));
-        std::shared_ptr<DriverType> ptr(new DriverType(syncHelper));
+        std::shared_ptr<DriverType> ptr(new DriverType());
 		 ptr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
@@ -524,7 +524,7 @@ void clientServerExample() {
 
     //     std::shared_ptr<PonocoDriverHelper> sharedSyncHelper  (new PonocoDriverHelper);
          PonocoDriverHelper* sharedSyncHelper  =new PonocoDriverHelper();
-std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
+std::shared_ptr<DriverType> ptr(new DriverType());
 //         DriverType* ptr = new DriverType(sharedSyncHelper);
         boost::thread serverThread(runServer);
        // sleepViaBoost(1);

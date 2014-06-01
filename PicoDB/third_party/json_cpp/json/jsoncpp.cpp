@@ -1954,6 +1954,8 @@ Value::Value( const Value &other )
    , itemIsUsed_( 0 )
 #endif
 {
+    assert(&other!=NULL);
+    assert(this!=NULL);
    switch ( type_ )
    {
    case nullValue:
@@ -1998,6 +2000,7 @@ Value::Value( const Value &other )
             comments_[comment].setComment( otherComment.comment_ );
       }
    }
+    assert(this!=NULL);
 }
 
 
