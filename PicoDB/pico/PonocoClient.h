@@ -71,7 +71,7 @@ public:
 	}
 	void insertOneBigRandomData() {
 		std::string key(pico_test::smallKey0);
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 100000; i++) {
 			string randomSmallKey = convertToString(i).append(random_string(key, 10).append(
 					random_string(key, 10)));
 //			if (mylogger.isTraceEnabled()) {
