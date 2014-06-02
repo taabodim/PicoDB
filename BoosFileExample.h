@@ -99,7 +99,7 @@ namespace
         for ( string::iterator itr = s.begin(); itr != s.end(); ++itr )
             if ( *itr == '\\' || *itr == '!' ) *itr = '/';
     }
-    
+//    asds
     //  extract a target directory path from a jam target string  ----------------//
     //  s may be relative to the initial_path:
     //    ..\..\..\libs\foo\build\bin\libfoo.lib\vc7\debug\runtime-link-dynamic\boo.obj
