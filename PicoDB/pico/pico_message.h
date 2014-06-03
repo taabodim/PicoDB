@@ -1,4 +1,4 @@
-/*
+    /*
  * pico_message.h
  *
  *  Created on: Mar 21, 2014
@@ -78,13 +78,14 @@ public:
 		this->hashCodeOfMessage = msg.hashCodeOfMessage;
 		return *this;
 	}
+    Json::Reader reader;
+
     pico_message(const std::string message_from_client)
     //this is for converting a string to pico_message when we read it from
     //the other side
     {
 		Json::Value root;   // will contains the root value after parsing.
-		Json::Reader reader;
-        
+		      
 		bool parsingSuccessful = reader.parse(message_from_client, root);
         if (!parsingSuccessful) {
 			// report to the user the failure and their locations in the document.

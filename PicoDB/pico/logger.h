@@ -16,7 +16,8 @@
 #include <iostream>
 #include <memory>
 #include <pico/PicoConfig.h>
-
+#include <boost/format.hpp>
+#include <pico_utils.h>
 using namespace std;
 namespace pico{
     
@@ -32,18 +33,15 @@ namespace pico{
         }
      
 public:
-   
+      
+        
         void log(std::string str )
         {
-
             boost::unique_lock<boost::mutex> lock(log_mutex);
-            append(str);
-            
-            
+            append(toStr(boost::format("\nTime : %1%  %2%") % getTimeNowAsString() %str.c_str()));
         }
        logger(std::string filename){
-        
-           string path(PicoConfig::logDir);
+        string path(PicoConfig::logDir);
 		std::string ext(".log");
 		path.append(filename);
         path.append(ext);

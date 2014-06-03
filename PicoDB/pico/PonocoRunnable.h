@@ -31,7 +31,7 @@ namespace  pico  {
         	assert(driverPtr!=NULL);
             PonocoClient myClient(driverPtr);
             myClient.setPonocoDriver(driverPtr);
-
+            sleepViaBoost(1);
             myClient.currentTestCase();
             
             

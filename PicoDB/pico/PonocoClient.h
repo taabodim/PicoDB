@@ -71,9 +71,9 @@ public:
 	}
 	void insertOneBigRandomData() {
 		std::string key(pico_test::smallKey0);
-		for (int i = 0; i < 1; i++) {
-			string randomSmallKey = random_string(key, 10).append(
-					random_string(key, 10));
+		for (int i = 0; i < 100000; i++) {
+			string randomSmallKey = convertToString(i).append(random_string(key, 10).append(
+					random_string(key, 10)));
 //			if (mylogger.isTraceEnabled()) {
 //				mylogger
 //						<< "driverPtr->insert(randomSmallKey,pico_test::bigValue0 );";
@@ -91,7 +91,7 @@ public:
 	}
 
 	void write1000smallRandomDataUsing100Threads() {
-		int numOfThreads = 3;
+		int numOfThreads = 1;
 		PicoConfig::defaultTimeoutInSec = 2;
 		vector<boost::thread*> allThreads;
 		//sleepViaBoost(2); this throws exception
@@ -226,12 +226,12 @@ public:
 		steady_clock::time_point t2 = steady_clock::now();
 
 		duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-
+        
 		mylogger << "****************************************\n";
 		mylogger << "\nIt took me " << time_span.count() << " seconds.\n";
 		std::cout << "****************************************\n";
 		std::cout << "\nIt took me " << time_span.count() << " seconds.\n";
-
+      //  sleepViaBoost(100);
 	}
 
 };

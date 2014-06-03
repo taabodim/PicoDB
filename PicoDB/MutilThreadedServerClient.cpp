@@ -431,7 +431,7 @@ void runPicoDriver(PonocoDriverHelper* syncHelper) {
         tcp::resolver r(io_service);
         
 		std::shared_ptr<tcp::socket> socket(new tcp::socket(io_service));
-        std::shared_ptr<DriverType> ptr(new DriverType(syncHelper));
+        std::shared_ptr<DriverType> ptr(new DriverType());
 		 ptr->start_connect(socket,r.resolve(tcp::resolver::query(localhost, port)));
         //		boost::thread shellThread(
         //				boost::bind(startTheShell, ptr)); //this will run the shell process that reads command and send to client
@@ -524,7 +524,7 @@ void clientServerExample() {
 
     //     std::shared_ptr<PonocoDriverHelper> sharedSyncHelper  (new PonocoDriverHelper);
          PonocoDriverHelper* sharedSyncHelper  =new PonocoDriverHelper();
-std::shared_ptr<DriverType> ptr(new DriverType(sharedSyncHelper));
+std::shared_ptr<DriverType> ptr(new DriverType());
 //         DriverType* ptr = new DriverType(sharedSyncHelper);
         boost::thread serverThread(runServer);
        // sleepViaBoost(1);
@@ -1023,14 +1023,14 @@ string  pico_test::bigValue0("Families skepticalFamilies of the 239 people who w
 
 string  pico_test::bigValue1("Families skepticalFamilies of the 239 people who were aboard when the plane disappeared from ;radar screens early March 8 met Friday with Malaysia Airlines and government officials. They came away unpersuaded that progress was being made.Today, all they said was that they were confident, family representative Steve Wang said. But that really doesn't mean that they have confirmed it.endOfMessage");
 int main(int argc, char** argv) {
-    bool homeSetting = false;
+    bool homeSetting = true;
     
     if(homeSetting)
     {
         PicoConfig::logDir.clear();
-        PicoConfig::logDir.append("/Users/mahmoudtaabodi/Documents/");
+        PicoConfig::logDir.append("/Users/mahmoudtaabodi/Documents/pico_logs/");
         PicoConfig::dataDir.clear();
-        PicoConfig::dataDir.append("/Users/mahmoudtaabodi/Documents/");
+        PicoConfig::dataDir.append("/Users/mahmoudtaabodi/Documents/pico_data/");
         
         
     }
