@@ -248,7 +248,7 @@ public:
         
         self->processTheBufferJustRead(currentBuffer,length);
 
-        
+        asyncReader_.returnTheBuffer(currentBuffer);
 //		boost::asio::async_read(*socket_,
 //				boost::asio::buffer(currentBuffer->getDataForRead(numberOfCharsToRead),
 //						numberOfCharsToRead),

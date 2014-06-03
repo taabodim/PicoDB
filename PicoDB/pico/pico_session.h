@@ -111,6 +111,7 @@ namespace pico {
                  sessionLogger->log(logMsg);
                }
              processTheBufferJustRead(currentBuffer,length);
+             asyncReader_.returnTheBuffer(currentBuffer);
              numberOfCharsToRead=10;
              //printHistoryOfMessages();//print all the messages after you are done with processing it
         }

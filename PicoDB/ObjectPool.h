@@ -140,6 +140,9 @@ public:
 	MongoThread(std::shared_ptr<ObjectPool> pool) {
 		mongoPool = pool;
 	}
+    MongoThread(const MongoThread& mThread) {
+        assert(false);
+    }
 	void run() {
 
 		int iter = 10;

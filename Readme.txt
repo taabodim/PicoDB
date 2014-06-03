@@ -11,6 +11,14 @@ install brew using this command
 ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
 
 
+
+how to install valgrind.
+1. brew install automake
+2. go to source dir, then do ./autogen
+3. then do ./configure
+4. then make
+5. make install
+
 adding the thread pool
 replace it with the one in the project
  its a bug for 1.55 version
