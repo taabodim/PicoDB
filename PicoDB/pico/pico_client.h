@@ -25,8 +25,6 @@
 #include <ClientResponseProcessor.h>
 #include <PonocoDriverHelper.h>
 #include <PicoConfig.h>
-#include <pico/MessageSender.h>
-//#include <pico/pico_session.h>//for format function, i dont know why
 #include <boost/format.hpp>
 #include <AtomicCounter.h>
 using boost::asio::ip::tcp;
@@ -69,7 +67,6 @@ private:
 	string database;
 	string user;
 	string col;
-    MessageSender* messageSender;
     pico_buffered_message<pico_record> allBuffersReadFromTheOtherSide;
     bool shutDownNormally;
 	asyncReader asyncReader_;
@@ -80,8 +77,8 @@ public:
 
 	PonocoDriver()
 
-	:bufferQueuePtr_(new ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>>)
-    ,messageSender(new MessageSender()),shutDownNormally(false)
+	:bufferQueuePtr_(new ConcurrentVector<std::shared_ptr<pico_record>,VectorTraits<pico_record>>) ,
+    shutDownNormally(false)
 	{
 		if(clientLogger->isTraceEnabled())
 		{
@@ -290,7 +287,7 @@ public:
         string properMessageAboutSize;
         getProperMessageAboutSize(dataSizeAsStr,properMessageAboutSize);
         writeOneMessageToOtherSide(properMessageAboutSize.c_str(),10,true,data,dataSize);
-        
+      //  bufferQueuePtr_->remove(currentBuffer); //if it exists
         
 	}
     

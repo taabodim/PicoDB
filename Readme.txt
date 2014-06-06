@@ -19,9 +19,16 @@ how to install valgrind.
 4. then make
 5. make install
 
+how to install some useful libraries
+brew install cppunit
+brew install automake
+brew install poco
+brew install snappy
+brew install cmake
+
 adding the thread pool
 replace it with the one in the project
- its a bug for 1.55 version
+its a bug for 1.55 version
 
  or then change the permission on this folder and file, and modify it according 
  to the git hub that removed all the =0 cases.

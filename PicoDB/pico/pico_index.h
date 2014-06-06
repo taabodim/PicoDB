@@ -10,7 +10,7 @@
 #include <list>
 #include <pico/pico_collection.h>
 #include <pico/pico_utils.h>
-
+#include <pico/DBRecord.h>
 #include <pico_logger_wrapper.h>
 #include <memory>
 using namespace std;
@@ -23,10 +23,10 @@ class pico_record_node
 //: public std::enable_shared_from_this<pico_record_node>{ //this causes problem when we are not using a normal pointer
 {
 public:
-//        typedef std::shared_ptr<pico_record_node> nodeType;
+//       
 	offsetType key; //this key is calculated based on the hash of the first  pico record of a pico message
 	offsetType offset; //this is the offset  of the first record of a pico message  in the file
-	//logger mylogger;
+	
 	nodeType left; //left node in the tree
 	nodeType right; //right node in the tree
 
@@ -170,7 +170,7 @@ public:
 	//            return node;
 	//        }
 
-	void insert(pico_record& record, nodeType leaf) {
+	void insert(std::shared_ptr<DBRecord> record, nodeType leaf) {
 
 		nodeType node = convert_pico_record_to_index_node(record);
 		insert(node, leaf);
@@ -256,12 +256,12 @@ public:
 	void insert(nodeType node) {
 		insert(node, root);
 	}
-	nodeType search(pico_record & record) {
+	nodeType search(std::shared_ptr<DBRecord> record) {
 		nodeType node = search(convert_pico_record_to_index_node(record), root);
 		if (node == nullptr) {
-			record.offset_of_record = -1;
+			record->offset_of_record = -1;
 		} else {
-			record.offset_of_record = node->offset;
+			record->offset_of_record = node->offset;
 		}
 		return node;
 	}
@@ -269,15 +269,15 @@ public:
 		destroy_tree(root);
 	}
 
-	nodeType convert_pico_record_to_index_node(pico_record & record) {
+	nodeType convert_pico_record_to_index_node(std::shared_ptr<DBRecord>  record) {
 		nodeType node(new pico_record_node());
 		std::hash < std::string > hash_fn;
-//		std::size_t key_hash = hash_fn(record.getKeyAsString()); //record key will be used to make the node key
+		std::size_t key_hash = hash_fn(record->getKeyAsString()); //record key will be used to make the node key
 
-//		node->key = key_hash;
+		node->key = key_hash;
 		// node->key = offset;//for testing the tree, just use the offset for now
 
-		node->offset = record.offset_of_record; //this is the record offset that will be saved in the index
+		node->offset = record->offset_of_record; //this is the record offset that will be saved in the index
 		node->left = nullptr;
 		node->right = nullptr;
 		return node;
@@ -327,10 +327,10 @@ public:
 			print_tree(topNode->right);
 		}
 	}
-	void add_to_tree(pico_record& it) { //this method creates a tree structure
+	void add_to_tree(std::shared_ptr<DBRecord> it) { //this method creates a tree structure
 		//based on the pico records that it reads from a collection
 		mylogger << "pico_index: adding this record to index " << it.toString();
-		assert(it.offset_of_record >= 0);
+		assert(it->offset_of_record >= 0);
 		nodeType node = convert_pico_record_to_index_node(it);
 		insert(node);
 		numberOfNodesInTree++;
@@ -349,18 +349,18 @@ public:
 		else
 			return (size(node->left) + 1 + size(node->right));
 	}
-	void build_tree(list<pico_record> all_pico_records) { //this method creates a tree structure
+	void build_tree(list<DBRecord> all_pico_records) { //this method creates a tree structure
 		//based on the pico records that it gets reads from a collection
 		mylogger << "\ntree is going to be build by " << all_pico_records.size()
 				<< " elements\n";
 
-		for (list<pico_record>::iterator it = all_pico_records.begin();
+		for (list<DBRecord>::iterator it = all_pico_records.begin();
 				it != all_pico_records.end(); ++it) {
 
 			mylogger << "\nbuild_tree : offset is " << it->offset_of_record
 					<< "\n";
 			assert(it->offset_of_record >= 0);
-			nodeType node = convert_pico_record_to_index_node(*it);
+			nodeType node = convert_pico_record_to_index_node(it);
 			insert(node);
 			numberOfNodesInTree++;
 		}
@@ -370,13 +370,13 @@ public:
 	void test_tree() {
 		const int num = 20;
 		nodeType allNodesInsertedInTree[num];
-		pico_record* allRecordsInsertedInTree[num];
+		std::shared_ptr<DBRecord> allRecordsInsertedInTree[num];
 
 		string key("mahmoudkey");
 		for (int i = 0; i < num; i++) {
 			int offset = random_number<int>(3);
-			pico_record record;
-			record.offset_of_record = offset;
+			std::shared_ptr<DBRecord>  record (new DBRecord());
+			record->offset_of_record = offset;
 			//record.setKey(random_string(key,5));
 			allNodesInsertedInTree[i] = convert_pico_record_to_index_node(
 					record);
@@ -393,8 +393,7 @@ public:
 
 	}
 
-}
-;
+};
 }
 
 #endif /* PICO_INDEX_H_ */

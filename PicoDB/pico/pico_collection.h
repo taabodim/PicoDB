@@ -10,7 +10,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <pico/pico_record.h>
+#include <pico/DBRecord.h>
 #include <stdio.h>
 #include <pico/pico_index.h>
 #include <logger.h>
@@ -23,9 +23,9 @@
 //this is a wrapper around the file that represents the collection
 namespace pico {
     struct recordInDatabase{
-//        char typeHolder [pico_record::max_key_type_size];
-//        char keyHolder[pico_record::max_key_size];
-//        char valueHolder[pico_record::max_value_size];
+//        char typeHolder [DBRecord::max_key_type_size];
+//        char keyHolder[DBRecord::max_key_size];
+//        char valueHolder[DBRecord::max_value_size];
     };
     
     //these the parts of record that are saved in file
@@ -73,7 +73,7 @@ namespace pico {
             
             // test_reading_from_collection();
             
-            list<pico_record> all_pico_messages = read_all_messages_records(); //write a function to get all the begining records for putting them in the tree (done)
+            list<DBRecord> all_pico_messages = read_all_messages_records(); //write a function to get all the begining records for putting them in the tree (done)
             size_t initSize = all_pico_messages.size();
             index.build_tree(all_pico_messages);
             
@@ -92,15 +92,14 @@ namespace pico {
         string getName() {
             return filename;
         }
-        void queue_record_for_deletion(
-                                       std::shared_ptr<pico_record> firstRecordOfMessageToBeDeleted) {
+        void queue_record_for_deletion(std::shared_ptr<DBRecord> firstRecordOfMessageToBeDeleted) {
             auto deleteTask = std::make_shared < DeleteTaskRunnable
             > (shared_from_this(), firstRecordOfMessageToBeDeleted);
             
             //mylogger<<"hello"<<"I am here"<<" "<<3<<3.23<<"\n";
             delete_thread_pool->submitTask(deleteTask);
         }
-        void deleteRecord(std::shared_ptr<pico_record> firstRecordOfMessageToBeDeleted,bool async) {
+        void deleteRecord(std::shared_ptr<DBRecord> firstRecordOfMessageToBeDeleted,bool async) {
             //this function gets called by request processor, it finds the first record of the message
             //that has the same key and delete all the records that follows that first record until the next
             //first record in the file
@@ -108,7 +107,7 @@ namespace pico {
             //delete this record all over the file , logically we should only have one record with the same key
             //when we are inserting to the file, we check if the record exists , we update it( the update is just deleting and inserting again)
             read_offset_of_this_record(firstRecordOfMessageToBeDeleted); //offset of record is found using index.search
-            pico_record_node node = *index.convert_pico_record_to_index_node(
+            DBRecord_node node = *index.convert_DBRecord_to_index_node(
                                                                              *firstRecordOfMessageToBeDeleted);
             firstRecordOfMessageToBeDeleted->offset_of_record = node.offset;
             
@@ -120,7 +119,7 @@ namespace pico {
             index.remove(node);
             
         }
-        void deletion_function(pico_record firstRecordOfMessageToBeDeleted) //this function is the main function that deletion thread calls to delete the record
+        void deletion_function(DBRecord firstRecordOfMessageToBeDeleted) //this function is the main function that deletion thread calls to delete the record
         {
             
             //   read_offset_of_this_record(firstRecordOfMessageToBeDeleted); the index has already been deleted
@@ -144,9 +143,9 @@ namespace pico {
             bool ignoreFirstBEGKEYRecordOffset = true;
             do {
                 
-                std::shared_ptr<pico_record> nextRecord = retrieve(nextOffset);
+                std::shared_ptr<DBRecord> nextRecord = retrieve(nextOffset);
                 
-//                if (pico_record::recordStartsWithBEGKEY(*nextRecord) && ignoreFirstBEGKEYRecordOffset==false ) {
+//                if (DBRecord::recordStartsWithBEGKEY(*nextRecord) && ignoreFirstBEGKEYRecordOffset==false ) {
 //                   break;
 //                } else {
 //                    all_offsets_for_this_message.push_back(nextOffset);
@@ -177,22 +176,22 @@ namespace pico {
             }
             offsetType endOffset = offsetManager->getEndOfFileOffset();
             
-            pico_buffered_message<pico_record> all_records_for_this_message;
+            pico_buffered_message<DBRecord> all_records_for_this_message;
             
             offsetType nextOffset = offsetOfFirstRecordOfMessage;
             assert(nextOffset>=0);
             
-            std::shared_ptr<pico_record> nextRecord = retrieve(nextOffset); //get the first record of this message
+            std::shared_ptr<DBRecord> nextRecord = retrieve(nextOffset); //get the first record of this message
 //            all_records_for_this_message.append(*nextRecord);
             
             nextOffset += max_database_record_size;
             do {
                 
-            	std::shared_ptr<pico_record> nextRecord = retrieve(nextOffset);
+            	std::shared_ptr<DBRecord> nextRecord = retrieve(nextOffset);
                 assert(!nextRecord->toString().empty());
                 
-//                assert(pico_record::recordStartsWithBEGKEY(nextRecord) || pico_record::recordStartsWithConKEY(nextRecord));
-//                if (pico_record::recordStartsWithConKEY(*nextRecord)) //this for the next message
+//                assert(DBRecord::recordStartsWithBEGKEY(nextRecord) || DBRecord::recordStartsWithConKEY(nextRecord));
+//                if (DBRecord::recordStartsWithConKEY(*nextRecord)) //this for the next message
 //                {
 //                    if (mylogger.isTraceEnabled()) {
 //                        mylogger<< "\npico_collection : retrieveOneMessage :  this buffer starts with CONKEY  \n";
@@ -236,10 +235,10 @@ namespace pico {
             
         }
         
-        msgPtr getMessageByKey(pico_record& record,
+        msgPtr getMessageByKey(DBRecord& record,
                                      string messageIdForResponse) {
             string result;
-//            assert(!pico_record::isRecordEmpty(record));
+//            assert(!DBRecord::isRecordEmpty(record));
             
             if(mylogger.isTraceEnabled())
             {
@@ -298,9 +297,9 @@ namespace pico {
                  max_database_record_size) {
                 //  cout << " read_all_records_offsets : reading one record from offset "<<offset  //<< std::endl;
                 
-            	std::shared_ptr<pico_record> record_read_from_file = retrieve(offset);
+            	std::shared_ptr<DBRecord> record_read_from_file = retrieve(offset);
                 
-//                if (pico_record::recordStartsWithBEGKEY(*record_read_from_file)) {
+//                if (DBRecord::recordStartsWithBEGKEY(*record_read_from_file)) {
 //                    list_of_offsets.push_back(offset);
 //                }
 //                //
@@ -312,10 +311,10 @@ namespace pico {
             return list_of_offsets;
         }
         
-        list<pico_record> read_all_messages_records() {
-            list<pico_record> list_;
+        list<DBRecord> read_all_messages_records() {
+            list<DBRecord> list_;
             try {
-                //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY and return them as pico_records not offsets
+                //this function will read over the file and gets all the first records that are starting with  either BEGKEY or CONKEY and return them as DBRecords not offsets
                 
                 offsetType endOfFile_Offset = offsetManager->getEndOfFileOffset();
                 mylogger << "\n offset of end of file is " << endOfFile_Offset;
@@ -323,7 +322,7 @@ namespace pico {
                 for (offsetType offset = 0; offset < endOfFile_Offset; offset +=
                      max_database_record_size) {
                     
-                	std::shared_ptr<pico_record> record_read_from_file = retrieve(offset);
+                	std::shared_ptr<DBRecord> record_read_from_file = retrieve(offset);
                     record_read_from_file->offset_of_record =offset;
                     
                     
@@ -331,12 +330,7 @@ namespace pico {
                     << "\n read_all_messages_records : reading one record from offset "
                     << offset << "\n the record read is "
                     << record_read_from_file->toString();
-                    
-//                    if (pico_record::recordStartsWithBEGKEY(
-//                                                            *record_read_from_file)) {
-//                        list_.push_back(*record_read_from_file);
-//                    }
-//                    
+                    list_.push_back(*record_read_from_file);
                 }
             } catch (...) {
                 std::cerr << "Exception: read_all_messages_records: unknown thrown"
@@ -348,7 +342,7 @@ namespace pico {
             return list_;
         }
         
-        void read_offset_of_this_record(std::shared_ptr<pico_record> record) {
+        void read_offset_of_this_record(std::shared_ptr<DBRecord> record) {
             nodeType node = index.search(*record);
             if (node == nullptr)
                 record->offset_of_record = -1;
@@ -359,7 +353,7 @@ namespace pico {
             
         }
 
-        bool ifRecordExists(pico_record& record) {
+        bool ifRecordExists(std::shared_ptr<DBRecord> record) {
             //this function checks if a record exists or not
             
             if (index.search(record) == nullptr)
@@ -376,24 +370,18 @@ namespace pico {
             if (offsetOfToBeDeletedRecord == -1)
                 return;
             
-            string empty("");
-//            pico_record empty_record;
-//            pico_record::setTheKeyInData(empty_record,empty);
-//            pico_record::setTheValueInData(empty_record,empty);
-//            pico_record::setTheRecordTypeInData(empty_record,empty);
-//            
-            //            (empty,empty);
-           // pico_record current_record = retrieve(offsetOfToBeDeletedRecord);
-            //        nodeType node = index.createANodeBasedOnOffset(offset);
-            //		index.deleteNode(node);
+           string empty("");
+           DBRecord empty_record;
+           DBRecord::setTheKeyInData(empty_record,empty);
+           DBRecord::setTheValueInData(empty_record,empty);
             
-//            overwrite(empty_record, offsetOfToBeDeletedRecord);
+           overwrite(empty_record, offsetOfToBeDeletedRecord);
             
-            // index.remove(*index.convert_pico_record_to_index_node(current_record));//passing the key of the record that was deleted
+            index.remove(*index.convert_DBRecord_to_index_node(current_record));//passing the key of the record that was deleted
             //to calculate the right
             
         }
-        offsetType get_offset_of_this_record(pico_record& record) { //this function is used in updating and replacing
+        offsetType get_offset_of_this_record(std::shared_ptr<DBRecord> record) { //this function is used in updating and replacing
             //this function should use the index to get the offset of the record
             //which is always the first record of the message
             //iterating through all the records in the file should be avoided
@@ -405,7 +393,7 @@ namespace pico {
                 return node->offset;
             
                 }
-        void overwrite(pico_record record, offsetType record_offset) { //this overwrites a file
+        void overwrite(std::shared_ptr<DBRecord> record, offsetType record_offset) { //this overwrites a file
             
             mylogger << "\noverwriting  one record to collection at this offset"<<record_offset<<"\n";
             int tryNum=0;
@@ -414,11 +402,11 @@ namespace pico {
                
                 append_a_record(record,record_offset);
                 
-                std::shared_ptr<pico_record> currentRecord = retrieve(record_offset);
+                std::shared_ptr<DBRecord> currentRecord = retrieve(record_offset);
                 
 //                if(mylogger.isTraceEnabled()) //just to test if overwrite worked properly
 //                {
-//                	std::shared_ptr<pico_record> read_from_file  = retrieve(record_offset);
+//                	std::shared_ptr<DBRecord> read_from_file  = retrieve(record_offset);
 //                    assert(currentRecord->areRecordsEqual(*read_from_file));
 //                }
 //                
@@ -439,18 +427,18 @@ namespace pico {
 //                }
             } while (tryNum<20);
         }
-        void insert(pico_record& record) { //this appends to the end of file
+        void insert(std::shared_ptr<DBRecord> record) { //this appends to the end of file
             append(record);
         }
-        void append(pico_record& record) { //this appends to the end of file
+        void append(std::shared_ptr<DBRecord> record) { //this appends to the end of file
             offsetType record_offset = offsetManager->getEndOfFileOffset();
-            record.offset_of_record = record_offset;
+            record->offset_of_record = record_offset;
             append_a_record(record, record_offset);
             
         }
         
-        std::shared_ptr<pico_record>  retrieve(offsetType offset) {
-            std::shared_ptr<pico_record> read_from_file (new pico_record());
+        std::shared_ptr<DBRecord>  retrieve(offsetType offset) {
+            std::shared_ptr<DBRecord> read_from_file (new DBRecord());
             
             
             FILE *ptr_myfile;
@@ -467,22 +455,22 @@ namespace pico {
             fread(&my_record,sizeof(struct recordInDatabase),1,ptr_myfile);
             
             
-//            for(int i=pico_record::beg_key_type_index;i<pico_record::end_key_type_index;i++)
-//            {
-//                
-//                read_from_file->data_[i]=my_record.typeHolder[i-pico_record::beg_key_type_index];
-//                
-//            }
-//            for(int i=pico_record::beg_of_key_index;i<pico_record::end_of_key_index;i++)
-//            {
-//                read_from_file->data_[i]=my_record.keyHolder[i-pico_record::beg_of_key_index];
-//                
-//            }
-//            for(int i=pico_record::beg_of_value_index;i<pico_record::end_of_value_index;i++)
-//            {
-//                read_from_file->data_[i]=my_record.valueHolder[i-pico_record::beg_of_value_index];
-//                
-//            }
+           for(int i=DBRecord::beg_key_type_index;i<DBRecord::end_key_type_index;i++)
+           {
+               
+               read_from_file->data_[i]=my_record.typeHolder[i-DBRecord::beg_key_type_index];
+               
+           }
+           for(int i=DBRecord::beg_of_key_index;i<DBRecord::end_of_key_index;i++)
+           {
+               read_from_file->data_[i]=my_record.keyHolder[i-DBRecord::beg_of_key_index];
+               
+           }
+           for(int i=DBRecord::beg_of_value_index;i<DBRecord::end_of_value_index;i++)
+           {
+               read_from_file->data_[i]=my_record.valueHolder[i-DBRecord::beg_of_value_index];
+               
+           }
             
             
             fclose(ptr_myfile);
@@ -492,7 +480,7 @@ namespace pico {
         
         
         
-        void  append_a_record  (pico_record& record, offsetType record_offset) {
+        void  append_a_record  (std::shared_ptr<DBRecord> record, offsetType record_offset) {
             
             FILE *ptr_myfile;
             struct recordInDatabase my_record;
@@ -507,22 +495,22 @@ namespace pico {
             }
 
             assert(ptr_myfile);
-//            for(int i=pico_record::beg_key_type_index;i<pico_record::max_key_type_size;i++)
-//            {
-//                
-//                my_record.typeHolder[i-pico_record::beg_key_type_index]=record.data_[i];
-//                
-//            }
-//            for(int i=pico_record::beg_of_key_index;i<pico_record::end_of_key_index;i++)
-//            {
-//                my_record.keyHolder[i-pico_record::beg_of_key_index]=record.data_[i];
-//                
-//            }
-//            for(int i=pico_record::beg_of_value_index;i<pico_record::end_of_value_index;i++)
-//            {
-//                my_record.valueHolder[i-pico_record::beg_of_value_index]=record.data_[i];
-//                
-//            }
+           for(int i=DBRecord::beg_key_type_index;i<DBRecord::max_key_type_size;i++)
+           {
+               
+               my_record.typeHolder[i-DBRecord::beg_key_type_index]=record.data_[i];
+               
+           }
+           for(int i=DBRecord::beg_of_key_index;i<DBRecord::end_of_key_index;i++)
+           {
+               my_record.keyHolder[i-DBRecord::beg_of_key_index]=record.data_[i];
+               
+           }
+           for(int i=DBRecord::beg_of_value_index;i<DBRecord::end_of_value_index;i++)
+           {
+               my_record.valueHolder[i-DBRecord::beg_of_value_index]=record.data_[i];
+               
+           }
             
             fseek ( ptr_myfile , record_offset , SEEK_SET );
             fwrite(&my_record, sizeof(struct recordInDatabase), 1, ptr_myfile);
@@ -531,7 +519,7 @@ namespace pico {
             
             offsetManager->setEndOfFileOffset(record_offset+max_database_record_size);
             
-//            if (pico_record::recordStartsWithBEGKEY(record)) {
+//            if (DBRecord::recordStartsWithBEGKEY(record)) {
 //                if(index.search(record)==nullptr)
 //                {
 //                     mylogger<<"pico_collection : Adding the BEGKEY record to the index !";
@@ -549,7 +537,7 @@ namespace pico {
             
             if(mylogger.isTraceEnabled()) //just to test if append worked properly
             {
-               std::shared_ptr<pico_record> read_from_file  = retrieve(record_offset);
+               std::shared_ptr<DBRecord> read_from_file  = retrieve(record_offset);
 //               assert(record.areRecordsEqual(*read_from_file));
             }
            
@@ -581,7 +569,7 @@ namespace pico {
            
         }
         
-        const pico_record empty_record;
+        const DBRecord empty_record;
     private:
 
     };
@@ -610,5 +598,16 @@ namespace pico {
     		fclose(fp);
     		return sz;
     	}
+
+    void static picoCollectionTest()
+        {
+
+            std::string nameOfCollection ("testCollection");
+            pico_collection myCollection(nameOfCollection);
+
+
+
+
+        }
 }
 #endif /* COLLECTION_H_ */

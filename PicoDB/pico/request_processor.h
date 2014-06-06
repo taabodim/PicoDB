@@ -259,8 +259,7 @@ public:
 		std::shared_ptr<pico_collection> collectionPtr =
 				collectionManager->getTheCollection(requestMessage->collection);
 
-		pico_buffered_message<pico_record> msg_in_buffers;
-//        =requestMessage->getKeyValueOfMessageInRecords();
+		pico_buffered_message<pico_record> msg_in_buffers =requestMessage;
 
 		pico_record firstrecord;
 //        = msg_in_buffers.pop();

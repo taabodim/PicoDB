@@ -71,7 +71,7 @@ public:
 	}
 	void insertOneBigRandomData() {
 		std::string key(pico_test::smallKey0);
-		for (int i = 0; i < 100000; i++) {
+		for (int i = 0; i < 1000; i++) {
 			string randomSmallKey = convertToString(i).append(random_string(key, 10).append(
 					random_string(key, 10)));
 //			if (mylogger.isTraceEnabled()) {
@@ -92,7 +92,7 @@ public:
 
 	void write1000smallRandomDataUsing100Threads() {
 		int numOfThreads = 1;
-		PicoConfig::defaultTimeoutInSec = 2;
+		PicoConfig::defaultTimeoutInSec = 10;
 		vector<boost::thread*> allThreads;
 		//sleepViaBoost(2); this throws exception
 		for (int i = 0; i < numOfThreads; i++) {

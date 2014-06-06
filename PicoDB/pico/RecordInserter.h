@@ -78,45 +78,31 @@ public:
 
 	msgPtr insertOneMessage(msgPtr picoMsg) {
 
-//		std::shared_ptr<pico_collection> optionCollection =
-//				collectionManager->getTheCollection(picoMsg->collection);
-//
-//		pico_buffered_message<pico_record> msg_in_buffers =
-//				picoMsg->getKeyValueOfMessageInRecords();
-//            int initialSize = msg_in_buffers.size();
-//		pico_record firstrecord = msg_in_buffers.peek();
-//
-//		offsetType whereToWriteThisRecord = 0;
-//		if (collectionManager->getTheCollection(picoMsg->collection)->ifRecordExists(
-//				firstrecord)) {
-//
-//			if (mylogger.isTraceEnabled()) {
-//				mylogger
-//						<< "request_processr: record already exists,returning error! ";
-//			}
-//
-//			string result("record already exists in database ");
-//			msgPtr msg = pico_message::build_message_from_string(result,
-//					picoMsg->messageId);
-//			return msg;
-//
-//		}
-//
-//		int i = 0;
-//		do {
-//
-//			pico_record record = msg_in_buffers.pop();
-//			i++;
-//			mylogger
-//					<< "\nrequest_processor : record that is going to be saved at this offset "
-//            << whereToWriteThisRecord<<" : "
-//					<< record.toString();
-//            record.offset_of_record = whereToWriteThisRecord;
-//			optionCollection->append(record); //append the
-//			whereToWriteThisRecord += max_database_record_size;
-//
-//		} while (!msg_in_buffers.empty());
-//		assert(i == initialSize);
+		std::shared_ptr<pico_collection> optionCollection =
+				collectionManager->getTheCollection(picoMsg->collection);
+
+		std::shared_ptr<DBRecord>  recordTOBeInDB= picoMsg->getDBrecordOfMessage();
+
+
+		if (collectionManager->getTheCollection(picoMsg->collection)->ifRecordExists(
+				recordTOBeInDB)) {
+
+			if (mylogger.isTraceEnabled()) {
+				mylogger
+						<< "request_processr: record already exists,returning error! ";
+			}
+
+			string result("record already exists in database ");
+			msgPtr msg = pico_message::build_message_from_string(result,
+					picoMsg->messageId);
+			return msg;
+
+		}
+
+	    mylogger<< "\nrequest_processor : record that is going to be saved at this offset "<< record.toString();
+        
+        optionCollection->append(recordTOBeInDB); //append the
+		
 		string result("one message was added to database in ");
 //		result.append(convertToString(i));
 		result.append(" seperate records");
