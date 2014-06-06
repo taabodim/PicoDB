@@ -380,7 +380,7 @@ public:
 			//record.setKey(random_string(key,5));
 			allNodesInsertedInTree[i] = convert_pico_record_to_index_node(
 					record);
-			allRecordsInsertedInTree[i] = &record;
+			allRecordsInsertedInTree[i] = record;
 			insert(allNodesInsertedInTree[i]);
 		}
 

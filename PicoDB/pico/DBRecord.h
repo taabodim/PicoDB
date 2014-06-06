@@ -116,7 +116,7 @@ namespace pico  {
             
         }
         bool areKeysEqual(const DBRecord& buffer) {
-            for (int i = beg_of_key_index; i < end_of_key_index; i++) {
+            for (int i = begOfKeyIndex; i < endOfKeyIndex; i++) {
                 if (data_[i] != buffer.data_[i]) {
                     return false;
                 }
@@ -132,27 +132,8 @@ namespace pico  {
             }
             
         }
-        string keyType; //the string form of keyType
-        string getKeyTypeAsString() {
-            if (keyType.empty()) {
-                getTheKeyTypeStringFromData();
-            }
-            assert(!keyType.empty());
-            return keyType;
-        }
-        void getTheKeyTypeStringFromData()
-        {
-            memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
-            //by copying into the other string or assigning to other
-            for (int i = beg_key_type_index; i < end_key_type_index; i++) {
-                if (data_copy[i] != '\0') {
-                    
-                    keyType.push_back(data_copy[i]);
-                } else {
-                    break;
-                }
-            }
-        }
+        
+        
         string key; //the string form of key
         string getKeyAsString() {
             if (key.empty()) {
@@ -234,61 +215,11 @@ namespace pico  {
             
             return str;
         }
-        
-        static bool recordStartsWithBEGKEY(DBRecord& currentRecord) //was debugged
-        {
-            if (currentRecord.data_[beg_key_type_index] == 'B'
-                && currentRecord.data_[beg_key_type_index + 1] == 'E'
-                && currentRecord.data_[beg_key_type_index + 2] == 'G'
-                && currentRecord.data_[beg_key_type_index + 3] == 'K'
-                && currentRecord.data_[beg_key_type_index + 4] == 'E'
-                && currentRecord.data_[beg_key_type_index + 5] == 'Y')
-                return true;
-            
-            return false;
-        }
-        
-        static bool recordStartsWithConKEY(DBRecord& currentRecord) //debugged
-        {
-            if (currentRecord.data_[beg_key_type_index] == 'C'
-                && currentRecord.data_[beg_key_type_index + 1] == 'O'
-                && currentRecord.data_[beg_key_type_index + 2] == 'N'
-                && currentRecord.data_[beg_key_type_index + 3] == 'K'
-                && currentRecord.data_[beg_key_type_index + 4] == 'E'
-                && currentRecord.data_[beg_key_type_index + 5] == 'Y')
-                return true;
-            
-            return false;
-        }
-        static void addAppendMarkerToTheEnd(DBRecord& currentBuffer)
-        
-        {
-            currentBuffer.data_[beg_of_appendMarker_index] = '9';
-            currentBuffer.data_[beg_of_appendMarker_index + 1] = '9';
-            currentBuffer.data_[beg_of_appendMarker_index + 2] = '9';
-            currentBuffer.data_[beg_of_appendMarker_index + 3] = '9';
-            currentBuffer.data_[beg_of_appendMarker_index + 4] = '9';
-            currentBuffer.data_[beg_of_appendMarker_index + 5] = '9';
-            
-        }
-        static bool IsThisRecordAnAddOn(DBRecord& currentBuffer) {
-            
-            if (currentBuffer.data_[beg_of_appendMarker_index] != '9'
-                || currentBuffer.data_[beg_of_appendMarker_index + 1] != '9'
-                || currentBuffer.data_[beg_of_appendMarker_index + 2] != '9'
-                || currentBuffer.data_[beg_of_appendMarker_index + 3] != '9'
-                || currentBuffer.data_[beg_of_appendMarker_index + 4] != '9'
-                || currentBuffer.data_[beg_of_appendMarker_index + 5] != '9')
-                return false;
-            
-            return true;
-            
-        }
         void setTheKeyString(string key) {
             memcpy(data_copy, data_, sizeof(data_)); //get a fresh copy of data to make sure its not touched
             //by copying into the other string or assigning to other
             
-            for (int i = beg_of_key_index; i < end_of_key_index; i++) {
+            for (int i = begOfKeyIndex; i < endOfKeyIndex; i++) {
                 if (data_copy[i] != '\0') {
                     
                     key.push_back(data_copy[i]);
@@ -301,8 +232,8 @@ namespace pico  {
         }
         
         void getTheKeyStringFromData() {
-            for (int i = DBRecord::beg_of_key_index;
-                 i < DBRecord::end_of_key_index; i++) {
+            for (int i = DBRecord::begOfKeyIndex;
+                 i < DBRecord::endOfKeyIndex; i++) {
                 key.push_back(data_[i]);
             }
         }
@@ -322,8 +253,8 @@ namespace pico  {
         static void setTheKeyInData(DBRecord& currentBuffer, string key) {
             int lastCharIndex = 0;
             const char* temp_buffer_message = key.c_str();
-            for (int i = DBRecord::beg_of_key_index;
-                 i < DBRecord::end_of_key_index; i++) {
+            for (int i = DBRecord::begOfKeyIndex;
+                 i < DBRecord::endOfKeyIndex; i++) {
                 //putting everything in the value part of data_ in DBRecord , so retrieving it is easier
                 
                 if (*temp_buffer_message != 0) {
@@ -335,8 +266,8 @@ namespace pico  {
                 lastCharIndex++;
             }
             
-            for (int i = DBRecord::beg_of_key_index + lastCharIndex;
-                 i < DBRecord::end_of_key_index; i++) {
+            for (int i = DBRecord::begOfKeyIndex + lastCharIndex;
+                 i < DBRecord::endOfKeyIndex; i++) {
                 currentBuffer.data_[i] = '\0';
             }
             currentBuffer.setTheKeyString(key);
