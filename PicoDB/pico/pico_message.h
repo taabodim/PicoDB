@@ -299,7 +299,7 @@ public:
 	~pico_message() {
         
        // assert(shutDownNormally);
-		logger.log("pico_message being destroyed now.\n");
+		mylogger.log("pico_message being destroyed now.\n");
         
 	}
 

@@ -29,7 +29,7 @@
 #include <memory>
 #include <utility>
 #include <array>
-
+#include <pico/OffsetManager.h>
 #include <file_test.h>
 
 #include <ctime>
@@ -379,30 +379,30 @@ std::string make_daytime_string() {
 void create100RecordsInCollection(){
   
    
-	pico_collection optionCollection("options-collection");
-    
-	for (int i = 0; i < 10; i++) {
-        string key=random_string(10);
-        string value = "valueForThisKey";
-        value.append(key);
-//        pico_record x1(key, value);
-//        cout<<"pico_record is "<<x1.toString()<<std::endl;
-//        optionCollection.insert(x1);
-	}
-    
-	cout << " number of records are : " << optionCollection.getNumberOfMessages()
-    << " \n";
-//	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
-//	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
-    
-    optionCollection.index.print_tree();
-	
-//    optionCollection.update(x1, x2);
+//	pico_collection optionCollection("options-collection");
+//    
+//	for (int i = 0; i < 10; i++) {
+//        string key=random_string(10);
+//        string value = "valueForThisKey";
+//        value.append(key);
+////        pico_record x1(key, value);
+////        cout<<"pico_record is "<<x1.toString()<<std::endl;
+////        optionCollection.insert(x1);
+//	}
+//    
+//	cout << " number of records are : " << optionCollection.getNumberOfMessages()
+//    << " \n";
+////	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
+////	cout << " record 4 : " << optionCollection.get(3).getString() << " \n";
+//    
+//    optionCollection.index.print_tree();
 //	
-    //optionCollection.deleteRecord(x1);
-    
-	//mylogger <<std::endl<< "end of function create100RecordsInCollection() "//<< std::endl;
-
+////    optionCollection.update(x1, x2);
+////	
+//    //optionCollection.deleteRecord(x1);
+//    
+//	//mylogger <<std::endl<< "end of function create100RecordsInCollection() "//<< std::endl;
+//
 }
 void test_pico_binary_index_tree()
 {
@@ -920,11 +920,11 @@ void file_example()
     fileTest.deleteSomeRecords();
 
 }
-void test_pico_index()
-{
-    pico_binary_index_tree index;
-    index.test_tree();
-}
+//void test_pico_index()
+//{
+//    pico_binary_index_tree index;
+//    index.test_tree();
+//}
 
 
 
@@ -979,14 +979,14 @@ void registerPrintStackHandlerForSignals() {
     
 }
 
-std::unique_ptr<ThreadPool>  pico_collection::delete_thread_pool (new ThreadPool(numberOfDeletionThreads));
-    
+//std::unique_ptr<ThreadPool>  pico_collection::delete_thread_pool (new ThreadPool(numberOfDeletionThreads));
+
 //    
 
 std::string pico_session::logFileName ("session");
 std::string request_processor::logFileName ("session");
 std::string SimpleRunnable::logFileName ("gicapods");
-std::string DeleteTaskRunnable::logFileName ("gicapods");
+//std::string DeleteTaskRunnable::logFileName ("gicapods");
 
 string pico_test::smallKey0 {"smallKey0"};
 string pico_test::smallKey1  ("smallKey1");

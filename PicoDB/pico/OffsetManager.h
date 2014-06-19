@@ -19,7 +19,6 @@ private:
 
 	static std::atomic<offsetType> offset; //it is init to -1
 	std::mutex offsetMutex;
-	std::shared_ptr<pico_collection> managedCollectionPtr;
 	std::string filename;
 public:
 	OffsetManager(

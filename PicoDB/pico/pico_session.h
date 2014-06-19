@@ -18,7 +18,6 @@
 #include <pico_buffered_message.h>
 #include <atomic>
 #include <pico/ConcurrentVector.h>
-#include <pico/MessageSender.h>
 #include <boost/format.hpp>
 #include <pico/AtomicCounter.h>
 using boost::asio::ip::tcp;
@@ -32,7 +31,7 @@ namespace pico {
         std::shared_ptr<tcp::socket> socket_;
         typedef msgPtr queueType;
         std::atomic<long> messageNumber;
-        MessageSender* messageSender;
+//        MessageSender* messageSender;
         bool shutDownNormally;
         asyncReader asyncReader_;
         request_processor requestProcessor_;
@@ -58,7 +57,10 @@ namespace pico {
         
         
         //constructor
-        pico_session(std::shared_ptr<tcp::socket> r_socket) :shutDownNormally(false),messageNumber(0),messageSender(new MessageSender()){
+        pico_session(std::shared_ptr<tcp::socket> r_socket) :
+        shutDownNormally(false),
+        messageNumber(0)
+        {
             socket_ = r_socket;
             
         }
@@ -178,30 +180,6 @@ namespace pico {
             
         }
         
-        void readingAndWritingRecordData() {
-            
-            string key1 = "keyfromkey1";
-            string value1 = "valuefromvalue1";
-            string key2 = "key2";
-            string value2 = "value2";
-            //            pico_record x1(key1, value1);
-            //
-            //            pico_record x2(key2, value2);
-            pico_collection optionCollection("options-collection");
-            
-            //            for (int i = 0; i < 10; i++) {
-            //                optionCollection.insert(x1);
-            //            }
-            cout << " number of records are : "
-            << optionCollection.getNumberOfMessages() << " ";
-            //            cout << " record 4 : " << optionCollection.get(3).toString() << " ";
-            //            cout << " record 4 : " << optionCollection.get(3).toString() << " ";
-            //            optionCollection.update(x1, x2);
-            //optionCollection.deleteRecord(x1);
-            
-            sessionLogger->log( "end of function readingAndWritingRecordData() ");
-            
-        }
         void processDataFromOtherSide(msgPtr messageFromOtherSide) {
             
             try {
