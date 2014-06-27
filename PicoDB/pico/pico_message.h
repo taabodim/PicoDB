@@ -291,7 +291,7 @@ public:
 		return json_form_of_message;
 	}
     std::shared_ptr<pico_record> getCompleteMessageInJsonAsOnBuffer()
-    {
+    { 
         std::shared_ptr<pico_record> recordPtr(new pico_record(json_form_of_message));
         return recordPtr;
     }
